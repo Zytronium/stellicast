@@ -1,27 +1,18 @@
-import Card from '@/components/Card'
+'use client';
 
-// Mock data – replace with real API later
-const videos = [
-  {
-    id: '1',
-    title: 'Introducing Stellicast – The Future of Video',
-    thumbnail: '/file.svg',
-    creator: 'Stellicast Team',
-  },
-  // …add more mock entries
-]
-
-export default function HomePage() {
-  return (
-    <>
-      <section className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Featured</h1>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {videos.map(v => (
-            <Card key={v.id} {...v} />
-          ))}
+export default function Home() {
+    return (
+        <div className="p-6">
+            <div className="grid grid-cols-4 gap-6 auto-rows-max">
+                {Array.from({ length: 20 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="bg-gray-200 dark:bg-gray-800 rounded-lg aspect-video flex items-center justify-center"
+                    >
+                        <span className="text-gray-500 dark:text-gray-400">Video {i + 1}</span>
+                    </div>
+                ))}
+            </div>
         </div>
-      </section>
-    </>
-  )
+    );
 }
