@@ -20,13 +20,12 @@ export default function TopBar() {
             {/* Logo and Title */}
             <div className="flex items-center gap-2 min-w-fit">
                 <Image
-                    src="/logo.png"
+                    src="/stellicast_smaller.png"
                     alt="Stellicast Logo"
-                    width={32}
+                    width={187.4}
                     height={32}
-                    className="w-8 h-8"
+                    className="h-8"
                 />
-                <span className="text-xl font-bold">Stellicast</span>
             </div>
 
             {/* Search Bar */}

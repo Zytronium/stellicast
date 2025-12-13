@@ -11,9 +11,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
-    const [aiContent, setAiContent] = useState('Unchanged');
-    const [corporateContent, setCorporateContent] = useState('Unchanged');
-    const [individualContent, setIndividualContent] = useState('Unchanged');
+    const [aiContent, setAiContent] = useState('Less');
+    const [studioContent, setStudioContent] = useState('Less');
+    const [creatorContent, setCreatorContent] = useState('More');
     const [lengthType, setLengthType] = useState('Any');
     const [selectedLengths, setSelectedLengths] = useState<string[]>([]);
     const [customLengthMin, setCustomLengthMin] = useState('');
@@ -65,7 +65,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     {/* AI Content Filter */}
                     <FilterAccordion title="AI Content">
                         <div className="space-y-2">
-                            {['More', 'Unchanged', 'Less', 'None'].map((option) => (
+                            {['More', 'Unmodified', 'Less', 'None'].map((option) => (
                                 <label key={option} className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="radio"
@@ -82,16 +82,16 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     </FilterAccordion>
 
                     {/* Corporate Content Filter */}
-                    <FilterAccordion title="Corporate-made Content">
+                    <FilterAccordion title="Studio Content (Corporate)">
                         <div className="space-y-2">
-                            {['More', 'Unchanged', 'Less', 'None'].map((option) => (
+                            {['More', 'Unmodified', 'Less', 'None'].map((option) => (
                                 <label key={option} className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="radio"
                                         name="corporateContent"
                                         value={option}
-                                        checked={corporateContent === option}
-                                        onChange={(e) => setCorporateContent(e.target.value)}
+                                        checked={studioContent === option}
+                                        onChange={(e) => setStudioContent(e.target.value)}
                                         className="w-4 h-4"
                                     />
                                     <span className="text-sm">{option}</span>
@@ -101,16 +101,16 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     </FilterAccordion>
 
                     {/* Individual Content Filter */}
-                    <FilterAccordion title="Individually-made Content">
+                    <FilterAccordion title="Creator Content">
                         <div className="space-y-2">
-                            {['More', 'Unchanged', 'Less', 'None'].map((option) => (
+                            {['More', 'Unmodified', 'Less', 'None'].map((option) => (
                                 <label key={option} className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="radio"
                                         name="individualContent"
                                         value={option}
-                                        checked={individualContent === option}
-                                        onChange={(e) => setIndividualContent(e.target.value)}
+                                        checked={creatorContent === option}
+                                        onChange={(e) => setCreatorContent(e.target.value)}
                                         className="w-4 h-4"
                                     />
                                     <span className="text-sm">{option}</span>
