@@ -18,15 +18,15 @@ export default function TopBar() {
     return (
         <header className="h-16 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-gray-800 flex items-center px-6 justify-between sticky top-0 z-50">
             {/* Logo and Title */}
-            <div className="flex items-center gap-2 min-w-fit">
+            <Link className="flex cursor-pointer items-center gap-2 min-w-fit" href="/">
                 <Image
                     src="/stellicast_smaller.png"
-                    alt="Stellicast Logo"
+                    alt="Stellicast"
                     width={187.4}
                     height={32}
                     className="h-8"
                 />
-            </div>
+            </Link>
 
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="flex-1 mx-8 max-w-md">
