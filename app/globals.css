@@ -37,6 +37,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.bg-gradient {
+    @apply bg-gradient-to-b from-blue-900/60 to-slate-900/80 dark:from-blue-950/80 dark:to-slate-950/90
+}
+.bg-gradient-darker {
+    background: linear-gradient(to bottom, #020617, #000000);
+}
 
 /* Optional: nicer text selection + subtle scrollbars */
 ::selection {

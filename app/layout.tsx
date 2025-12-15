@@ -21,9 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex h-[calc(100vh-64px)]">
           <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
           <main className="flex-1 overflow-y-auto">
-            <div className="min-h-full bg-gradient-to-b from-transparent to-black/5 dark:to-white/5">
+            <div
+              className="min-h-full bg-gradient-darker">
               <div className="mx-auto w-full max-w-7xl px-6 py-6">
-                {children}
+              {children}
               </div>
             </div>
           </main>

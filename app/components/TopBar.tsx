@@ -16,7 +16,7 @@ export default function TopBar() {
     };
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b border-gray-200 bg-white/80 backdrop-blur dark:border-gray-800 dark:bg-[#0a0a0a]/70">
+    <header className="sticky top-0 z-50 h-16 border-b border-gray-200 /*bg-white/80*/ backdrop-blur dark:border-gray-800 bg-gradient">
       <div className="flex h-full items-center justify-between px-6">
         <Link className="flex min-w-fit cursor-pointer items-center gap-2" href="/">
           <Image

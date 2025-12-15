@@ -7,7 +7,7 @@ const placeholder_titles = [
   "Welcome to Stellicast - The future of video streaming",
   "Quick Tech Tips",
   "Gaming Highlights: Best Moments of 2025",
-  "The Science Behind Neural Networks and Machine Learning: A Deep Dive",
+  "The Science Behind Neural Networks and Machine Learning: A Deep Dive You Don't Want to Miss",
   "Weekend Music Mix",
   "Understanding Quantum Computing",
   "Live Podcast: Tech Talk",
