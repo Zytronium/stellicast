@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     };
 
     return (
-        <div className={`relative transition-all duration-300`}>
+        <div className={`relative transition-all duration-300 z-1`}>
             {/* Sidebar */}
             <aside
                 className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-gray-800 overflow-y-auto transition-all duration-300 ${
