@@ -60,7 +60,7 @@ export default function Home() {
             creator_name="Creator Name"
             views="2.1k views"
             date="2 days ago"
-            thumbnail_src={(i - 1) % 7 === 0 ? "/StellicastAIPlaceholderThumbnail1.png" : "/StellicastPlaceholderThumbnail1.png"}
+            thumbnail_src={(i - 1) % 7 === 0 ? "/StellicastAIPlaceholderThumbnail.png" : "/StellicastPlaceholderThumbnail.png"}
             is_ai={(i - 1) % 7 === 0}
           />
         ))}
