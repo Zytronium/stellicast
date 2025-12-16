@@ -5,6 +5,7 @@ import Card from './components/Card';
 const chips = ['All', 'Tech', 'Gaming', 'Music', 'Science', 'Podcasts', 'Live', 'New'];
 const placeholder_titles = [
   "Welcome to Stellicast - The future of video streaming",
+  "Star Trek Battle Engine: Defiant vs Jem’Hadar",
   "Quick Tech Tips",
   "Gaming Highlights: Best Moments of 2025",
   "The Science Behind Neural Networks and Machine Learning: A Deep Dive You Don't Want to Miss",
@@ -22,8 +23,7 @@ const placeholder_titles = [
   "Podcast Episode 42: Digital Evolution",
   "Next-Gen Gaming Technologies Explained",
   "Behind the Scenes: Music Studio Tour",
-  "Science Weekly Roundup",
-  "Interactive Live Stream Highlights"
+  "Science Weekly Roundup"
 ];
 export default function Home() {
   return (
@@ -60,8 +60,8 @@ export default function Home() {
             creator_name="Creator Name"
             views="2.1k views"
             date="2 days ago"
-            thumbnail_src={(i - 1) % 7 === 0 ? "/StellicastAIPlaceholderThumbnail.png" : "/StellicastPlaceholderThumbnail.png"}
-            is_ai={(i - 1) % 7 === 0}
+            thumbnail_src={(i - 4) % 7 === 0 ? "/StellicastAIPlaceholderThumbnail.png" : "/StellicastPlaceholderThumbnail.png"}
+            is_ai={(i - 4) % 7 === 0}
           />
         ))}
       </section>
