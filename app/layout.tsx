@@ -20,12 +20,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <TopBar />
         <div className="flex h-[calc(100vh-64px)]">
           <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-          <main className="flex-1 overflow-y-auto">
-            <div
-              className="min-h-full bg-gradient-darker">
-              <div className="mx-auto w-full max-w-7xl px-6 py-6">
-              {children}
-              </div>
+
+          <main
+            className={[
+              'flex-1 overflow-y-auto transition-[padding-left] duration-300',
+              sidebarOpen ? 'pl-64' : 'pl-0',
+            ].join(' ')}
+          >
+            <div className="min-h-full bg-gradient-darker">
+              <div className="mx-auto w-full max-w-7xl px-6 py-6">{children}</div>
             </div>
           </main>
         </div>

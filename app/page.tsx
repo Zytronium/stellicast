@@ -30,7 +30,7 @@ export default function Home() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Your Feed</h1>
+          <h1 className="pl-5 text-2xl font-semibold tracking-tight">Your Feed</h1>
         </div>
 
         <div className="flex flex-wrap gap-2">
