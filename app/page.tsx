@@ -5,7 +5,8 @@ import Card from './components/Card';
 const chips = ['All', 'Tech', 'Gaming', 'Music', 'Science', 'Podcasts', 'Live', 'New'];
 const placeholder_titles = [
   "Welcome to Stellicast - The future of video streaming",
-  "Star Trek Battle Engine: Defiant vs Jem’Hadar",
+  "Star Trek Battle Engine: Defiant vs Jem’Hadar - A fitting battle",
+  "Star Trek Battle Engine: Voyager vs Charon - The ultimate battle",
   "Quick Tech Tips",
   "Gaming Highlights: Best Moments of 2025",
   "The Science Behind Neural Networks and Machine Learning: A Deep Dive You Don't Want to Miss",
@@ -19,7 +20,6 @@ const placeholder_titles = [
   "Quick Gaming Review",
   "Music Production Basics",
   "Live Coding Session: Building Modern Apps",
-  "The Complete Guide to Sustainable Technology",
   "Podcast Episode 42: Digital Evolution",
   "Next-Gen Gaming Technologies Explained",
   "Behind the Scenes: Music Studio Tour",
