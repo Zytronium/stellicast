@@ -13,10 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="en" className="scroll-smooth">
         <head>
             <title>Stellicast – The YouTube Alternative We&apos;re Still Waiting For</title>
-            <meta name="description" content="Privacy‑first video platform with transparent AI policies." />
+            <meta name="description" content="A work-in-progress, open-source, privacy‑first video platform that doesn't sell user data, doesn't bombard you with ads, listens to user feedback, and promotes non-corporate, human-made content." />
             <link rel="icon" href="/favicon.ico" />
         </head>
-        <body className="bg-white dark:bg-[#0a0a0a] text-black dark:text-white">
+        <body className="bg-[#0a0a0a] text-white">
         <TopBar />
         <div className="flex h-[calc(100vh-64px)]">
           <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />

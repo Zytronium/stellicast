@@ -191,14 +191,14 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                         placeholder="Min time"
                                         value={customLengthMin}
                                         onChange={(e) => setCustomLengthMin(e.target.value)}
-                                        className="w-full px-3 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
+                                        className="w-full px-3 py-1 bg-gray-900 border border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
                                     />
                                     <input
                                         type="text"
                                         placeholder="Max time"
                                         value={customLengthMax}
                                         onChange={(e) => setCustomLengthMax(e.target.value)}
-                                        className="w-full px-3 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
+                                        className="w-full px-3 py-1 bg-gray-900 border border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
                                     />
                                 </div>
                             )}
@@ -277,14 +277,14 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                         placeholder="Min age"
                                         value={customAgeMin}
                                         onChange={(e) => setCustomAgeMin(e.target.value)}
-                                        className="w-full px-3 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
+                                        className="w-full px-3 py-1 bg-gray-900 border border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
                                     />
                                     <input
                                         type="text"
                                         placeholder="Max age"
                                         value={customAgeMax}
                                         onChange={(e) => setCustomAgeMax(e.target.value)}
-                                        className="w-full px-3 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
+                                        className="w-full px-3 py-1 bg-gray-900 border border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
                                     />
                                 </div>
                             )}
@@ -296,9 +296,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed top-20 transition-all duration-300 z-40 bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-gray-800 rounded-r-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-900 ${
-                    isOpen ? 'left-64' : 'left-0'
-                }`}
+                className={`fixed top-20 transition-all duration-300 z-40 bg-[#0a0a0a] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900
+                ${ isOpen ? 'left-64' : 'left-0' }`}
                 aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
             >
                 {isOpen ? (

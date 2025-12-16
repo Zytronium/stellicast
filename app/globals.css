@@ -1,20 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 @font-face {
@@ -38,7 +31,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 .bg-gradient {
-    @apply bg-gradient-to-b from-blue-900/60 to-slate-900/80 dark:from-blue-950/80 dark:to-slate-950/90
+    @apply bg-gradient-to-b from-blue-950/80 to-slate-950/90
 }
 .bg-gradient-darker {
     background: linear-gradient(to bottom, #020617, #000000);

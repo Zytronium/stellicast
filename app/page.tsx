@@ -40,7 +40,7 @@ export default function Home() {
               className={
                 idx === 0
                   ? 'rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
-                  : 'rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:bg-[#0a0a0a] dark:text-gray-200 dark:hover:bg-gray-900'
+                  : 'rounded-full border border-gray-800 bg-[#0a0a0a] px-3 py-1.5 text-xs font-medium text-gray-200 hover:bg-gray-900'
               }
               type="button"
             >

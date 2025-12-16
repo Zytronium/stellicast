@@ -12,7 +12,7 @@ export default function FilterAccordion({ title, children }: FilterAccordionProp
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-800 pb-4">
+    <div className="border-b border-gray-800 pb-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-2 hover:text-blue-500 transition-colors"
