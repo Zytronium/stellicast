@@ -27,8 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               sidebarOpen ? 'pl-64' : 'pl-0',
             ].join(' ')}
           >
-            <div className="min-h-full bg-gradient-darker">
-              <div className="mx-auto w-full max-w-7xl px-6 py-6">{children}</div>
+            <div className="min-h-full bg-gradient-darker flex flex-col">
+              <div className="mx-auto w-full max-w-7xl px-6 py-6 flex-1 flex flex-col">{children}</div>
             </div>
           </main>
         </div>

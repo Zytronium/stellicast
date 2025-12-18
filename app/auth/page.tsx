@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
-import Link from 'next/link';
 
 export default function AuthPage() {
   const supabase = createSupabaseBrowserClient();
@@ -40,7 +39,7 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-darker text-white">
+    <div className="flex flex-1 items-center justify-center text-white">
       <div className="w-full max-w-md space-y-6">
         <form
           onSubmit={handleSubmit}
@@ -92,7 +91,7 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {loading ? 'Working...' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
@@ -100,7 +99,7 @@ export default function AuthPage() {
           <div className="text-center">
             <button
               type="button"
-              className="text-sm text-gray-400 hover:text-gray-200"
+              className="text-sm text-gray-400 hover:text-gray-200 cursor-pointer transition-colors duration-200"
               onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
             >
               {mode === 'signin'
@@ -110,6 +109,6 @@ export default function AuthPage() {
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }
