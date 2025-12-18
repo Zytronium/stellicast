@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import {  } from '@heroicons/react/24/solid';
 
 interface FilterAccordionProps {
   title: string;
