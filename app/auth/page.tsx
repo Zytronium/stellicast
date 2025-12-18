@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
+import Link from 'next/link';
 
 export default function AuthPage() {
   const supabase = createSupabaseBrowserClient();
@@ -30,7 +31,7 @@ export default function AuthPage() {
         });
         if (error) throw error;
       }
-      router.push('/'); // redirect after auth
+      router.push('/');
     } catch (err: any) {
       setError(err.message ?? 'Something went wrong');
     } finally {
@@ -39,57 +40,82 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black text-white">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-xl border border-gray-800 bg-[#0a0a0a] p-6"
-      >
-        <h1 className="text-lg font-semibold text-center">
-          {mode === 'signin' ? 'Sign in' : 'Sign up'}
-        </h1>
-
-        <div className="space-y-2">
-          <label className="block text-xs text-gray-400">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
-          />
+    <main className="flex min-h-screen items-center justify-center bg-gradient-darker text-white">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center">
+          <Link href="/" className="text-sm text-gray-300 hover:text-blue-400">
+            ← Back to Stellicast
+          </Link>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-xs text-gray-400">Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
-          />
-        </div>
-
-        {error && <p className="text-xs text-red-400">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-blue-600 py-2 text-sm font-semibold hover:bg-blue-500 disabled:opacity-60"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-8"
         >
-          {loading ? 'Working...' : mode === 'signin' ? 'Sign in' : 'Sign up'}
-        </button>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {mode === 'signin' ? 'Sign in to Stellicast' : 'Create your account'}
+            </h1>
+            <p className="text-sm text-gray-400">
+              {mode === 'signin'
+                ? 'Welcome back! Enter your credentials to continue.'
+                : 'Join the future of video streaming.'}
+            </p>
+          </div>
 
-        <button
-          type="button"
-          className="w-full text-xs text-gray-400 underline"
-          onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-        >
-          {mode === 'signin'
-            ? "Don't have an account? Sign up"
-            : 'Already have an account? Sign in'}
-        </button>
-      </form>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-200">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-gray-800 bg-black px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-200">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-lg border border-gray-800 bg-black px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="rounded-lg border border-red-900 bg-red-950/30 p-3">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Working...' : mode === 'signin' ? 'Sign in' : 'Create account'}
+          </button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              className="text-sm text-gray-400 hover:text-gray-200"
+              onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+            >
+              {mode === 'signin'
+                ? "Don't have an account? Sign up"
+                : 'Already have an account? Sign in'}
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }
