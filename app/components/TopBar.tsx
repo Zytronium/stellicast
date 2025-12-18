@@ -49,7 +49,7 @@ export default function TopBar() {
         </form>
 
         <nav className="hidden min-w-fit items-center gap-6 lg:flex">
-          <Link href="/feed" className="text-sm text-gray-200 hover:text-blue-400">
+          <Link href="/" className="text-sm text-gray-200 hover:text-blue-400">
             Feed
           </Link>
           <Link href="/upload" className="text-sm text-gray-200 hover:text-blue-400">
