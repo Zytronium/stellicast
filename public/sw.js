@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stellicast-offline-v2';
+const CACHE_NAME = 'stellicast-offline-v3';
 const OFFLINE_URL = '/offline';
 
 self.addEventListener('install', (event) => {
