@@ -72,14 +72,6 @@ export default async function WatchPage({ params }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link
-          href="/"
-          className="text-sm text-gray-300 hover:text-blue-400"
-          aria-label="Back to feed"
-        >
-          ← Back
-        </Link>
-
         <div className="flex items-center gap-2">
           <a
             href={video.src}

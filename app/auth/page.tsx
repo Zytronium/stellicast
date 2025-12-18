@@ -42,12 +42,6 @@ export default function AuthPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-darker text-white">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <Link href="/" className="text-sm text-gray-300 hover:text-blue-400">
-            ← Back to Stellicast
-          </Link>
-        </div>
-
         <form
           onSubmit={handleSubmit}
           className="space-y-6 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-8"
