@@ -1,19 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
+import type { User } from '@supabase/supabase-js';
 
 export default function TopBar() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Handle search logic here
-        console.log('Search:', searchQuery);
-    };
+  const [searchQuery, setSearchQuery] = useState('');
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Get initial user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Search:', searchQuery);
+  };
+
+  const handleLogout = async () => {
+    setProfileMenuOpen(false);
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-gray-800 backdrop-blur bg-gradient">
@@ -63,51 +91,74 @@ export default function TopBar() {
           </Link>
         </nav>
 
+        {/* Auth Section */}
         <div className="relative ml-4 min-w-fit">
-          <button
-            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-gray-900"
-            aria-haspopup="menu"
-            aria-expanded={profileMenuOpen}
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
-              U
-            </div>
-            <ChevronDownIcon className={`h-4 w-4 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
-          </button>
+          {loading ? (
+            <div className="h-10 w-20 animate-pulse rounded-xl bg-gray-800"></div>
+          ) : user ? (
+            <>
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-gray-900"
+                aria-haspopup="menu"
+                aria-expanded={profileMenuOpen}
+              >
+                {user.user_metadata?.avatar_url ? (
+                  <Image
+                    src={user.user_metadata.avatar_url}
+                    alt={user.email || 'User'}
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                    {(user.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <ChevronDownIcon className={`h-4 w-4 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-          {profileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-lg">
-              <div className="border-b border-gray-800 px-4 py-3">
-                <p className="text-sm font-semibold">username</p>
-                <p className="text-xs text-gray-400">Signed in</p>
-              </div>
-              <div className="py-2">
-                <Link
-                  href="/account"
-                  className="block px-4 py-2 text-sm hover:bg-gray-800"
-                  onClick={() => setProfileMenuOpen(false)}
-                >
-                  Account
-                </Link>
-                <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-sm hover:bg-gray-800"
-                  onClick={() => setProfileMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <button
-                  className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-800"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    console.log('Logout');
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
+              {profileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-lg">
+                  <div className="border-b border-gray-800 px-4 py-3">
+                    <p className="text-sm font-semibold truncate">
+                      {user.user_metadata?.username || user.email?.split('@')[0] || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                  </div>
+                  <div className="py-2">
+                    <Link
+                      href="/account"
+                      className="block px-4 py-2 text-sm hover:bg-gray-800"
+                      onClick={() => setProfileMenuOpen(false)}
+                    >
+                      Account
+                    </Link>
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm hover:bg-gray-800"
+                      onClick={() => setProfileMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-800"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <Link
+              href="/auth"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-colors"
+            >
+              Login
+            </Link>
           )}
         </div>
       </div>

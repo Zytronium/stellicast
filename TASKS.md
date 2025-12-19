@@ -13,13 +13,13 @@ Create a login / sign-up page for users to create new
 accounts or log in. Ensure emails are verified before 
 users can access their account
 
-**Status:** In Progress
+**Status:** Done
 
 ### 0.3. Account dropdown
 Show logged in user info in account dropdown when logged
 in. Show a signin/signup button when not logged in.
 
-**Status:** Todo
+**Status:** Done
 
 ### 0.4. User profiles
 Create a public user profile page for every user.
