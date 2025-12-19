@@ -64,6 +64,7 @@ export default function AuthPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 className="w-full rounded-lg border border-gray-800 bg-black px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
                 placeholder="you@example.com"
               />
@@ -76,6 +77,7 @@ export default function AuthPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                 className="w-full rounded-lg border border-gray-800 bg-black px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
                 placeholder="••••••••"
               />
