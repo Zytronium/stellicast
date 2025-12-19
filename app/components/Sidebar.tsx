@@ -11,7 +11,7 @@ interface SidebarProps {
   showFilters?: boolean; // Only show filters tab on search/feed pages
 }
 
-type TabType = 'filters' | 'library' | 'subscriptions';
+type TabType = 'filters' | 'library' | 'following';
 
 export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<TabType>('filters');
@@ -70,14 +70,15 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
 
   // Placeholder data
   const libraryItems = [
-    { id: 1, name: 'Watch Later', count: 24 },
-    { id: 2, name: 'Liked Videos', count: 156 },
-    { id: 3, name: 'History', count: 0 },
-    { id: 4, name: 'My Playlist 1', count: 12 },
-    { id: 5, name: 'Favorites', count: 8 },
+    { id: 1, name: 'History', count: 0 },
+    { id: 2, name: 'Watch Later', count: 24 },
+    { id: 3, name: 'Liked Videos', count: 156 },
+    { id: 4, name: 'Starred Videos', count: 3 },
+    { id: 5, name: 'My Playlist 1', count: 12 },
+    { id: 6, name: 'Favorites', count: 4 },
   ];
 
-  const subscriptions = [
+  const following = [
     { id: 1, name: 'Tech Channel', avatar: 'T', hasNew: true },
     { id: 2, name: 'Gaming Stream', avatar: 'G', hasNew: false },
     { id: 3, name: 'Music Producer', avatar: 'M', hasNew: true },
@@ -94,7 +95,7 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
         {showFilters && (
           <button
             onClick={() => handleTabClick('filters')}
-            className={`bg-[#0a0a0a] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900 transition-colors ${
+            className={`bg-[#060c13] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900 transition-colors ${
               activeTab === 'filters' && isOpen ? 'bg-gray-900 border-l-2 border-l-blue-500' : ''
             }`}
             aria-label="Filters"
@@ -104,7 +105,7 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
         )}
         <button
           onClick={() => handleTabClick('library')}
-          className={`bg-[#0a0a0a] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900 transition-colors ${
+          className={`bg-[#060c13] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900 transition-colors ${
             activeTab === 'library' && isOpen ? 'bg-gray-900 border-l-2 border-l-blue-500' : ''
           }`}
           aria-label="Library"
@@ -112,11 +113,11 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
           <BookmarkIcon className="w-5 h-5" />
         </button>
         <button
-          onClick={() => handleTabClick('subscriptions')}
-          className={`bg-[#0a0a0a] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900 transition-colors ${
-            activeTab === 'subscriptions' && isOpen ? 'bg-gray-900 border-l-2 border-l-blue-500' : ''
+          onClick={() => handleTabClick('following')}
+          className={`bg-[#060c13] border border-gray-800 rounded-r-lg p-2 hover:bg-gray-900 transition-colors ${
+            activeTab === 'following' && isOpen ? 'bg-gray-900 border-l-2 border-l-blue-500' : ''
           }`}
-          aria-label="Subscriptions"
+          aria-label="Following"
         >
           <RssIcon className="w-5 h-5" />
         </button>
@@ -367,7 +368,7 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
               {libraryItems.map((item) => (
                 <button
                   key={item.id}
-                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-900 rounded-lg transition-colors text-left"
+                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-900 bg-gray-800/10 rounded-lg transition-colors text-left"
                 >
                   <span className="text-sm">{item.name}</span>
                   {item.count > 0 && (
@@ -379,12 +380,12 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
           </div>
         )}
 
-        {/* Subscriptions Tab */}
-        {activeTab === 'subscriptions' && (
+        {/* Following Tab */}
+        {activeTab === 'following' && (
           <div className="p-6">
-            <h2 className="text-lg font-bold mb-4">Subscriptions</h2>
+            <h2 className="text-lg font-bold mb-4">Following</h2>
             <div className="space-y-2">
-              {subscriptions.map((sub) => (
+              {following.map((sub) => (
                 <button
                   key={sub.id}
                   className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-900 rounded-lg transition-colors text-left"
