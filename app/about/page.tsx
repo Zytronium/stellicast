@@ -9,6 +9,8 @@ import {
   CpuChipIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
+import Card from '@/components/Card';
+import VideoPlayer from "@/components/VideoPlayer";
 
 export default function AboutPage() {
   return (
@@ -57,7 +59,7 @@ export default function AboutPage() {
       </section>
 
       {/* The Difference Section */}
-      <section className="w-full bg-gray-900/30 py-24 border-y border-gray-800">
+      <section className="w-full bg-gray-900/30 py-24 border-y border-gray-800 rounded-2xl">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Human-Centric AI Policy</h2>
@@ -118,6 +120,23 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Sample Video Section */}
+      <section className="w-full max-w-4xl mx-auto py-24 px-6">
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Sample the Video Experience</h2>
+        <div className="mx-auto">
+          <VideoPlayer video={{
+            id: "5f502022-2000-4000-8000-000000000000",
+            title: "Sample Video",
+            creator: "Creator Name",
+            description: "Stellicast Demo",
+            thumbnail: "/StellicastPlaceholderThumbnail.png",
+            src: "https://share.zytronium.dev/videos/yt/roll.mp4"
+          }}
+          />
         </div>
       </section>
 
