@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlayIcon } from '@heroicons/react/24/solid';
@@ -23,6 +26,8 @@ export default function Card({
   thumbnail_src,
   is_ai,
 }: CardProps) {
+  const [imgSrc, setImgSrc] = useState(thumbnail_src);
+
   return (
     <Link
       href={href}
@@ -30,10 +35,11 @@ export default function Card({
     >
       <div className="relative aspect-video bg-gray-900">
         <Image
-          src={thumbnail_src}
+          src={imgSrc}
           alt={title}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          onError={() => setImgSrc('/StellicastPlaceholderThumbnail.png')}
         />
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/10 to-white/5" />

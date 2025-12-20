@@ -12,6 +12,7 @@
     "@heroicons/react": "^2.2.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.88.0",
+    "hls.js": "^1.6.15",
     "lucide-react": "^0.562.0",
     "next": "^16.0.10",
     "react": "19.2.3",
