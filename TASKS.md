@@ -24,7 +24,7 @@ in. Show a signin/signup button when not logged in.
 ### 0.4. User profiles
 Create a public user profile page for every user.
 
-**Status:** Todo
+**Status:** In Progress
 
 ### 0.5. Edit profile
 Allow users to edit their profiles. Add certain buttons 
@@ -35,7 +35,7 @@ on the profile page when that user is logged in.
 ### 0.6. Channel creation
 Allow users to create new Creator channels.
 
-**Status:** Todo
+**Status:** Done
 
 ### 0.7. Studio conversion
 Allow Creators who qualify to convert their Creator channel
@@ -66,12 +66,12 @@ uploads a new video.
 ### 1.1. Video upload page
 Create a video upload page for channels to upload videos.
 
-**Status:** Todo
+**Status:** In Progress
 
 ### 1.2. Create video database
 Create a database to store videos and meta data about them.
 
-**Status:** Todo
+**Status:** Done
 
 ### 1.3. Link video database
 Use the video database to stream videos efficiently to users.
@@ -81,24 +81,24 @@ and watch page, such as video length. This is separate from
 data like title, description, thumbnail src, likes, upload date,
 etc.
 
-**Status:** Todo
+**Status:** Done
 
 ## 2. Redesigned Watch Page
 
 ### 2.1 Create new design
 Sketch a new watch page design.
 
-**Status:** Todo
+**Status:** Done
 
 ### 2.2. Implement new design
 Implement the new watch page design.
 
-**Status:** Todo
+**Status:** In Progress
 
 ### 2.3. Redesign video player
 Redesign the video player to match the new design.
 
-**Status:** Todo
+**Status:** Done
 
 ### 2.4. Add functionalities
 Add new functionalities to the watch page for likes, dislikes,

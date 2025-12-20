@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Hls from 'hls.js';
 import { Play, Pause, Volume2, VolumeX, Maximize, Settings, Gauge, RotateCcw } from 'lucide-react';
 
 export type Video = {
@@ -10,6 +11,7 @@ export type Video = {
   description: string;
   thumbnail: string;
   src: string;
+  duration?: number;
 };
 
 export default function VideoPlayer({ video }: { video: Video }) {
@@ -30,7 +32,8 @@ export default function VideoPlayer({ video }: { video: Video }) {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
-  const [selectedQuality, setSelectedQuality] = useState('1080p');
+  const [selectedQuality, setSelectedQuality] = useState('Auto');
+  const [availableQualities, setAvailableQualities] = useState<{ id: number, height: string }[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -41,37 +44,91 @@ export default function VideoPlayer({ video }: { video: Video }) {
 
   const qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', 'Auto'];
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  const hlsRef = useRef<Hls | null>(null);
+
+  // Track when metadata is loaded and duration is available
+  useEffect(() => {
+    if (duration > 0 && video.id) {
+      // Check if we need to update the database (only if it's currently 0 or missing)
+      // Note: 'video' here is the prop from the parent WatchPage
+      const needsUpdate = !video.duration || video.duration === 0;
+
+      if (needsUpdate) {
+        console.log(`Reporting duration for video ${video.id}: ${duration}s`);
+        fetch(`/api/videos/${video.id}/metadata`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration: Math.round(duration) }),
+        }).catch(err => console.error("Failed to update duration:", err));
+      }
+    }
+  }, [duration, video.id, video.duration]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
 
-    const updateTime = () => setCurrentTime(video.currentTime);
-    const updateDuration = () => setDuration(video.duration);
+    if (video.src.includes('.m3u8')) {
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hlsRef.current = hls;
+        hls.loadSource(video.src);
+        hls.attachMedia(videoElement);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          const levels = hls.levels.map((level, index) => ({
+            id: index,
+            height: `${level.height}p`
+          })).reverse(); // Higher resolutions first
+          setAvailableQualities(levels);
+        });
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        // For Safari
+        videoElement.src = video.src;
+      }
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+      }
+    };
+  }, [video.src]);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const updateTime = () => setCurrentTime(videoElement.currentTime);
+    const updateDuration = () => {
+      if (videoElement.duration && isFinite(videoElement.duration)) {
+        setDuration(videoElement.duration);
+      }
+    };
     const updateBuffered = () => {
       const ranges = [];
-      for (let i = 0; i < video.buffered.length; i++) {
+      for (let i = 0; i < videoElement.buffered.length; i++) {
         ranges.push({
-          start: video.buffered.start(i),
-          end: video.buffered.end(i)
+          start: videoElement.buffered.start(i),
+          end: videoElement.buffered.end(i)
         });
       }
       setBuffered(ranges);
     };
     const handleEnded = () => setHasEnded(true);
 
-    video.addEventListener('timeupdate', updateTime);
-    video.addEventListener('loadedmetadata', updateDuration);
-    video.addEventListener('durationchange', updateDuration);
-    video.addEventListener('progress', updateBuffered);
-    video.addEventListener('ended', handleEnded);
+    videoElement.addEventListener('timeupdate', updateTime);
+    videoElement.addEventListener('loadedmetadata', updateDuration);
+    videoElement.addEventListener('durationchange', updateDuration);
+    videoElement.addEventListener('progress', updateBuffered);
+    videoElement.addEventListener('ended', handleEnded);
 
     return () => {
-      video.removeEventListener('timeupdate', updateTime);
-      video.removeEventListener('loadedmetadata', updateDuration);
-      video.removeEventListener('durationchange', updateDuration);
-      video.removeEventListener('progress', updateBuffered);
-      video.removeEventListener('ended', handleEnded);
+      videoElement.removeEventListener('timeupdate', updateTime);
+      videoElement.removeEventListener('loadedmetadata', updateDuration);
+      videoElement.removeEventListener('durationchange', updateDuration);
+      videoElement.removeEventListener('progress', updateBuffered);
+      videoElement.removeEventListener('ended', handleEnded);
     };
   }, []);
 
@@ -204,6 +261,14 @@ export default function VideoPlayer({ video }: { video: Video }) {
     video.playbackRate = speed;
     setPlaybackRate(speed);
     setShowSpeedMenu(false);
+  };
+
+  const changeQuality = (id: number, label: string) => {
+    if (hlsRef.current) {
+      hlsRef.current.currentLevel = id;
+      setSelectedQuality(label);
+      setShowQualityMenu(false);
+    }
   };
 
   const toggleFullscreen = () => {
@@ -363,10 +428,20 @@ export default function VideoPlayer({ video }: { video: Video }) {
                 {selectedQuality}
               </button>
               {showQualityMenu && (
-                <div className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-2 min-w-[100px]">
-                  {qualities.map(quality => (
-                    <button key={quality} onClick={() => { setSelectedQuality(quality); setShowQualityMenu(false); }} className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${quality === selectedQuality ? 'text-blue-400' : 'text-white'}`}>
-                      {quality}
+                <div className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-2 min-w-[100px] max-h-60 overflow-y-auto">
+                  <button
+                    onClick={() => changeQuality(-1, 'Auto')}
+                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${selectedQuality === 'Auto' ? 'text-blue-400' : 'text-white'}`}
+                  >
+                    Auto
+                  </button>
+                  {availableQualities.map((q) => (
+                    <button
+                      key={q.id}
+                      onClick={() => changeQuality(q.id, q.height)}
+                      className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${q.height === selectedQuality ? 'text-blue-400' : 'text-white'}`}
+                    >
+                      {q.height}
                     </button>
                   ))}
                 </div>
