@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import VideoUpload from '@/components/VideoUpload';
 import { CloudArrowUpIcon, ShieldCheckIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
@@ -9,6 +9,9 @@ import { CloudArrowUpIcon, ShieldCheckIcon, InformationCircleIcon } from '@heroi
 export default function UploadPage() {
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const channelId = searchParams.get('channel');
+
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
@@ -46,7 +49,7 @@ export default function UploadPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
           <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl p-6 shadow-xl">
-            <VideoUpload />
+            <VideoUpload channelId={channelId || undefined} />
           </div>
         </div>
 
