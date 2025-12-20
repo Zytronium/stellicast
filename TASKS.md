@@ -230,3 +230,12 @@ Add a Sectors page that displays a unique layout showing many
 different sectors.
 
 **Status:** Todo
+
+## 8. Admin Panel
+
+### 8.1. Add admin panel
+Add an admin panel page for the website to manage users, channels,
+videos, etc. It must display all data for each user and channel, 
+music email and password.
+
+**Status:** Todo
