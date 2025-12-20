@@ -43,6 +43,24 @@ export default function VideoPlayer({ video }: { video: Video }) {
   const qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', 'Auto'];
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
+  // Track when metadata is loaded and duration is available
+  useEffect(() => {
+    if (duration > 0 && video.id) {
+      // Check if we need to update the database (only if it's currently 0 or missing)
+      // Note: 'video' here is the prop from the parent WatchPage
+      const needsUpdate = !video.duration || video.duration === 0;
+
+      if (needsUpdate) {
+        console.log(`Reporting duration for video ${video.id}: ${duration}s`);
+        fetch(`/api/videos/${video.id}/metadata`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration: Math.round(duration) }),
+        }).catch(err => console.error("Failed to update duration:", err));
+      }
+    }
+  }, [duration, video.id, video.duration]);
+
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
@@ -60,35 +78,39 @@ export default function VideoPlayer({ video }: { video: Video }) {
   }, [video.src]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
 
-    const updateTime = () => setCurrentTime(video.currentTime);
-    const updateDuration = () => setDuration(video.duration);
+    const updateTime = () => setCurrentTime(videoElement.currentTime);
+    const updateDuration = () => {
+      if (videoElement.duration && isFinite(videoElement.duration)) {
+        setDuration(videoElement.duration);
+      }
+    };
     const updateBuffered = () => {
       const ranges = [];
-      for (let i = 0; i < video.buffered.length; i++) {
+      for (let i = 0; i < videoElement.buffered.length; i++) {
         ranges.push({
-          start: video.buffered.start(i),
-          end: video.buffered.end(i)
+          start: videoElement.buffered.start(i),
+          end: videoElement.buffered.end(i)
         });
       }
       setBuffered(ranges);
     };
     const handleEnded = () => setHasEnded(true);
 
-    video.addEventListener('timeupdate', updateTime);
-    video.addEventListener('loadedmetadata', updateDuration);
-    video.addEventListener('durationchange', updateDuration);
-    video.addEventListener('progress', updateBuffered);
-    video.addEventListener('ended', handleEnded);
+    videoElement.addEventListener('timeupdate', updateTime);
+    videoElement.addEventListener('loadedmetadata', updateDuration);
+    videoElement.addEventListener('durationchange', updateDuration);
+    videoElement.addEventListener('progress', updateBuffered);
+    videoElement.addEventListener('ended', handleEnded);
 
     return () => {
-      video.removeEventListener('timeupdate', updateTime);
-      video.removeEventListener('loadedmetadata', updateDuration);
-      video.removeEventListener('durationchange', updateDuration);
-      video.removeEventListener('progress', updateBuffered);
-      video.removeEventListener('ended', handleEnded);
+      videoElement.removeEventListener('timeupdate', updateTime);
+      videoElement.removeEventListener('loadedmetadata', updateDuration);
+      videoElement.removeEventListener('durationchange', updateDuration);
+      videoElement.removeEventListener('progress', updateBuffered);
+      videoElement.removeEventListener('ended', handleEnded);
     };
   }, []);
 

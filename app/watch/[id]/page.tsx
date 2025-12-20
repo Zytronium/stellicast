@@ -13,6 +13,7 @@ export type Video = {
   description: string;
   thumbnail: string;
   src: string;
+  duration?: number;
 };
 
 type Comment = {
@@ -180,11 +181,12 @@ export default function WatchPage({ params }: { params: { id: string } | Promise
         }
         const videoData = await videoRes.json();
         
-        setVideo({
-          ...videoData,
-          src: videoData.video_url,
-          creator: videoData.channels?.display_name || "Unknown Creator"
-        });
+            setVideo({
+              ...videoData,
+              src: videoData.video_url, 
+              creator: videoData.channels?.display_name || "Unknown Creator",
+              duration: videoData.duration // Ensure this is passed through!
+            });
 
         // Fetch all videos for up next
         const allRes = await fetch(`/api/videos`);

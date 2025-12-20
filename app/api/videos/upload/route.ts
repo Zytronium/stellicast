@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         description: body.description || '',
         thumbnail_url: `https://${pullZone}/${guid}/thumbnail.jpg`,
         video_url: `https://${pullZone}/${guid}/playlist.m3u8`,
-        channel_id: channel.id,
+        channel_id: channel ? channel.id : user.id,
         view_count: 0,
         duration: 0,
       })
