@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeftIcon, FunnelIcon, InformationCircleIcon, BookmarkIcon, RssIcon } from '@heroicons/react/24/solid';
 import FilterAccordion from './FilterAccordion';
 import Tooltip from './Tooltip';
@@ -15,6 +15,12 @@ type TabType = 'filters' | 'library' | 'following';
 
 export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<TabType>('filters');
+
+  useEffect(() => {
+    if (!showFilters && activeTab === 'filters' && isOpen) {
+      setIsOpen(false);
+    }
+  }, [showFilters, activeTab, isOpen, setIsOpen]);
 
   // Filter states
   const [aiContent, setAiContent] = useState('Less');

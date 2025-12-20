@@ -7,7 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import { usePathname } from "next/navigation";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const pathsWithFilters = ['/feed', '/explore']; // and `/`
   const pathsWithoutSidebar = ['/about', '/auth'];
