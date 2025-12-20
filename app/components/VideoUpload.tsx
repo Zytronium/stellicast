@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 
-export default function VideoUpload() {
+export default function VideoUpload({ channelId }: { channelId?: string }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -15,6 +15,12 @@ export default function VideoUpload() {
     const title = formData.get('title') as string;
 
     if (!file) return;
+
+    if (!channelId) {
+      alert('Please select a channel from your account page before uploading.');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -22,24 +28,29 @@ export default function VideoUpload() {
       const initRes = await fetch('/api/videos/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-              title,
-              description: formData.get('description'),
-              is_ai: formData.get('is_ai') === 'on'
-            }),
-          });
-          
-          if (!initRes.ok) throw new Error('Failed to initialize upload');
-          const { guid, libraryId, apiKey } = await initRes.json();
+        body: JSON.stringify({
+          title,
+          description: formData.get('description'),
+          is_ai: formData.get('is_ai') === 'on',
+          channel_id: channelId, // Add this line
+        }),
+      });
 
-          // 2. Upload directly to Bunny.net from the client
-          const xhr = new XMLHttpRequest();
-          // Use the global upload endpoint for better reliability
-          xhr.open('PUT', `https://video.bunnycdn.com/library/${libraryId}/videos/${guid}`, true);
-          xhr.setRequestHeader('AccessKey', apiKey);
-          xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      if (!initRes.ok) {
+        const errorData = await initRes.json();
+        throw new Error(errorData.error || 'Failed to initialize upload');
+      }
 
-          xhr.upload.onprogress = (event) => {
+      const { guid, libraryId, apiKey } = await initRes.json();
+
+      // 2. Upload directly to Bunny.net from the client
+      const xhr = new XMLHttpRequest();
+      // Use the global upload endpoint for better reliability
+      xhr.open('PUT', `https://video.bunnycdn.com/library/${libraryId}/videos/${guid}`, true);
+      xhr.setRequestHeader('AccessKey', apiKey);
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+      xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percentComplete = Math.round((event.loaded / event.total) * 100);
           setProgress(percentComplete);
@@ -64,15 +75,23 @@ export default function VideoUpload() {
 
       xhr.send(file);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      alert('Failed to start upload');
+      alert(error.message || 'Failed to start upload');
       setUploading(false);
     }
   };
 
   return (
     <form onSubmit={handleUpload} className="space-y-6">
+      {!channelId && (
+        <div className="bg-yellow-900/20 border border-yellow-700 rounded-xl p-4">
+          <p className="text-yellow-400 text-sm">
+            ⚠️ No channel selected. Please go to your <a href="/account" className="underline font-semibold">account page</a> and select a channel to upload videos.
+          </p>
+        </div>
+      )}
+
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-1.5">Video Title</label>
@@ -84,7 +103,7 @@ export default function VideoUpload() {
             required
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-400 mb-1.5">Description</label>
           <textarea
@@ -137,17 +156,17 @@ export default function VideoUpload() {
             <span>{progress}%</span>
           </div>
           <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-            <div 
-              className="bg-blue-600 h-full transition-all duration-300" 
+            <div
+              className="bg-blue-600 h-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
-      
+
       <button
         type="submit"
-        disabled={uploading}
+        disabled={uploading || !channelId}
         className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
       >
         {uploading ? (

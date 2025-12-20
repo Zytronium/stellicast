@@ -10,48 +10,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Ensure public.users record exists
-    const { data: profile } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', user.id)
-      .single();
+    const body = await request.json();
+    const { title, channel_id } = body;
 
-    if (!profile) {
-      await supabase.from('users').insert({
-        id: user.id,
-        username: user.email?.split('@')[0] || `user_${user.id.slice(0, 5)}`,
-        display_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-      });
+    if (!channel_id) {
+      return NextResponse.json(
+        { error: 'Channel ID is required. Please select a channel.' },
+        { status: 400 }
+      );
     }
 
-    // 2. Ensure the user has a channel (Test Channel Logic)
-    let { data: channel } = await supabase
+    // Verify user owns this channel
+    const { data: channel, error: channelError } = await supabase
       .from('channels')
       .select('id')
+      .eq('id', channel_id)
       .eq('owner_id', user.id)
       .single();
 
-    if (!channel) {
-      const { data: newChannel, error: createError } = await supabase
-        .from('channels')
-        .insert({
-          owner_id: user.id,
-          display_name: `${user.email?.split('@')[0]}'s Channel`,
-          handle: `user_${user.id.slice(0, 8)}`,
-          channel_type: 'creator',
-        })
-        .select()
-        .single();
-
-      if (createError) throw createError;
-      channel = newChannel;
+    if (channelError || !channel) {
+      return NextResponse.json(
+        { error: 'Channel not found or you do not have permission' },
+        { status: 403 }
+      );
     }
 
-    const body = await request.json();
-    const { title } = body;
-
-    // 3. Create video placeholder in Bunny Stream
+    // Create video placeholder in Bunny Stream
     const createResponse = await fetch(
       `https://video.bunnycdn.com/library/${process.env.BUNNY_STREAM_LIBRARY_ID}/videos`,
       {
@@ -67,11 +51,10 @@ export async function POST(request: NextRequest) {
     if (!createResponse.ok) throw new Error('Bunny Stream initialization failed');
     const videoData = await createResponse.json();
     const guid = videoData.guid;
-    
-    // Use the Pull Zone for public URLs, not the API host
+
     const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME;
-    
-    // 4. Store video metadata
+
+    // Store video metadata
     const { data: newVideo, error: dbError } = await supabase
       .from('videos')
       .insert({
@@ -79,7 +62,7 @@ export async function POST(request: NextRequest) {
         description: body.description || '',
         thumbnail_url: `https://${pullZone}/${guid}/thumbnail.jpg`,
         video_url: `https://${pullZone}/${guid}/playlist.m3u8`,
-        channel_id: channel ? channel.id : user.id,
+        channel_id: channel_id,
         view_count: 0,
         duration: 0,
       })
@@ -101,6 +84,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// todo: when channels are implemented, limit uploads to channels
 // todo: limit file size based on channel type and if user has premium
-// todo: store video metadata in supabase database
