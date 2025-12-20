@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Hls from 'hls.js';
 import { Play, Pause, Volume2, VolumeX, Maximize, Settings, Gauge, RotateCcw } from 'lucide-react';
 
 export type Video = {
@@ -41,6 +42,22 @@ export default function VideoPlayer({ video }: { video: Video }) {
 
   const qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', 'Auto'];
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    if (video.src.includes('.m3u8')) {
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(video.src);
+        hls.attachMedia(videoElement);
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        // For Safari
+        videoElement.src = video.src;
+      }
+    }
+  }, [video.src]);
 
   useEffect(() => {
     const video = videoRef.current;
