@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             ].join(' ')}
           >
             <div className="min-h-full bg-gradient-darker flex flex-col">
-              <div className="mx-auto w-full max-w-7xl px-6 py-6 flex-1 flex flex-col">{children}</div>
+              <div className="w-full px-6 pl-10 py-6 flex-1 flex flex-col">{children}</div>
             </div>
           </main>
         </div>
