@@ -11,6 +11,7 @@ export type Video = {
   description: string;
   thumbnail: string;
   src: string;
+  duration?: number;
 };
 
 export default function VideoPlayer({ video }: { video: Video }) {
@@ -31,7 +32,8 @@ export default function VideoPlayer({ video }: { video: Video }) {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
-  const [selectedQuality, setSelectedQuality] = useState('1080p');
+  const [selectedQuality, setSelectedQuality] = useState('Auto');
+  const [availableQualities, setAvailableQualities] = useState<{ id: number, height: string }[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -42,6 +44,7 @@ export default function VideoPlayer({ video }: { video: Video }) {
 
   const qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', 'Auto'];
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  const hlsRef = useRef<Hls | null>(null);
 
   // Track when metadata is loaded and duration is available
   useEffect(() => {
@@ -68,13 +71,28 @@ export default function VideoPlayer({ video }: { video: Video }) {
     if (video.src.includes('.m3u8')) {
       if (Hls.isSupported()) {
         const hls = new Hls();
+        hlsRef.current = hls;
         hls.loadSource(video.src);
         hls.attachMedia(videoElement);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          const levels = hls.levels.map((level, index) => ({
+            id: index,
+            height: `${level.height}p`
+          })).reverse(); // Higher resolutions first
+          setAvailableQualities(levels);
+        });
       } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         // For Safari
         videoElement.src = video.src;
       }
     }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+      }
+    };
   }, [video.src]);
 
   useEffect(() => {
@@ -245,6 +263,14 @@ export default function VideoPlayer({ video }: { video: Video }) {
     setShowSpeedMenu(false);
   };
 
+  const changeQuality = (id: number, label: string) => {
+    if (hlsRef.current) {
+      hlsRef.current.currentLevel = id;
+      setSelectedQuality(label);
+      setShowQualityMenu(false);
+    }
+  };
+
   const toggleFullscreen = () => {
     const container = containerRef.current;
     if (!container) return;
@@ -402,10 +428,20 @@ export default function VideoPlayer({ video }: { video: Video }) {
                 {selectedQuality}
               </button>
               {showQualityMenu && (
-                <div className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-2 min-w-[100px]">
-                  {qualities.map(quality => (
-                    <button key={quality} onClick={() => { setSelectedQuality(quality); setShowQualityMenu(false); }} className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${quality === selectedQuality ? 'text-blue-400' : 'text-white'}`}>
-                      {quality}
+                <div className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-2 min-w-[100px] max-h-60 overflow-y-auto">
+                  <button
+                    onClick={() => changeQuality(-1, 'Auto')}
+                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${selectedQuality === 'Auto' ? 'text-blue-400' : 'text-white'}`}
+                  >
+                    Auto
+                  </button>
+                  {availableQualities.map((q) => (
+                    <button
+                      key={q.id}
+                      onClick={() => changeQuality(q.id, q.height)}
+                      className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${q.height === selectedQuality ? 'text-blue-400' : 'text-white'}`}
+                    >
+                      {q.height}
                     </button>
                   ))}
                 </div>
