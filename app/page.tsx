@@ -68,7 +68,7 @@ export default function Home() {
               views={`${video.view_count || 0} views`}
               date={new Date(video.created_at).toLocaleDateString()}
               thumbnail_src={video.thumbnail_url}
-              is_ai={false} 
+              is_ai={video.is_ai}
             />
           ))}
         </section>
