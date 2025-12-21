@@ -24,7 +24,7 @@ in. Show a signin/signup button when not logged in.
 ### 0.4. User profiles
 Create a public user profile page for every user.
 
-**Status:** In Progress
+**Status:** Todo
 
 ### 0.5. Edit profile
 Allow users to edit their profiles. Add certain buttons 
@@ -66,7 +66,7 @@ uploads a new video.
 ### 1.1. Video upload page
 Create a video upload page for channels to upload videos.
 
-**Status:** In Progress
+**Status:** Done
 
 ### 1.2. Create video database
 Create a database to store videos and meta data about them.
@@ -111,14 +111,14 @@ stars, follows, comments, etc.
 ### 3.1. Add video thumbnails
 Add video thumbnails to the home feed that are not placeholders.
 
-**Status:** Todo
+**Status:** Done
 
 ### 3.2. Add real videos from the database
 Add real videos from the database to the home feed. Include
 metadata like title, description, thumbnail src, likes, upload date,
 channel name, etc.
 
-**Status:** Todo
+**Status:** Done
 
 ### 3.3. Filters
 Make the filters from the sidebar actually work
