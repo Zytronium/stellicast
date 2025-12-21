@@ -12,7 +12,11 @@ export interface Video {
     likes: number;
     dislikes: number;
     comments: number;
-    isPromotional: boolean; // must be false on Studio channels
+    duration: number;
+    visibility: "public" | "unlisted" | "private";
+    tags: string[];
+    isAI: boolean;
+    isPromotional: boolean; // must be false on Studio channels; they can do ads instead
 }
 
 export interface Ad extends Video {
