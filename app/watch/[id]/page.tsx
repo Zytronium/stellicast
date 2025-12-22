@@ -27,8 +27,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = `${video.title} - Stellicast`;
     const description = video.description || `Watch ${video.title} on Stellicast`;
     const thumbnail = video.thumbnail_url;
-    const videoUrl = video.video_url;
-    const channelName = video.channels?.display_name || 'Unknown Creator';
+
+    // Extract GUID and use direct MP4 URL for embeds
+    const videoGuid = video.video_url.split('/').slice(-2, -1)[0];
+    const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME;
+    const mp4Url = `https://${pullZone}/${videoGuid}/play_720p.mp4`;
 
     return {
       title,
@@ -48,10 +51,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ],
         videos: [
           {
-            url: videoUrl,
+            url: mp4Url,
+            secureUrl: mp4Url,
+            type: 'video/mp4',
             width: 1280,
             height: 720,
-            type: 'video/mp4',
           },
         ],
         siteName: 'Stellicast',
@@ -63,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [thumbnail],
         players: {
           playerUrl: `${baseUrl}/embed/${id}`,
-          streamUrl: videoUrl,
+          streamUrl: mp4Url,
           width: 1280,
           height: 720,
         },
@@ -72,6 +76,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         'og:video:type': 'video/mp4',
         'og:video:width': '1280',
         'og:video:height': '720',
+        'twitter:player:width': '1280',
+        'twitter:player:height': '720',
       },
     };
   } catch (error) {
