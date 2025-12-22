@@ -8,7 +8,7 @@ const VIEW_COOLDOWN_SECONDS = 60 * 30; // 30 minutes
 export async function incrementViewAction(id: string) {
   if (!id) return null;
 
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const viewCookieName = `viewed_video_${id}`;
 
   // --- determine if cookie exists (defensive across runtimes) ---

@@ -1,4 +1,3 @@
-// /app/watch/[id]/page.tsx
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import WatchPageClient from './WatchPageClient';
@@ -8,9 +7,6 @@ type Props = {
   params: { id: string } | Promise<{ id: string }>;
 };
 
-// -------------------------
-// Metadata function
-// -------------------------
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await Promise.resolve(params);
   const { id } = resolvedParams;
@@ -23,7 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .eq('id', id)
       .single();
 
-    if (error || !video) return { title: 'Video Not Found - Stellicast' };
+    if (error || !video)
+      return { title: 'Video Not Found - Stellicast' };
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const title = `${video.title} - Stellicast`;
@@ -32,9 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const videoGuid = (video.video_url || '').split('/').slice(-2, -1)[0] || '';
     const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME || '';
-    const mp4Url = pullZone
-      ? `https://${pullZone}/${videoGuid}/play_720p.mp4`
-      : `${video.video_url}`;
+    const mp4Url = pullZone ? `https://${pullZone}/${videoGuid}/play_720p.mp4` : `${video.video_url}`;
 
     return {
       title,
@@ -74,9 +69,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-// -------------------------
-// Server Component Page
-// -------------------------
 export default async function WatchPage({ params }: Props) {
   const resolvedParams = await Promise.resolve(params);
   const { id } = resolvedParams;
@@ -90,6 +82,5 @@ export default async function WatchPage({ params }: Props) {
 
   if (error || !video) notFound();
 
-  // Render client-side component
   return <WatchPageClient initialVideo={video} />;
 }
