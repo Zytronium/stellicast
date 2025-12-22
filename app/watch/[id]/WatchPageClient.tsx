@@ -9,7 +9,10 @@ import VideoPlayer from '@/components/VideoPlayer';
 export type Video = {
   id: string;
   title: string;
+  view_count: number;
   creator: string;
+  creator_videos: number;
+  creator_followers: number;
   description: string;
   thumbnail: string;
   src: string;
@@ -184,7 +187,9 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         const videoObj = {
           ...videoData,
           src: videoData.video_url,
-          creator: videoData.channels?.display_name || "Unknown Creator",
+          creator: videoData.channel?.display_name || "Unknown Creator",
+          creator_videos: videoData.channel?.video_count ?? 0,
+          creator_followers: videoData.channel?.follower_count ?? 0,
           duration: videoData.duration
         };
 
@@ -264,7 +269,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-gray-100">{video.creator}</div>
-                  <div className="text-xs text-gray-400">42 videos • 15.2k followers</div>
+                  <div className="text-xs text-gray-400">{video.creator_videos} videos • {video.creator_followers} followers</div>
                 </div>
               </div>
 
@@ -346,7 +351,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </span>
               </summary>
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-gray-400">2.1k views • Published 2 days ago</p>
+                <p className="text-xs text-gray-400">{video.view_count} • Published 2 days ago</p>
                 <div className="text-sm leading-relaxed text-gray-300">
                   {video.description.split('\n').map((line, i) => (
                     <p key={i} className={i === 0 ? '' : 'mt-3'}>
