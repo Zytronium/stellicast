@@ -102,6 +102,33 @@ const mockComments: Comment[] = [
   }
 ];
 
+// Helper function to check if view should be counted
+function shouldCountView(videoId: string): boolean {
+  try {
+    const viewsKey = 'stellicast_views';
+    const viewCooldown = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+    const viewsData = localStorage.getItem(viewsKey);
+    const views = viewsData ? JSON.parse(viewsData) : {};
+
+    const lastViewTime = views[videoId];
+    const now = Date.now();
+
+    // Count view if never viewed or cooldown period has passed
+    if (!lastViewTime || now - lastViewTime > viewCooldown) {
+      views[videoId] = now;
+      localStorage.setItem(viewsKey, JSON.stringify(views));
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    // If localStorage fails, count the view anyway
+    console.error('Error checking view cooldown:', error);
+    return true;
+  }
+}
+
 function CommentComponent({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) {
   const [showReplies, setShowReplies] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -197,6 +224,19 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
         // Update page title
         document.title = `${videoObj.title} - Stellicast`;
+
+        // Increment view count if cooldown has passed
+        if (shouldCountView(id)) {
+          fetch(`/api/videos/${id}/view`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success && data.view_count) {
+                // Update the local video object with new view count
+                setVideo(prev => prev ? { ...prev, view_count: data.view_count } : null);
+              }
+            })
+            .catch(error => console.error('Error incrementing view:', error));
+        }
 
         // Fetch all videos for up next
         const allRes = await fetch(`/api/videos`);
