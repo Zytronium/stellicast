@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/VideoPlayer';
-import '@/app/globals.css';
+import '@/globals.css';
 
 type Video = {
   id: string;
