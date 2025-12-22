@@ -351,7 +351,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </span>
               </summary>
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-gray-400">{video.view_count} • Published 2 days ago</p>
+                <p className="text-xs text-gray-400">{video.view_count} views • Published 2 days ago</p>
                 <div className="text-sm leading-relaxed text-gray-300">
                   {video.description.split('\n').map((line, i) => (
                     <p key={i} className={i === 0 ? '' : 'mt-3'}>
