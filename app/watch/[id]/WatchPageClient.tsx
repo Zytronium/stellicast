@@ -138,33 +138,17 @@ export default function WatchPageClient({ initialVideo }: { initialVideo: any })
 
   useEffect(() => {
     if (!video?.id) return;
-    let mounted = true;
 
-    (async () => {
-      try {
-      const res = await fetch(`/api/videos/${video.id}/views`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!res.ok) {
-        return;
-      }
-
-      const json = await res.json();
-      if (!mounted)
-        return;
-
-      if (json?.view_count != null) {
-        setVideo(prev => (prev ? { ...prev, view_count: json.view_count } : prev));
+    fetch(`/api/videos/${video.id}/views`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.view_count != null) {
+          setVideo(prev => prev ? { ...prev, view_count: data.view_count } : prev);
         }
-      } catch (err) {
-      console.error('Failed to increment view via route:', err);
-      }
-    })();
-
-  return () => { mounted = false; };
+      })
+      .catch(console.error);
   }, [video?.id]);
+
 
   // fetch upNext client-side (keeps being client-only)
   useEffect(() => {
