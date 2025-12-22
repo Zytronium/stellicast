@@ -22,7 +22,17 @@ export async function GET(
 
   const { data: video, error } = await supabase
     .from('videos')
-    .select('*')
+      .select(`
+        *,
+        channels (
+          id,
+          display_name,
+          handle,
+          avatar_url,
+          follower_count,
+          video_count
+        )
+      `)
     .eq('id', id)
     .single();
 

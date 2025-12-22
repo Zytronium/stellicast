@@ -9,7 +9,10 @@ import VideoPlayer from '@/components/VideoPlayer';
 export type Video = {
   id: string;
   title: string;
+  view_count: number;
   creator: string;
+  creator_videos: number;
+  creator_followers: number;
   description: string;
   thumbnail: string;
   src: string;
@@ -185,6 +188,8 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           ...videoData,
           src: videoData.video_url,
           creator: videoData.channels?.display_name || "Unknown Creator",
+          creator_videos: videoData.channels?.video_count ?? 0,
+          creator_followers: videoData.channels?.follower_count ?? 0,
           duration: videoData.duration
         };
 
@@ -198,7 +203,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         if (allRes.ok) {
           const allData = await allRes.json();
           const videos = Array.isArray(allData.videos) ? allData.videos : [];
-          setUpNext(videos.filter((v: Video) => v.id !== id).slice(0, 8));
+          setUpNext(videos.filter((v: any) => v.id !== id).slice(0, 8));
         }
 
         setTimeout(() => setCanStar(true), 3000);
@@ -264,7 +269,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-gray-100">{video.creator}</div>
-                  <div className="text-xs text-gray-400">42 videos • 15.2k followers</div>
+                  <div className="text-xs text-gray-400">{video.creator_videos} videos • {video.creator_followers} followers</div>
                 </div>
               </div>
 
@@ -346,7 +351,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </span>
               </summary>
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-gray-400">2.1k views • Published 2 days ago</p>
+                <p className="text-xs text-gray-400">{video.view_count} • Published 2 days ago</p>
                 <div className="text-sm leading-relaxed text-gray-300">
                   {video.description.split('\n').map((line, i) => (
                     <p key={i} className={i === 0 ? '' : 'mt-3'}>
@@ -363,14 +368,14 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upNext.map((v) => (
+            {upNext.map((v: any) => (
               <Link key={v.id} href={`/watch/${v.id}`} className="bg-gray-900/50 rounded-lg overflow-hidden hover:bg-gray-900 transition">
                 <div className="aspect-video bg-gray-800 relative">
-                  <img src={v.thumbnail} alt={v.title} className="w-full h-full object-cover" />
+                  <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-3">
                   <p className="text-sm font-medium line-clamp-2">{v.title}</p>
-                  <p className="text-xs text-gray-400 mt-1">{v.creator} • 2.1k views</p>
+                  <p className="text-xs text-gray-400 mt-1">{v.channels?.display_name || 'Unknown'} • 2.1k views</p>
                 </div>
               </Link>
             ))}
