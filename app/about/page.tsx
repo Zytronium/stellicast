@@ -9,7 +9,6 @@ import {
   CpuChipIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
-import Card from '@/components/Card';
 import VideoPlayer from "@/components/VideoPlayer";
 
 export default function AboutPage() {
@@ -138,6 +137,37 @@ export default function AboutPage() {
           }}
           />
         </div>
+      </section>
+
+      {/* Donations Section */}
+      <section className="w-full max-w-5xl mx-auto py-6 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-6">Support Stellicast</h2>
+        <p className="text-gray-400 mb-10 max-w-xl mx-auto">
+          Stellicast is independently developed. Donations help cover infrastructure,
+          moderation tools, and continued development.
+        </p>
+
+        <a
+          href="https://www.buymeacoffee.com/zytronium"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+    inline-flex items-center gap-3
+    px-6 py-3
+    rounded-full
+    font-extrabold
+    text-black
+    bg-gradient-to-r from-cyan-300 to-sky-400
+    shadow-lg shadow-cyan-500/30
+    transition-all duration-300
+    hover:scale-105
+    hover:shadow-cyan-400/50
+    focus:outline-none focus:ring-4 focus:ring-cyan-300/40
+    active:scale-95
+  ">
+          <span className="text-2xl">💵</span>
+          <span className="text-lg tracking-wide">Support Development</span>
+        </a>
       </section>
 
       {/* CTA / Footer */}
