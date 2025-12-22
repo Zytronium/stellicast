@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { ThumbsUp, ThumbsDown, Star, Search, Plus, X } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
-import { incrementViewAction } from '@/actions/incrementViewAction';
 
 export type Video = {
   id: string;
@@ -38,13 +38,68 @@ const mockComments: Comment[] = [
     dislikes: 1,
     timestamp: '2 days ago',
     replies: [
-      { id: '1-1', user: 'VideoCreator', text: 'Glad it helped! More tutorials coming soon.', likes: 12, dislikes: 0, timestamp: '2 days ago' },
-      { id: '1-2', user: 'AnotherViewer', text: 'Same here, very helpful content!', likes: 5, dislikes: 0, timestamp: '1 day ago' }
+      {
+        id: '1-1',
+        user: 'VideoCreator',
+        text: 'Glad it helped! More tutorials coming soon.',
+        likes: 12,
+        dislikes: 0,
+        timestamp: '2 days ago'
+      },
+      {
+        id: '1-2',
+        user: 'AnotherViewer',
+        text: 'Same here, very helpful content!',
+        likes: 5,
+        dislikes: 0,
+        timestamp: '1 day ago'
+      }
     ]
   },
-  { id: '2', user: 'CodeMaster99', text: 'Could you make a follow-up video covering advanced techniques?', likes: 18, dislikes: 0, timestamp: '1 day ago', replies: [{ id: '2-1', user: 'VideoCreator', text: "That's on my list! Should be out next week.", likes: 8, dislikes: 0, timestamp: '1 day ago' }] },
-  { id: '3', user: 'NewbieDev', text: 'As someone just starting out, this was incredibly clear and easy to follow. Keep up the great work!', likes: 31, dislikes: 0, timestamp: '12 hours ago' },
-  { id: '4', user: 'SkepticalUser', text: "I don't think this approach is the best way to handle this problem. There are better alternatives.", likes: 3, dislikes: 15, timestamp: '8 hours ago', replies: [{ id: '4-1', user: 'DefenderUser', text: 'What alternatives would you suggest? This worked perfectly for my use case.', likes: 7, dislikes: 1, timestamp: '6 hours ago' }] }
+  {
+    id: '2',
+    user: 'CodeMaster99',
+    text: 'Could you make a follow-up video covering advanced techniques?',
+    likes: 18,
+    dislikes: 0,
+    timestamp: '1 day ago',
+    replies: [
+      {
+        id: '2-1',
+        user: 'VideoCreator',
+        text: "That's on my list! Should be out next week.",
+        likes: 8,
+        dislikes: 0,
+        timestamp: '1 day ago'
+      }
+    ]
+  },
+  {
+    id: '3',
+    user: 'NewbieDev',
+    text: 'As someone just starting out, this was incredibly clear and easy to follow. Keep up the great work!',
+    likes: 31,
+    dislikes: 0,
+    timestamp: '12 hours ago'
+  },
+  {
+    id: '4',
+    user: 'SkepticalUser',
+    text: "I don't think this approach is the best way to handle this problem. There are better alternatives.",
+    likes: 3,
+    dislikes: 15,
+    timestamp: '8 hours ago',
+    replies: [
+      {
+        id: '4-1',
+        user: 'DefenderUser',
+        text: 'What alternatives would you suggest? This worked perfectly for my use case.',
+        likes: 7,
+        dislikes: 1,
+        timestamp: '6 hours ago'
+      }
+    ]
+  }
 ];
 
 function CommentComponent({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) {
@@ -102,26 +157,10 @@ function CommentComponent({ comment, isReply = false }: { comment: Comment; isRe
   );
 }
 
-export default function WatchPageClient({ initialVideo }: { initialVideo: any }) {
-  // Map server-provided row to client Video type
-  const mappedInitial = initialVideo
-    ? {
-      id: initialVideo.id,
-      title: initialVideo.title,
-      view_count: initialVideo.view_count ?? 0,
-      creator: initialVideo.channels?.display_name || 'Unknown Creator',
-      creator_videos: initialVideo.channels?.video_count ?? 0,
-      creator_followers: initialVideo.channels?.follower_count ?? 0,
-      description: initialVideo.description || '',
-      thumbnail: initialVideo.thumbnail_url || '',
-      src: initialVideo.video_url || '',
-      duration: initialVideo.duration ?? undefined
-    }
-    : null;
-
-  const [video, setVideo] = useState<Video | null>(mappedInitial);
+export default function WatchPageClient({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  const [video, setVideo] = useState<Video | null>(null);
   const [upNext, setUpNext] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(false); // main video already provided by server
+  const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [starred, setStarred] = useState(false);
@@ -131,69 +170,53 @@ export default function WatchPageClient({ initialVideo }: { initialVideo: any })
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState('');
 
-  // set document title from server-provided video
   useEffect(() => {
-    if (video) document.title = `${video.title} - Stellicast`;
-  }, [video]);
+    async function loadData() {
+      const resolvedParams = await Promise.resolve(params);
+      const { id } = resolvedParams;
 
-  useEffect(() => {
-    if (!video?.id) return;
-    let mounted = true;
-
-    (async () => {
       try {
-      const res = await fetch(`/api/videos/${video.id}/views`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!res.ok) {
-        return;
-      }
-
-      const json = await res.json();
-      if (!mounted)
-        return;
-
-      if (json?.view_count != null) {
-        setVideo(prev => (prev ? { ...prev, view_count: json.view_count } : prev));
+        // Fetch current video
+        const videoRes = await fetch(`/api/videos/${id}`);
+        if (!videoRes.ok) {
+          notFound();
+          return;
         }
-      } catch (err) {
-      console.error('Failed to increment view via route:', err);
-      }
-    })();
+        const videoData = await videoRes.json();
 
-  return () => { mounted = false; };
-  }, [video?.id]);
+        const videoObj = {
+          ...videoData,
+          src: videoData.video_url,
+          creator: videoData.channels?.display_name || "Unknown Creator",
+          creator_videos: videoData.channels?.video_count ?? 0,
+          creator_followers: videoData.channels?.follower_count ?? 0,
+          duration: videoData.duration
+        };
 
-  // fetch upNext client-side (keeps being client-only)
-  useEffect(() => {
-    async function fetchUpNext() {
-      if (!video) return;
-      try {
-        const res = await fetch('/api/videos');
-        if (!res.ok) return;
-        const allData = await res.json();
-        const videos = Array.isArray(allData.videos) ? allData.videos : [];
-        setUpNext(videos.filter((v: any) => v.id !== video.id).slice(0, 8).map((v: any) => ({
-          id: v.id,
-          title: v.title,
-          view_count: v.view_count ?? 0,
-          creator: v.channels?.display_name || 'Unknown',
-          creator_videos: v.channels?.video_count ?? 0,
-          creator_followers: v.channels?.follower_count ?? 0,
-          description: v.description || '',
-          thumbnail: v.thumbnail_url || '',
-          src: v.video_url || '',
-          duration: v.duration
-        })));
-      } catch (err) {
-        console.error('Failed to load up next:', err);
+        setVideo(videoObj);
+
+        // Update page title
+        document.title = `${videoObj.title} - Stellicast`;
+
+        // Fetch all videos for up next
+        const allRes = await fetch(`/api/videos`);
+        if (allRes.ok) {
+          const allData = await allRes.json();
+          const videos = Array.isArray(allData.videos) ? allData.videos : [];
+          setUpNext(videos.filter((v: any) => v.id !== id).slice(0, 8));
+        }
+
+        setTimeout(() => setCanStar(true), 3000);
+      } catch (error) {
+        console.error('Error loading video:', error);
+        notFound();
+      } finally {
+        setLoading(false);
       }
     }
 
-    fetchUpNext();
-  }, [video]);
+    loadData();
+  }, [params]);
 
   useEffect(() => {
     if (commentSearch.trim() === '') {
@@ -212,12 +235,17 @@ export default function WatchPageClient({ initialVideo }: { initialVideo: any })
     }
   }, [commentSearch]);
 
-  if (!video) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-400">Video not found</div>
+        <div className="text-gray-400">Loading...</div>
       </div>
     );
+  }
+
+  if (!video) {
+    notFound();
+    return null;
   }
 
   return (
@@ -323,7 +351,7 @@ export default function WatchPageClient({ initialVideo }: { initialVideo: any })
                 </span>
               </summary>
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-gray-400">{video.view_count} views • Published 2 days ago</p>
+                <p className="text-xs text-gray-400">{video.view_count} • Published 2 days ago</p>
                 <div className="text-sm leading-relaxed text-gray-300">
                   {video.description.split('\n').map((line, i) => (
                     <p key={i} className={i === 0 ? '' : 'mt-3'}>
@@ -343,11 +371,11 @@ export default function WatchPageClient({ initialVideo }: { initialVideo: any })
             {upNext.map((v: any) => (
               <Link key={v.id} href={`/watch/${v.id}`} className="bg-gray-900/50 rounded-lg overflow-hidden hover:bg-gray-900 transition">
                 <div className="aspect-video bg-gray-800 relative">
-                  <img src={v.thumbnail} alt={v.title} className="w-full h-full object-cover" />
+                  <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-3">
                   <p className="text-sm font-medium line-clamp-2">{v.title}</p>
-                  <p className="text-xs text-gray-400 mt-1">{v.creator} • {v.view_count.toLocaleString()} views</p>
+                  <p className="text-xs text-gray-400 mt-1">{v.channels?.display_name || 'Unknown'} • 2.1k views</p>
                 </div>
               </Link>
             ))}
