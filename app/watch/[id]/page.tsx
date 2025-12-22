@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import WatchPageClient from './WatchPageClient';
+import { createSupabaseServerClient } from '@/../lib/supabase-server';
 
 type Props = {
   params: { id: string } | Promise<{ id: string }>;
@@ -11,27 +12,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = resolvedParams;
 
   try {
-    // Fetch video data server-side for metadata
+    const supabase = await createSupabaseServerClient();
+    const { data: video, error } = await supabase
+      .from('videos')
+      .select('*, channels(*)')
+      .eq('id', id)
+      .single();
+
+    if (error || !video)
+      return { title: 'Video Not Found - Stellicast' };
+
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const videoRes = await fetch(`${baseUrl}/api/videos/${id}`, {
-      cache: 'no-store'
-    });
-
-    if (!videoRes.ok) {
-      return {
-        title: 'Video Not Found - Stellicast',
-      };
-    }
-
-    const video = await videoRes.json();
     const title = `${video.title} - Stellicast`;
     const description = video.description || `Watch ${video.title} on Stellicast`;
     const thumbnail = video.thumbnail_url;
 
-    // Extract GUID and use direct MP4 URL for embeds
-    const videoGuid = video.video_url.split('/').slice(-2, -1)[0];
-    const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME;
-    const mp4Url = `https://${pullZone}/${videoGuid}/play_720p.mp4`;
+    const videoGuid = (video.video_url || '').split('/').slice(-2, -1)[0] || '';
+    const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME || '';
+    const mp4Url = pullZone ? `https://${pullZone}/${videoGuid}/play_720p.mp4` : `${video.video_url}`;
 
     return {
       title,
@@ -41,23 +39,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         type: 'video.other',
         url: `${baseUrl}/watch/${id}`,
-        images: [
-          {
-            url: thumbnail,
-            width: 1280,
-            height: 720,
-            alt: video.title,
-          },
-        ],
-        videos: [
-          {
-            url: mp4Url,
-            secureUrl: mp4Url,
-            type: 'video/mp4',
-            width: 1280,
-            height: 720,
-          },
-        ],
+        images: [{ url: thumbnail, width: 1280, height: 720, alt: video.title }],
+        videos: [{ url: mp4Url, secureUrl: mp4Url, type: 'video/mp4', width: 1280, height: 720 }],
         siteName: 'Stellicast',
       },
       twitter: {
@@ -80,14 +63,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         'twitter:player:height': '720',
       },
     };
-  } catch (error) {
-    console.error('Error generating metadata:', error);
-    return {
-      title: 'Stellicast',
-    };
+  } catch (err) {
+    console.error('Error generating metadata:', err);
+    return { title: 'Stellicast' };
   }
 }
 
 export default async function WatchPage({ params }: Props) {
-  return <WatchPageClient params={params} />;
+  const resolvedParams = await Promise.resolve(params);
+  const { id } = resolvedParams;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: video, error } = await supabase
+    .from('videos')
+    .select('*, channels(*)')
+    .eq('id', id)
+    .single();
+
+  if (error || !video) notFound();
+
+  return <WatchPageClient initialVideo={video} />;
 }
