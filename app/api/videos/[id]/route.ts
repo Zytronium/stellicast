@@ -24,7 +24,7 @@ export async function GET(
     .from('videos')
       .select(`
         *,
-        channel (
+        channels (
           id,
           display_name,
           handle,

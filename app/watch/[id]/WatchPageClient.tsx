@@ -187,9 +187,9 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         const videoObj = {
           ...videoData,
           src: videoData.video_url,
-          creator: videoData.channel?.display_name || "Unknown Creator",
-          creator_videos: videoData.channel?.video_count ?? 0,
-          creator_followers: videoData.channel?.follower_count ?? 0,
+          creator: videoData.channels?.display_name || "Unknown Creator",
+          creator_videos: videoData.channels?.video_count ?? 0,
+          creator_followers: videoData.channels?.follower_count ?? 0,
           duration: videoData.duration
         };
 
