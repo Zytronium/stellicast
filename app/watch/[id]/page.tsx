@@ -28,7 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const description = video.description || `Watch ${video.title} on Stellicast`;
     const thumbnail = video.thumbnail_url;
 
-    // Extract GUID and use direct MP4 URL for embeds
+    // Use embed URL for og:video (like YouTube does)
+    const embedUrl = `${baseUrl}/embed/${id}`;
+
+    // Extract GUID for direct MP4 (as fallback)
     const videoGuid = video.video_url.split('/').slice(-2, -1)[0];
     const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME;
     const mp4Url = `https://${pullZone}/${videoGuid}/play_720p.mp4`;
@@ -51,9 +54,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ],
         videos: [
           {
-            url: mp4Url,
-            secureUrl: mp4Url,
-            type: 'video/mp4',
+            url: embedUrl,
+            secureUrl: embedUrl,
+            type: 'text/html',
             width: 1280,
             height: 720,
           },
@@ -66,14 +69,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         images: [thumbnail],
         players: {
-          playerUrl: `${baseUrl}/embed/${id}`,
+          playerUrl: embedUrl,
           streamUrl: mp4Url,
           width: 1280,
           height: 720,
         },
       },
       other: {
-        'og:video:type': 'video/mp4',
+        'og:video:type': 'text/html',
         'og:video:width': '1280',
         'og:video:height': '720',
         'twitter:player:width': '1280',
