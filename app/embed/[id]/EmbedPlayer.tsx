@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import VideoPlayer from '@/components/VideoPlayer';
+import { useState } from 'react';
 import '@/globals.css';
 
 type Video = {
@@ -17,60 +16,47 @@ type Video = {
 };
 
 export default function EmbedPlayer({ video }: { video: Video }) {
-  const [useCustomPlayer, setUseCustomPlayer] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  useEffect(() => {
-    // Detect if we're in an embedded context that might not support custom player
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isDiscord = userAgent.includes('discord');
-    const isTwitter = userAgent.includes('twitter');
-
-    // Use simple player for platforms that might have issues
-    if (isDiscord || isTwitter) {
-      setUseCustomPlayer(false);
-    }
-  }, []);
-
-  const videoData = {
-    id: video.id,
-    title: video.title,
-    creator: video.channels?.display_name || 'Unknown Creator',
-    description: video.description || '',
-    thumbnail: video.thumbnail_url,
-    src: video.video_url,
-    duration: video.duration,
-  };
-
-  // Extract MP4 URL for fallback
+  // Extract MP4 URL
   const videoGuid = video.video_url.split('/').slice(-2, -1)[0];
   const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME;
   const mp4Url = `https://${pullZone}/${videoGuid}/play_720p.mp4`;
 
   return (
-    <html lang="en">
-    <head>
-      <title>{video.title}</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-    </head>
-    <body style={{ margin: 0, padding: 0, backgroundColor: '#000', overflow: 'hidden' }}>
-    <div style={{ width: '100vw', height: '100vh' }}>
-      {useCustomPlayer ? (
-        <VideoPlayer video={videoData} />
+    <div className="w-full h-full bg-black flex items-center justify-center">
+      {!isPlaying ? (
+        // Thumbnail with play button
+        <div
+          className="relative w-full h-full cursor-pointer group"
+          onClick={() => setIsPlaying(true)}
+        >
+          <img
+            src={video.thumbnail_url}
+            alt={video.title}
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-50 transition">
+            <svg
+              className="w-20 h-20 text-white drop-shadow-lg"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
       ) : (
+        // Native video player
         <video
+          className="w-full h-full"
           controls
           autoPlay
-          playsInline
-          preload="auto"
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           src={mp4Url}
-          poster={video.thumbnail_url}
         >
           Your browser does not support the video tag.
         </video>
       )}
     </div>
-    </body>
-    </html>
   );
 }
