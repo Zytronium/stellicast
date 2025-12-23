@@ -65,7 +65,7 @@ export default function Home() {
               duration={video.duration ? `${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}` : "0:00"}
               title={video.title}
               creator_name={video.channels?.display_name || "Unknown Creator"}
-              views={`${video.view_count || 0} views`}
+              views={`${video.view_count || 0} view${video.view_count === 1 ? '' : 's'}`}
               date={new Date(video.created_at).toLocaleDateString()}
               thumbnail_src={video.thumbnail_url}
               is_ai={video.is_ai}

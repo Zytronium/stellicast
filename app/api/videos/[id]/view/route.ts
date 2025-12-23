@@ -78,7 +78,7 @@ export async function POST(
         return NextResponse.json(
           {
             error: 'Rate limit exceeded',
-            message: `Please wait ${remainingMinutes} minute(s) before viewing again`,
+            message: `Please wait ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'} before viewing again`,
             remainingMs
           },
           { status: 429 }
