@@ -228,8 +228,15 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         // Increment view count if cooldown has passed
         if (shouldCountView(id)) {
           fetch(`/api/videos/${id}/view`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
+            .then(async res => {
+              const data = await res.json();
+
+              if (res.status === 429) {
+                // Rate limited - silently ignore
+                console.log('View rate limited:', data.message);
+                return;
+              }
+
               if (data.success && data.view_count) {
                 // Update the local video object with new view count
                 setVideo(prev => prev ? { ...prev, view_count: data.view_count } : null);
