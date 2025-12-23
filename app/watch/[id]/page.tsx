@@ -78,6 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         'og:video:height': '720',
         'twitter:player:width': '1280',
         'twitter:player:height': '720',
+        'theme-color': '#0092f3',
       },
     };
   } catch (error) {
