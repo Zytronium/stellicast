@@ -15,6 +15,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
 import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
 import { StarIcon } from "@/components/StarIcon";
+import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
 export type Video = {
   id: string;
@@ -242,11 +243,16 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [disliked, setDisliked] = useState(false);
   const [starred, setStarred] = useState(false);
   const [canStar, setCanStar] = useState(false);
+  const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [commentSearch, setCommentSearch] = useState('');
   const [filteredComments, setFilteredComments] = useState(mockComments);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showShareCopied, setShowShareCopied] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [dislikeLoading, setDislikeLoading] = useState(false);
+  const [starLoading, setStarLoading] = useState(false);
   const likeIconRef = useRef<ThumbsUpIconHandle>(null);
   const dislikeIconRef = useRef<ThumbsDownIconHandle>(null);
 
@@ -256,6 +262,27 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       const { id } = resolvedParams;
 
       try {
+        // Check authentication status and get user preferences
+        const supabase = createSupabaseBrowserClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          setIsAuthenticated(true);
+
+          // Fetch user's engagement data
+          const { data: userData } = await supabase
+            .from('users')
+            .select('liked_videos, disliked_videos, starred_videos')
+            .eq('id', user.id)
+            .single();
+
+          if (userData) {
+            setLiked(userData.liked_videos?.includes(id) || false);
+            setDisliked(userData.disliked_videos?.includes(id) || false);
+            setStarred(userData.starred_videos?.includes(id) || false);
+          }
+        }
+
         // Fetch current video
         const videoRes = await fetch(`/api/videos/${id}`);
         if (!videoRes.ok) {
@@ -308,8 +335,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           setAllVideos(filteredVideos);
           setUpNext(filteredVideos.slice(0, 6));
         }
-
-        setTimeout(() => setCanStar(true), (video?.duration ?? 60000) * 0.20);
       } catch (error) {
         console.error('Error loading video:', error);
         notFound();
@@ -320,6 +345,14 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
     loadData();
   }, [params]);
+
+  // Check if user can star based on watched time
+  useEffect(() => {
+    if (!video) return;
+
+    const requiredWatchTime = (video.duration || 0) * 0.20;
+    setCanStar(watchedSeconds >= requiredWatchTime);
+  }, [watchedSeconds, video]);
 
   useEffect(() => {
     // Update displayed videos when videosToShow changes
@@ -343,25 +376,175 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     }
   }, [commentSearch]);
 
-  const handleLikeClick = () => {
+  const handleWatchedTimeUpdate = (seconds: number) => {
+    setWatchedSeconds(seconds);
+  };
+
+  const handleLikeClick = async () => {
+    if (!isAuthenticated) {
+      alert('Please sign in to like videos');
+      return;
+    }
+
+    if (likeLoading || !video) return;
+
+    setLikeLoading(true);
     const wasLiked = liked;
-    setLiked(!liked);
-    if (disliked) setDisliked(false);
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/like`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        alert(data.message || 'Please wait before liking again');
+        setLikeLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to like video');
+      }
+
+      // Update local state
+      setLiked(data.liked);
+      if (data.liked && disliked) {
+        setDisliked(false);
+      }
+
+      // Update video counts
+      setVideo(prev => prev ? {
+        ...prev,
+        like_count: data.like_count,
+        dislike_count: data.dislike_count
+      } : null);
 
     // Only animate if adding a like (not removing)
-    if (!wasLiked) {
+      if (data.liked && !wasLiked) {
       likeIconRef.current?.startAnimation();
+    }
+
+    } catch (error) {
+      console.error('Error liking video:', error);
+      alert('Failed to like video. Please try again.');
+    } finally {
+      setLikeLoading(false);
     }
   };
 
-  const handleDislikeClick = () => {
+  const handleDislikeClick = async () => {
+    if (!isAuthenticated) {
+      alert('Please sign in to dislike videos');
+      return;
+    }
+
+    if (dislikeLoading || !video) return;
+
+    setDislikeLoading(true);
     const wasDisliked = disliked;
-    setDisliked(!disliked);
-    if (liked) setLiked(false);
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/dislike`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        alert(data.message || 'Please wait before disliking again');
+        setDislikeLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to dislike video');
+      }
+
+      // Update local state
+      setDisliked(data.disliked);
+      if (data.disliked && liked) {
+        setLiked(false);
+      }
+
+      // Update video counts
+      setVideo(prev => prev ? {
+        ...prev,
+        like_count: data.like_count,
+        dislike_count: data.dislike_count
+      } : null);
 
     // Only animate if adding a dislike (not removing)
-    if (!wasDisliked) {
+      if (data.disliked && !wasDisliked) {
       dislikeIconRef.current?.startAnimation();
+    }
+
+    } catch (error) {
+      console.error('Error disliking video:', error);
+      alert('Failed to dislike video. Please try again.');
+    } finally {
+      setDislikeLoading(false);
+    }
+  };
+
+  const handleStarClick = async () => {
+    if (!isAuthenticated) {
+      alert('Please sign in to star videos');
+      return;
+    }
+
+    if (!canStar) {
+      const requiredSeconds = Math.ceil((video?.duration || 0) * 0.20);
+      alert(`You must watch at least 20% of the video (${requiredSeconds} seconds) or 15 minutes (whichever is shorter) to star it. You've watched ${watchedSeconds} seconds so far.`);
+      return;
+    }
+
+    if (starLoading || !video) return;
+
+    setStarLoading(true);
+
+    try {
+      const response = await fetch(`/api/videos/${video.id}/star`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ watchedSeconds }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        alert(data.message || 'Please wait before starring again');
+        setStarLoading(false);
+        return;
+      }
+
+      if (response.status === 403) {
+        alert(data.message || 'You need to watch more of the video to star it');
+        setStarLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to star video');
+      }
+
+      // Update local state
+      setStarred(data.starred);
+
+      // Update video star count
+      setVideo(prev => prev ? {
+        ...prev,
+        star_count: data.star_count
+      } : null);
+
+    } catch (error) {
+      console.error('Error starring video:', error);
+      alert('Failed to star video. Please try again.');
+    } finally {
+      setStarLoading(false);
     }
   };
 
@@ -398,7 +581,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       {/* Left side: Video Player and Info */}
       <div className="flex-1 min-w-0">
         {/* Video Player */}
-        <VideoPlayer video={video} />
+        <VideoPlayer video={video} onWatchedTimeUpdate={handleWatchedTimeUpdate} />
 
         {/* Video Title and Engagement */}
         <div className="mt-4 space-y-3">
@@ -433,37 +616,39 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 <div className="flex flex-col rounded-lg overflow-hidden border border-gray-800">
                   <button
                     onClick={handleLikeClick}
+                    disabled={likeLoading}
                     className={`flex items-center justify-center px-3 py-2 text-sm transition ${
                       liked ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
-                    }`}
+                    } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <ThumbsUpIcon ref={likeIconRef} className="w-4 h-4" />
                   </button>
                   <div className="h-px bg-gray-800"></div>
                   <button
                     onClick={handleDislikeClick}
+                    disabled={dislikeLoading}
                     className={`flex items-center justify-center px-3 py-2 text-sm transition ${
                       disliked ? 'bg-red-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
-                    }`}
+                    } ${dislikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <ThumbsDownIcon ref={dislikeIconRef} className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="flex flex-col text-xs text-gray-400 gap-3">
-                  <span>{video.like_count + (liked ? 1 : 0)} like{video.like_count + (liked ? 1 : 0) === 1 ? '' : 's'}</span>
-                  <span>{video.dislike_count + (disliked ? 1 : 0)} dislike{video.dislike_count + (disliked ? 1 : 0) === 1 ? '' : 's'}</span>
+                  <span>{video.like_count} like{video.like_count === 1 ? '' : 's'}</span>
+                  <span>{video.dislike_count} dislike{video.dislike_count === 1 ? '' : 's'}</span>
                 </div>
               </div>
 
               {/* Star Button with Label */}
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => canStar && setStarred(!starred)}
-                  disabled={!canStar}
+                  onClick={handleStarClick}
+                  disabled={!canStar || starLoading}
                   className={`transition ${
-                    canStar ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
-                  }`}
-                  title={!canStar ? 'Watch 20% of the video to star it' : ''}
+                    canStar && !starLoading ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
+                  } ${starLoading ? 'opacity-50' : ''}`}
+                  title={!canStar ? `Watch ${Math.ceil((video.duration || 0) * 0.20)}s (20%) to star` : ''}
                 >
                   <StarIcon
                     className={`w-8 h-8 transition ${
@@ -473,7 +658,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   />
                 </button>
                 <span className={`text-sm font-medium ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {video.star_count + (starred ? 1 : 0)} star{video.star_count + (starred ? 1 : 0) === 1 ? '' : 's'}
+                  {video.star_count} star{video.star_count === 1 ? '' : 's'}
                 </span>
               </div>
 

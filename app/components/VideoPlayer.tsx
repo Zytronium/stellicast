@@ -14,10 +14,16 @@ export type Video = {
   duration?: number;
 };
 
-export default function VideoPlayer({ video }: { video: Video }) {
+type VideoPlayerProps = {
+  video: Video;
+  onWatchedTimeUpdate?: (watchedSeconds: number) => void;
+};
+
+export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
+  const watchedSegmentsRef = useRef<Set<number>>(new Set());
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -41,10 +47,39 @@ export default function VideoPlayer({ video }: { video: Video }) {
     y: number
   } | null>(null);
   const [isLooping, setIsLooping] = useState(false);
+  const [totalWatchedSeconds, setTotalWatchedSeconds] = useState(0);
 
   const qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', 'Auto'];
   const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
   const hlsRef = useRef<Hls | null>(null);
+
+  // Track unique watched seconds (prevents skipping ahead to cheat)
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const handleTimeUpdate = () => {
+      const currentSecond = Math.floor(videoElement.currentTime);
+
+      // Only count this second if we haven't watched it before
+      if (!watchedSegmentsRef.current.has(currentSecond)) {
+        watchedSegmentsRef.current.add(currentSecond);
+        const newTotal = watchedSegmentsRef.current.size;
+        setTotalWatchedSeconds(newTotal);
+
+        // Notify parent component
+        if (onWatchedTimeUpdate) {
+          onWatchedTimeUpdate(newTotal);
+        }
+      }
+    };
+
+    videoElement.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [onWatchedTimeUpdate]);
 
   // Track when metadata is loaded and duration is available
   useEffect(() => {
@@ -341,6 +376,15 @@ export default function VideoPlayer({ video }: { video: Video }) {
         <source src={video.src} type="video/mp4" />
       </video>
 
+      {/* Debug info - shows actual watched time vs current position */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-2 right-2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg space-y-1">
+          <div>Watched: {totalWatchedSeconds}s</div>
+          <div>Position: {Math.floor(currentTime)}s</div>
+          <div>Progress: {duration > 0 ? Math.round((totalWatchedSeconds / duration) * 100) : 0}%</div>
+        </div>
+      )}
+
       {contextMenu && (
         <div
           className="fixed bg-black/95 rounded-lg shadow-lg py-2 z-50 min-w-[200px]"
@@ -457,7 +501,10 @@ export default function VideoPlayer({ video }: { video: Video }) {
                     <div className="font-semibold border-b border-gray-700 pb-2">Settings</div>
                     <button className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Subtitles</button>
                     <button className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Annotations</button>
-                    <button className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Loop</button>
+                    <button onClick={toggleLoop} className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                      <span>Loop</span>
+                      {isLooping && <span className="text-blue-400">✓</span>}
+                    </button>
                   </div>
                 </div>
               )}
