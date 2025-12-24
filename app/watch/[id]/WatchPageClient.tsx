@@ -1,15 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ThumbsUp, ThumbsDown, Star, Search, Plus, X } from 'lucide-react';
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Search,
+  Plus,
+  X,
+  Share2
+} from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
+import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
+import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
+import { StarIcon } from "@/components/StarIcon";
 
 export type Video = {
   id: string;
   title: string;
   view_count: number;
+  star_count: number;
+  like_count: number;
+  dislike_count: number;
   creator: string;
   creator_videos: number;
   creator_followers: number;
@@ -17,6 +30,7 @@ export type Video = {
   thumbnail: string;
   src: string;
   duration?: number;
+  created_at?: string;
 };
 
 type Comment = {
@@ -101,6 +115,40 @@ const mockComments: Comment[] = [
     ]
   }
 ];
+
+// Helper function to format timestamp
+function formatTimeAgo(timestamp: string): string {
+  const now = new Date();
+  const created = new Date(timestamp);
+  const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'just now';
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month${diffInMonths === 1 ? '' : 's'} ago`;
+  }
+
+  const diffInYears = Math.floor(diffInMonths / 12);
+  return `${diffInYears} year${diffInYears === 1 ? '' : 's'} ago`;
+}
 
 // Helper function to check if view should be counted
 function shouldCountView(videoId: string): boolean {
@@ -187,6 +235,8 @@ function CommentComponent({ comment, isReply = false }: { comment: Comment; isRe
 export default function WatchPageClient({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [upNext, setUpNext] = useState<Video[]>([]);
+  const [allVideos, setAllVideos] = useState<Video[]>([]);
+  const [videosToShow, setVideosToShow] = useState(6);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
@@ -196,6 +246,9 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [filteredComments, setFilteredComments] = useState(mockComments);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [showShareCopied, setShowShareCopied] = useState(false);
+  const likeIconRef = useRef<ThumbsUpIconHandle>(null);
+  const dislikeIconRef = useRef<ThumbsDownIconHandle>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -217,7 +270,8 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           creator: videoData.channels?.display_name || "Unknown Creator",
           creator_videos: videoData.channels?.video_count ?? 0,
           creator_followers: videoData.channels?.follower_count ?? 0,
-          duration: videoData.duration
+          duration: videoData.duration,
+          created_at: videoData.created_at
         };
 
         setVideo(videoObj);
@@ -250,10 +304,12 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         if (allRes.ok) {
           const allData = await allRes.json();
           const videos = Array.isArray(allData.videos) ? allData.videos : [];
-          setUpNext(videos.filter((v: any) => v.id !== id).slice(0, 8));
+          const filteredVideos = videos.filter((v: any) => v.id !== id);
+          setAllVideos(filteredVideos);
+          setUpNext(filteredVideos.slice(0, 6));
         }
 
-        setTimeout(() => setCanStar(true), 3000);
+        setTimeout(() => setCanStar(true), (video?.duration ?? 60000) * 0.20);
       } catch (error) {
         console.error('Error loading video:', error);
         notFound();
@@ -264,6 +320,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
     loadData();
   }, [params]);
+
+  useEffect(() => {
+    // Update displayed videos when videosToShow changes
+    setUpNext(allVideos.slice(0, videosToShow));
+  }, [videosToShow, allVideos]);
 
   useEffect(() => {
     if (commentSearch.trim() === '') {
@@ -281,6 +342,43 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       setFilteredComments(filtered);
     }
   }, [commentSearch]);
+
+  const handleLikeClick = () => {
+    const wasLiked = liked;
+    setLiked(!liked);
+    if (disliked) setDisliked(false);
+
+    // Only animate if adding a like (not removing)
+    if (!wasLiked) {
+      likeIconRef.current?.startAnimation();
+    }
+  };
+
+  const handleDislikeClick = () => {
+    const wasDisliked = disliked;
+    setDisliked(!disliked);
+    if (liked) setLiked(false);
+
+    // Only animate if adding a dislike (not removing)
+    if (!wasDisliked) {
+      dislikeIconRef.current?.startAnimation();
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      setShowShareCopied(true);
+      setTimeout(() => setShowShareCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+    }
+  };
+
+  const handleLoadMore = () => {
+    setVideosToShow(prev => prev + 6);
+  };
 
   if (loading) {
     return (
@@ -316,7 +414,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-gray-100">{video.creator}</div>
-                  <div className="text-xs text-gray-400">{video.creator_videos} videos • {video.creator_followers} followers</div>
+                  <div className="text-xs text-gray-400">{video.creator_videos} video{video.creator_videos === 1 ? '' : 's'} • {video.creator_followers} follower{video.creator_followers === 1 ? '' : 's'}</div>
                 </div>
               </div>
 
@@ -334,32 +432,26 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               <div className="flex items-center gap-2">
                 <div className="flex flex-col rounded-lg overflow-hidden border border-gray-800">
                   <button
-                    onClick={() => {
-                      setLiked(!liked);
-                      if (disliked) setDisliked(false);
-                    }}
+                    onClick={handleLikeClick}
                     className={`flex items-center justify-center px-3 py-2 text-sm transition ${
                       liked ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
                     }`}
                   >
-                    <ThumbsUp className="w-4 h-4" />
+                    <ThumbsUpIcon ref={likeIconRef} className="w-4 h-4" />
                   </button>
                   <div className="h-px bg-gray-800"></div>
                   <button
-                    onClick={() => {
-                      setDisliked(!disliked);
-                      if (liked) setLiked(false);
-                    }}
+                    onClick={handleDislikeClick}
                     className={`flex items-center justify-center px-3 py-2 text-sm transition ${
                       disliked ? 'bg-red-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
                     }`}
                   >
-                    <ThumbsDown className="w-4 h-4" />
+                    <ThumbsDownIcon ref={dislikeIconRef} className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="flex flex-col text-xs text-gray-400 gap-0.5">
-                  <span>{156 + (liked ? 1 : 0)} likes</span>
-                  <span>{3 + (disliked ? 1 : 0)} dislikes</span>
+                <div className="flex flex-col text-xs text-gray-400 gap-3">
+                  <span>{video.like_count + (liked ? 1 : 0)} like{video.like_count + (liked ? 1 : 0) === 1 ? '' : 's'}</span>
+                  <span>{video.dislike_count + (disliked ? 1 : 0)} dislike{video.dislike_count + (disliked ? 1 : 0) === 1 ? '' : 's'}</span>
                 </div>
               </div>
 
@@ -373,17 +465,32 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   }`}
                   title={!canStar ? 'Watch 20% of the video to star it' : ''}
                 >
-                  <Star
-                    className={`w-9 h-9 transition ${
-                      starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'
+                  <StarIcon
+                    className={`w-8 h-8 transition ${
+                      starred ? 'text-yellow-500' : canStar ? 'text-gray-400' : 'text-gray-600'
                     }`}
-                    fill={starred ? 'currentColor' : 'none'}
-                    strokeWidth={starred ? 0 : 2}
+                    fill={starred ? 'currentColor' : '#1c263a'}
                   />
                 </button>
                 <span className={`text-sm font-medium ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Star!
+                  {video.star_count + (starred ? 1 : 0)} star{video.star_count + (starred ? 1 : 0) === 1 ? '' : 's'}
                 </span>
+              </div>
+
+              {/* Share Button */}
+              <div className="relative">
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Share</span>
+                </button>
+                {showShareCopied && (
+                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
+                    Link copied!
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -398,7 +505,9 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </span>
               </summary>
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-gray-400">{video.view_count} view{video.view_count === 1 ? '' : 's'} • Published 2 days ago</p>
+                <p className="text-xs text-gray-400">
+                  {video.view_count} view{video.view_count === 1 ? '' : 's'} • Published {video.created_at ? formatTimeAgo(video.created_at) : 'recently'}
+                </p>
                 <div className="text-sm leading-relaxed text-gray-300">
                   {video.description.split('\n').map((line, i) => (
                     <p key={i} className={i === 0 ? '' : 'mt-3'}>
@@ -427,6 +536,16 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               </Link>
             ))}
           </div>
+          {upNext.length < allVideos.length && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleLoadMore}
+                className="px-6 py-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition"
+              >
+                Load More
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
