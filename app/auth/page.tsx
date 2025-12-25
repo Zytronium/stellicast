@@ -13,6 +13,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,6 +25,9 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        if (!agreedToTerms) {
+          throw new Error('You must agree to the Terms of Use and Privacy Policy');
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -83,6 +87,31 @@ export default function AuthPage() {
               />
             </div>
           </div>
+
+          {mode === 'signup' && (
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="rounded border-gray-800 bg-black text-blue-600 focus:ring-blue-600"
+                />
+                <span className="text-sm text-gray-400">
+                  I agree to the{' '}
+                  <a href="/terms-of-use" className="text-blue-500 hover:text-blue-400"
+                     target="_blank">
+                    Terms of Use
+                  </a>{' '}
+                  and{' '}
+                  <a href="/privacy-policy" className="text-blue-500 hover:text-blue-400"
+                     target="_blank">
+                    Privacy Policy
+                  </a>
+                </span>
+              </label>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-lg border border-red-900 bg-red-950/30 p-3">
