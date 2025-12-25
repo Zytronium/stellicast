@@ -1,16 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import {
-  ThumbsUp,
-  ThumbsDown,
-  Search,
-  Plus,
-  X,
-  Share2
-} from 'lucide-react';
+import { Search, Plus, X, Share2, ChevronRight, ChevronDown, ThumbsUp, ThumbsDown } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
 import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
@@ -41,56 +34,31 @@ type Comment = {
   likes: number;
   dislikes: number;
   timestamp: string;
-  replies?: Comment[];
+  parent_id?: string;
 };
 
+type CommentWithChildren = Comment & { children?: CommentWithChildren[] };
+
 const mockComments: Comment[] = [
+  // ===== Top-level comments =====
   {
-    id: '1',
+    id: 'c_a9f3k2',
     user: 'TechEnthusiast',
     text: 'This is exactly what I was looking for! Thanks for making this tutorial.',
     likes: 24,
     dislikes: 1,
-    timestamp: '2 days ago',
-    replies: [
-      {
-        id: '1-1',
-        user: 'VideoCreator',
-        text: 'Glad it helped! More tutorials coming soon.',
-        likes: 12,
-        dislikes: 0,
-        timestamp: '2 days ago'
-      },
-      {
-        id: '1-2',
-        user: 'AnotherViewer',
-        text: 'Same here, very helpful content!',
-        likes: 5,
-        dislikes: 0,
-        timestamp: '1 day ago'
-      }
-    ]
+    timestamp: '2 days ago'
   },
   {
-    id: '2',
+    id: 'c_x7p91d',
     user: 'CodeMaster99',
     text: 'Could you make a follow-up video covering advanced techniques?',
     likes: 18,
     dislikes: 0,
-    timestamp: '1 day ago',
-    replies: [
-      {
-        id: '2-1',
-        user: 'VideoCreator',
-        text: "That's on my list! Should be out next week.",
-        likes: 8,
-        dislikes: 0,
-        timestamp: '1 day ago'
-      }
-    ]
+    timestamp: '1 day ago'
   },
   {
-    id: '3',
+    id: 'c_m4q8zs',
     user: 'NewbieDev',
     text: 'As someone just starting out, this was incredibly clear and easy to follow. Keep up the great work!',
     likes: 31,
@@ -98,27 +66,213 @@ const mockComments: Comment[] = [
     timestamp: '12 hours ago'
   },
   {
-    id: '4',
+    id: 'c_r2w8k9',
     user: 'SkepticalUser',
     text: "I don't think this approach is the best way to handle this problem. There are better alternatives.",
     likes: 3,
     dislikes: 15,
-    timestamp: '8 hours ago',
-    replies: [
-      {
-        id: '4-1',
-        user: 'DefenderUser',
-        text: 'What alternatives would you suggest? This worked perfectly for my use case.',
-        likes: 7,
-        dislikes: 1,
-        timestamp: '6 hours ago'
-      }
-    ]
+    timestamp: '8 hours ago'
+  },
+  {
+    id: 'c_p6e3v4',
+    user: 'SilentWatcher',
+    text: 'No one is mentioning performance. Did anyone benchmark this?',
+    likes: 6,
+    dislikes: 2,
+    timestamp: '7 hours ago'
+  },
+
+  // ===== Replies to comment 1 =====
+  {
+    id: 'c_b7t4e2',
+    parent_id: 'c_a9f3k2',
+    user: 'VideoCreator',
+    text: 'Glad it helped! More tutorials coming soon.',
+    likes: 12,
+    dislikes: 0,
+    timestamp: '2 days ago'
+  },
+  {
+    id: 'c_4jz9m1',
+    parent_id: 'c_a9f3k2',
+    user: 'AnotherViewer',
+    text: 'Same here, very helpful content!',
+    likes: 5,
+    dislikes: 0,
+    timestamp: '1 day ago'
+  },
+  {
+    id: 'c_f1k8qa',
+    parent_id: 'c_a9f3k2',
+    user: 'FrontendFan',
+    text: 'Agreed. Especially the explanation around edge cases.',
+    likes: 9,
+    dislikes: 0,
+    timestamp: '23 hours ago'
+  },
+
+  // ===== Nested replies under VideoCreator =====
+  {
+    id: 'c_9e2r5d',
+    parent_id: 'c_b7t4e2',
+    user: 'TechEnthusiast',
+    text: 'Looking forward to it! Any chance you\'ll cover scaling next?',
+    likes: 4,
+    dislikes: 0,
+    timestamp: '1 day ago'
+  },
+  {
+    id: 'c_v8n2s7',
+    parent_id: 'c_b7t4e2',
+    user: 'VideoCreator',
+    text: 'Yep, scalability and caching are both planned topics.',
+    likes: 7,
+    dislikes: 0,
+    timestamp: '22 hours ago'
+  },
+
+  // ===== Replies to comment 2 =====
+  {
+    id: 'c_z3y6p8',
+    parent_id: 'c_x7p91d',
+    user: 'VideoCreator',
+    text: "That's on my list! Should be out next week.",
+    likes: 8,
+    dislikes: 0,
+    timestamp: '1 day ago'
+  },
+  {
+    id: 'c_k5m1x9',
+    parent_id: 'c_x7p91d',
+    user: 'BackendBro',
+    text: 'Advanced techniques would be great, especially error handling.',
+    likes: 6,
+    dislikes: 0,
+    timestamp: '20 hours ago'
+  },
+  {
+    id: 'c_8wq4n2',
+    parent_id: 'c_k5m1x9',
+    user: 'CodeMaster99',
+    text: 'Yes! Error handling and logging are usually skipped.',
+    likes: 3,
+    dislikes: 0,
+    timestamp: '18 hours ago'
+  },
+
+  // ===== Replies to comment 3 =====
+  {
+    id: 'c_d7h2p4',
+    parent_id: 'c_m4q8zs',
+    user: 'HelpfulDev',
+    text: 'Welcome! This channel helped me a ton when I started too.',
+    likes: 5,
+    dislikes: 0,
+    timestamp: '11 hours ago'
+  },
+  {
+    id: 'c_j9s5e1',
+    parent_id: 'c_m4q8zs',
+    user: 'VideoCreator',
+    text: 'Really appreciate that — beginner-friendly is always my goal.',
+    likes: 10,
+    dislikes: 0,
+    timestamp: '10 hours ago'
+  },
+
+  // ===== Disagreement thread =====
+  {
+    id: 'c_q3k9w8',
+    parent_id: 'c_r2w8k9',
+    user: 'DefenderUser',
+    text: 'What alternatives would you suggest? This worked perfectly for my use case.',
+    likes: 7,
+    dislikes: 1,
+    timestamp: '6 hours ago'
+  },
+  {
+    id: 'c_1x8r6p',
+    parent_id: 'c_r2w8k9',
+    user: 'AnotherSkeptic',
+    text: 'I kind of agree. this can get messy at scale.',
+    likes: 4,
+    dislikes: 2,
+    timestamp: '6 hours ago'
+  },
+  {
+    id: 'c_m9d2k4',
+    parent_id: 'c_q3k9w8',
+    user: 'SkepticalUser',
+    text: 'For larger systems, I’d recommend an event-driven approach instead.',
+    likes: 2,
+    dislikes: 6,
+    timestamp: '5 hours ago'
+  },
+  {
+    id: 'c_7f4z2e',
+    parent_id: 'c_q3k9w8',
+    user: 'DefenderUser',
+    text: 'Fair point, but that adds complexity most people here don’t need.',
+    likes: 8,
+    dislikes: 1,
+    timestamp: '4 hours ago'
+  },
+
+  // ===== Performance thread =====
+  {
+    id: 'c_5n8qj2',
+    parent_id: 'c_p6e3v4',
+    user: 'PerfNerd',
+    text: 'I benchmarked something similar, works fine under moderate load.',
+    likes: 6,
+    dislikes: 0,
+    timestamp: '6 hours ago'
+  },
+  {
+    id: 'c_h4s7w9',
+    parent_id: 'c_p6e3v4',
+    user: 'SilentWatcher',
+    text: 'Good to know, thanks for testing.',
+    likes: 2,
+    dislikes: 0,
+    timestamp: '5 hours ago'
+  },
+
+  // ===== Late reply =====
+  {
+    id: 'c_u8v3r5',
+    parent_id: 'c_a9f3k2',
+    user: 'LateComer',
+    text: 'Just watched this today. Still relevant!',
+    likes: 3,
+    dislikes: 0,
+    timestamp: '1 hour ago'
   }
 ];
 
+// Helper function to build a tree from flat comments
+function buildCommentTree(comments: Comment[]): CommentWithChildren[] {
+  const map = new Map<string, CommentWithChildren>();
+  // Create nodes and preserve original order by iterating original array
+  comments.forEach(c => map.set(c.id, { ...c, children: [] }));
+
+  const roots: CommentWithChildren[] = [];
+
+  comments.forEach(c => {
+    const node = map.get(c.id)!;
+    if (c.parent_id && map.has(c.parent_id)) {
+      map.get(c.parent_id)!.children!.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  return roots;
+}
+
 // Helper function to format timestamp
 function formatTimeAgo(timestamp: string): string {
+  try {
   const now = new Date();
   const created = new Date(timestamp);
   const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
@@ -149,6 +303,9 @@ function formatTimeAgo(timestamp: string): string {
 
   const diffInYears = Math.floor(diffInMonths / 12);
   return `${diffInYears} year${diffInYears === 1 ? '' : 's'} ago`;
+  } catch {
+    return timestamp;
+  }
 }
 
 // Helper function to check if view should be counted
@@ -178,57 +335,175 @@ function shouldCountView(videoId: string): boolean {
   }
 }
 
-function CommentComponent({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) {
-  const [showReplies, setShowReplies] = useState(true);
+// Threaded comment component
+function CommentComponent({
+  comment,
+  depth = 0
+}: {
+  comment: CommentWithChildren;
+  depth?: number;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [replyText, setReplyText] = useState('');
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
 
+  const hasReplies = comment.children && comment.children.length > 0;
+  const replyCount = comment.children?.length || 0;
+
+  const handleLike = () => {
+    if (liked) {
+      setLiked(false);
+    } else {
+      setLiked(true);
+      if (disliked) setDisliked(false);
+    }
+  };
+
+  const handleDislike = () => {
+    if (disliked) {
+      setDisliked(false);
+    } else {
+      setDisliked(true);
+      if (liked) setLiked(false);
+    }
+  };
+
+  const displayLikes = comment.likes + (liked ? 1 : 0) - (disliked && !liked ? 0 : 0);
+  const displayDislikes = comment.dislikes + (disliked ? 1 : 0) - (liked && !disliked ? 0 : 0);
+
   return (
-    <div className={isReply ? 'ml-12' : ''}>
-      <div className="flex gap-3">
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm font-bold">
-          {comment.user[0].toUpperCase()}
-        </div>
-        <div className="flex-1">
+    <div className={`${depth > 0 ? 'ml-4' : ''}`}>
+      <div className="flex gap-3 py-2">
+        {/* Avatar */}
+        <div className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white">
+            {comment.user[0]?.toUpperCase() ?? '?'}
+          </div>
+
+        {/* Content */}
+          <div className="flex-1 min-w-0">
+          {/* Header */}
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium">{comment.user}</p>
-            <span className="text-xs text-gray-500">{comment.timestamp}</span>
-          </div>
-          <p className="text-sm text-gray-300 mt-1">{comment.text}</p>
-          <div className="flex items-center gap-4 mt-2">
-            <button
-              onClick={() => setLiked(!liked)}
-              className={`flex items-center gap-1 text-xs ${liked ? 'text-blue-400' : 'text-gray-400'} hover:text-blue-400`}
-            >
-              <ThumbsUp className="w-4 h-4" />
-              <span>{comment.likes + (liked ? 1 : 0)}</span>
+            <span className="text-sm font-medium text-gray-200">{comment.user}</span>
+              <span className="text-xs text-gray-500">{comment.timestamp}</span>
+            </div>
+
+          {/* Comment text */}
+          {!collapsed && (
+              <>
+              <div className="mt-1 text-sm text-gray-300 break-words leading-relaxed">
+                {comment.text}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 mt-2">
+                {/* Like button */}
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center gap-1 text-xs font-medium transition ${
+                    liked ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                  {displayLikes > 0 && <span>{displayLikes}</span>}
+                </button>
+
+                {/* Dislike button */}
+                <button
+                  onClick={handleDislike}
+                  className={`flex items-center gap-1 text-xs font-medium transition ${
+                    disliked ? 'text-red-400' : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                  {displayDislikes > 0 && <span>{displayDislikes}</span>}
+                </button>
+
+                {/* Reply button */}
+                <button
+                  onClick={() => setShowReplyBox(!showReplyBox)}
+                  className="text-xs font-medium text-gray-400 hover:text-white transition"
+                >
+                    Reply
             </button>
-            <button
-              onClick={() => setDisliked(!disliked)}
-              className={`flex items-center gap-1 text-xs ${disliked ? 'text-red-400' : 'text-gray-400'} hover:text-red-400`}
-            >
-              <ThumbsDown className="w-4 h-4" />
-              <span>{comment.dislikes + (disliked ? 1 : 0)}</span>
-            </button>
-            <button className="text-xs text-gray-400 hover:text-white">Reply</button>
-          </div>
-          {comment.replies && comment.replies.length > 0 && (
-            <button
-              onClick={() => setShowReplies(!showReplies)}
-              className="text-xs text-blue-400 hover:text-blue-300 mt-2 flex items-center gap-1"
-            >
-              {showReplies ? '▼' : '▶'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
-            </button>
+
+                {/* Share button */}
+                <button className="text-xs font-medium text-gray-400 hover:text-white transition">
+                    Share
+              </button>
+
+                {/* Reply count / collapse button */}
+                {hasReplies && (
+                  <button
+                    onClick={() => setCollapsed(true)}
+                    className="text-xs font-medium text-blue-400 hover:text-blue-300 transition flex items-center gap-1 ml-1"
+                  >
+                    <ChevronDown className="w-3 h-3" />
+                    {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                  </button>
+                )}
+              </div>
+
+              {/* Reply box */}
+              {showReplyBox && (
+                <div className="mt-3">
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Add a reply..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none"
+                    rows={2}
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setShowReplyBox(false);
+                        setReplyText('');
+                      }}
+                      className="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        // Handle reply submission
+                        setShowReplyBox(false);
+                        setReplyText('');
+                      }}
+                      disabled={!replyText.trim()}
+                      className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+                    >
+                      Reply
+                    </button>
+                  </div>
+                </div>
+              )}
+              </>
           )}
+
+          {/* Collapsed state */}
+          {collapsed && (
+            <button
+              onClick={() => setCollapsed(false)}
+              className="mt-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition flex items-center gap-1"
+            >
+              <ChevronRight className="w-3 h-3" />
+              Show {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+            </button>
+            )}
+          </div>
         </div>
+
+      {/* Nested replies */}
+      {!collapsed && hasReplies && (
+        <div className="mt-2 border-l-2 border-gray-800 pl-2">
+          {comment.children!.map((child) => (
+              <CommentComponent key={child.id} comment={child} depth={depth + 1} />
+            ))}
       </div>
-      {showReplies && comment.replies && (
-        <div className="mt-4 space-y-4">
-          {comment.replies.map(reply => (
-            <CommentComponent key={reply.id} comment={reply} isReply={true} />
-          ))}
-        </div>
-      )}
+        )}
     </div>
   );
 }
@@ -245,7 +520,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [canStar, setCanStar] = useState(false);
   const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [commentSearch, setCommentSearch] = useState('');
-  const [filteredComments, setFilteredComments] = useState(mockComments);
+  const [filteredComments, setFilteredComments] = useState<Comment[]>(mockComments);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showShareCopied, setShowShareCopied] = useState(false);
@@ -311,13 +586,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           fetch(`/api/videos/${id}/view`, { method: 'POST' })
             .then(async res => {
               const data = await res.json();
-
               if (res.status === 429) {
                 // Rate limited - silently ignore
                 console.log('View rate limited:', data.message);
                 return;
               }
-
               if (data.success && data.view_count) {
                 // Update the local video object with new view count
                 setVideo(prev => prev ? { ...prev, view_count: data.view_count } : null);
@@ -359,22 +632,38 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     setUpNext(allVideos.slice(0, videosToShow));
   }, [videosToShow, allVideos]);
 
+  // Search across the flat list and include parent chain for context
   useEffect(() => {
     if (commentSearch.trim() === '') {
       setFilteredComments(mockComments);
-    } else {
-      const searchLower = commentSearch.toLowerCase();
-      const filtered = mockComments.filter(comment =>
-        comment.text.toLowerCase().includes(searchLower) ||
-        comment.user.toLowerCase().includes(searchLower) ||
-        (comment.replies?.some(reply =>
-          reply.text.toLowerCase().includes(searchLower) ||
-          reply.user.toLowerCase().includes(searchLower)
-        ))
-      );
-      setFilteredComments(filtered);
+      return;
     }
+
+    const q = commentSearch.toLowerCase();
+    const byId = new Map<string, Comment>(mockComments.map(c => [c.id, c]));
+    const matched = mockComments.filter(c =>
+      c.text.toLowerCase().includes(q) || c.user.toLowerCase().includes(q)
+      );
+
+    const include = new Set<string>(matched.map(c => c.id));
+
+    // add parents for context
+    matched.forEach(c => {
+      let pid = c.parent_id;
+      while (pid) {
+        if (include.has(pid)) break;
+        include.add(pid);
+        const parent = byId.get(pid);
+        pid = parent?.parent_id;
+    }
+    });
+
+    // keep original order
+    const result = mockComments.filter(c => include.has(c.id));
+    setFilteredComments(result);
   }, [commentSearch]);
+
+  const commentTree = useMemo(() => buildCommentTree(filteredComments), [filteredComments]);
 
   const handleWatchedTimeUpdate = (seconds: number) => {
     setWatchedSeconds(seconds);
@@ -716,7 +1005,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
                 <div className="p-3">
                   <p className="text-sm font-medium line-clamp-2">{v.title}</p>
-                  <p className="text-xs text-gray-400 mt-1">{v.channels?.display_name || 'Unknown'} • 2.1k views</p>
+                  <p className="text-xs text-gray-400 mt-1">{v.channels?.display_name || 'Unknown'} • {v.view_count} view{v.view_count === 1 ? '' : 's'}</p>
                 </div>
               </Link>
             ))}
@@ -738,7 +1027,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       <div className="w-full lg:w-96 bg-gray-900/50 rounded-lg p-4 flex flex-col lg:h-[calc(100vh-8rem)] lg:sticky lg:top-4">
         {/* Header with Title and Search */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
-          <h2 className="text-lg font-semibold">Comments ({mockComments.length})</h2>
+          <h2 className="text-lg font-semibold">{mockComments.length} Comments</h2>
 
           {/* Comment Search - Desktop */}
           <div className="hidden lg:block relative w-48">
@@ -783,7 +1072,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             </button>
             <button
               onClick={() => {
-                // Handle comment submission
+                // Handle comment submission (mock)
                 setNewComment('');
               }}
               disabled={!newComment.trim()}
@@ -803,14 +1092,15 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           Add Comment
         </button>
 
-        {/* Comments List */}
-        <div className="space-y-6 overflow-y-auto flex-1">
-          {filteredComments.length > 0 ? (
-            filteredComments.map((comment) => (
+        <div className="flex-1 overflow-y-auto">
+          {commentTree.length > 0 ? (
+            <div className="space-y-1">
+              {commentTree.map((comment) => (
               <CommentComponent key={comment.id} comment={comment} />
-            ))
+              ))}
+            </div>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-4">No comments found</p>
+            <p className="text-sm text-gray-400 text-center py-8">No comments found</p>
           )}
         </div>
       </div>
@@ -851,7 +1141,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               </button>
               <button
                 onClick={() => {
-                  // Handle comment submission
+                  // Handle comment submission (mock)
                   setShowCommentModal(false);
                   setNewComment('');
                 }}
