@@ -289,7 +289,7 @@ Your continued use of the Service after changes take effect will constitute acce
 
 If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, you can contact us at:
 
-- **Emai:** stellicast@zytronium.dev
+- **Email:** stellicast@zytronium.dev
 
 This is a temporary email address and will stop being monitored in January, 2026, being replaced with a new, permanent email address.
 

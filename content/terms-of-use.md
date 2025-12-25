@@ -305,7 +305,7 @@ unless otherwise required by applicable law.
 
 If you have any questions about these Terms, please contact:
 
-- **Email or Contact Form:** stellicast@zytronium.dev
+- **Email:** stellicast@zytronium.dev
 
 This is a temporary email address and will stop being monitored in January, 2026, being replaced with a new, permanent email address.
 
