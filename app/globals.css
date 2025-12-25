@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -94,12 +95,12 @@ body {
 
 /* Optional: nicer text selection + subtle scrollbars */
 ::selection {
-  background: color-mix(in oklab, var(--foreground) 18%, transparent);
+    background: color-mix(in oklab, oklch(0.503 0.169 255.562) 70%, transparent);
 }
 
 * {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--foreground) 22%, transparent) transparent;
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.64 0.079 246.858) oklch(0.24 0.05 266.231);
 }
 
 :root {
