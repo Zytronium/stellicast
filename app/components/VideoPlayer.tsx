@@ -19,7 +19,7 @@ type VideoPlayerProps = {
   onWatchedTimeUpdate?: (watchedSeconds: number) => void;
 };
 
-const SHOW_DEBUG_INFO = false;
+let SHOW_DEBUG_INFO = false;
 
 export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -379,7 +379,7 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
       </video>
 
       {/* Debug info - shows actual watched time vs current position */}
-      {process.env.NODE_ENV === 'development' && SHOW_DEBUG_INFO === true && (
+      {process.env.NODE_ENV === 'development' && SHOW_DEBUG_INFO && (
         <div className="absolute top-2 right-2 bg-black/80 text-white text-xs px-3 py-2 rounded-lg space-y-1">
           <div>Watched: {totalWatchedSeconds}s</div>
           <div>Position: {Math.floor(currentTime)}s</div>
