@@ -128,12 +128,12 @@ export default function AboutPage() {
           Sample the Video Experience</h2>
         <div className="mx-auto">
           <VideoPlayer video={{
-            id: "5f502022-2000-4000-8000-000000000000",
+            id: "4759f71a-f92c-4971-b036-db43783f0696",
             title: "Sample Video",
             creator: "Creator Name",
-            description: "Stellicast Demo",
+            description: "Stellicast Video Player Demo Example",
             thumbnail: "/StellicastPlaceholderThumbnail.png",
-            src: "https://share.zytronium.dev/videos/yt/roll.mp4"
+            src: "https://vz-a7106f64-493.b-cdn.net/4759f71a-f92c-4971-b036-db43783f0696/playlist.m3u8"
           }}
           />
         </div>
