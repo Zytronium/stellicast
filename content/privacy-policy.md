@@ -291,7 +291,7 @@ If you have any questions, concerns, or requests regarding this Privacy Policy o
 
 - **Emai:** stellicast@zytronium.dev
 
-This is a temporary email address and will stopped being monitored in January, 2026, being replaced with a new, permanent email address.
+This is a temporary email address and will stop being monitored in January, 2026, being replaced with a new, permanent email address.
 
 Stellicast is a team of one unpaid developer at the time of writing this document. Please be patient and do not expect a quick response.
 

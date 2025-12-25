@@ -2,8 +2,8 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import fs from 'fs';
 import path from 'path';
 
-export default async function PrivacyPolicy() {
-  const filePath = path.join(process.cwd(), 'content', 'privacy-policy.md');
+export default async function TermsOfUse() {
+  const filePath = path.join(process.cwd(), 'content', 'terms-of-use.md');
   const markdown = fs.readFileSync(filePath, 'utf-8');
 
   return (
