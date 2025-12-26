@@ -43,8 +43,13 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center text-white">
-      <div className="w-full max-w-md space-y-6">
+    <div className="flex flex-1 items-center justify-center text-white relative overflow-hidden">
+      {/* Animated gradient blur background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[500px] h-[500px] bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-blue-600/30 rounded-full blur-3xl animate-pulse animation-duration-5000" />
+      </div>
+
+      <div className="w-full max-w-md space-y-6 relative z-10">
         <form
           onSubmit={handleSubmit}
           className="space-y-6 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-8"
