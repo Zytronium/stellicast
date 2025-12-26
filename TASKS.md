@@ -93,7 +93,7 @@ Sketch a new watch page design.
 ### 2.2. Implement new design
 Implement the new watch page design.
 
-**Status:** In Progress
+**Status:** Done
 
 ### 2.3. Redesign video player
 Redesign the video player to match the new design.
@@ -104,7 +104,7 @@ Redesign the video player to match the new design.
 Add new functionalities to the watch page for likes, dislikes,
 stars, follows, comments, etc.
 
-**Status:** Todo
+**Status:** In Progress
 
 ## 3. Home Feed
 
@@ -142,11 +142,35 @@ when clicked.
 **Status:** Todo
 
 ### 3.7. The algorithm
-Create an algorithm that shows the user mostly videos from
-channels they follow or that the user commonly likes videos
-from. Sprinkle in some random videos from channels they have
-not seen, but in the same genres the user generally watches.
-Avoid using AI if possible.
+Create an algorithm that shows the user mostly content from
+channels they follow, but also content it programmatically
+determines they should see based on their history, without
+using AI to analyze their tastes.
+
+The algorithm should factor in the following factors, in order from most important to least important:
+- Who the user follows (especially if the user recently followed them)
+- Channels the user watches most often
+- Which tags and genres of videos the user likes and stars most often
+- Which tags and genres of videos the user watches most often
+- Genres and tags the user often dislikes (filter these out)
+- Videos the user has rewatched multiple times recently
+- Videos that are trending right now (small factor; leave for Trending and Explore pages)
+
+Users should be able to disable the algorithm to track less of their data.
+Disabling the algorithm should pause tracking of:
+- Genres and tags the user often watches for a decent percentage of the video duration
+- Genres and tags the user often likes or stars
+- Genres and tags the user often dislikes
+
+Disabling the algorithm will not affect tracking of the following data:
+- Channels the user follows
+- Videos the user watches
+- Videos the user dislikes, likes, or stars 
+- Channels the user often watches videos from (though this can probably still be programmatically determined based on watch history if the user has it enabled)
+
+However, these factors will not affect what gets recommended to them. Instead, 
+users with the algorithm disabled will only see videos from channels they follow
+and, if watch history is enabled, videos they have repeatedly rewatched recently.
 
 **Status:** Todo
 
