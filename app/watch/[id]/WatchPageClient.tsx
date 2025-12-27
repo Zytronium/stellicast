@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Search, Plus, X, Share2, ChevronRight, ChevronDown, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Plus, X, Share2, ChevronRight, ChevronDown, ThumbsUp, ThumbsDown, Edit2, Trash2 } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
 import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
@@ -29,239 +29,121 @@ export type Video = {
 
 type Comment = {
   id: string;
-  user: string;
-  text: string;
-  likes: number;
-  dislikes: number;
-  timestamp: string;
-  parent_id?: string;
+  user_id: string;
+  video_id: string;
+  message: string;
+  like_count: number;
+  dislike_count: number;
+  created_at: string;
+  parent_comment_id?: string;
+  user?: {
+    id: string;
+    username: string;
+    display_name?: string;
+  };
 };
 
 type CommentWithChildren = Comment & { children?: CommentWithChildren[] };
 
-const mockComments: Comment[] = [
-  // ===== Top-level comments =====
-  {
-    id: 'c_a9f3k2',
-    user: 'TechEnthusiast',
-    text: 'This is exactly what I was looking for! Thanks for making this tutorial.',
-    likes: 24,
-    dislikes: 1,
-    timestamp: '2 days ago'
-  },
-  {
-    id: 'c_x7p91d',
-    user: 'CodeMaster99',
-    text: 'Could you make a follow-up video covering advanced techniques?',
-    likes: 18,
-    dislikes: 0,
-    timestamp: '1 day ago'
-  },
-  {
-    id: 'c_m4q8zs',
-    user: 'NewbieDev',
-    text: 'As someone just starting out, this was incredibly clear and easy to follow. Keep up the great work!',
-    likes: 31,
-    dislikes: 0,
-    timestamp: '12 hours ago'
-  },
-  {
-    id: 'c_r2w8k9',
-    user: 'SkepticalUser',
-    text: "I don't think this approach is the best way to handle this problem. There are better alternatives.",
-    likes: 3,
-    dislikes: 15,
-    timestamp: '8 hours ago'
-  },
-  {
-    id: 'c_p6e3v4',
-    user: 'SilentWatcher',
-    text: 'No one is mentioning performance. Did anyone benchmark this?',
-    likes: 6,
-    dislikes: 2,
-    timestamp: '7 hours ago'
-  },
+async function fetchComments(videoId: string, page = 1, sort = 'newest') {
+  const response = await fetch(
+    `/api/videos/${videoId}/comments?page=${page}&sort=${sort}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch comments');
+  return response.json();
+}
 
-  // ===== Replies to comment 1 =====
-  {
-    id: 'c_b7t4e2',
-    parent_id: 'c_a9f3k2',
-    user: 'VideoCreator',
-    text: 'Glad it helped! More tutorials coming soon.',
-    likes: 12,
-    dislikes: 0,
-    timestamp: '2 days ago'
-  },
-  {
-    id: 'c_4jz9m1',
-    parent_id: 'c_a9f3k2',
-    user: 'AnotherViewer',
-    text: 'Same here, very helpful content!',
-    likes: 5,
-    dislikes: 0,
-    timestamp: '1 day ago'
-  },
-  {
-    id: 'c_f1k8qa',
-    parent_id: 'c_a9f3k2',
-    user: 'FrontendFan',
-    text: 'Agreed. Especially the explanation around edge cases.',
-    likes: 9,
-    dislikes: 0,
-    timestamp: '23 hours ago'
-  },
-
-  // ===== Nested replies under VideoCreator =====
-  {
-    id: 'c_9e2r5d',
-    parent_id: 'c_b7t4e2',
-    user: 'TechEnthusiast',
-    text: 'Looking forward to it! Any chance you\'ll cover scaling next?',
-    likes: 4,
-    dislikes: 0,
-    timestamp: '1 day ago'
-  },
-  {
-    id: 'c_v8n2s7',
-    parent_id: 'c_b7t4e2',
-    user: 'VideoCreator',
-    text: 'Yep, scalability and caching are both planned topics.',
-    likes: 7,
-    dislikes: 0,
-    timestamp: '22 hours ago'
-  },
-
-  // ===== Replies to comment 2 =====
-  {
-    id: 'c_z3y6p8',
-    parent_id: 'c_x7p91d',
-    user: 'VideoCreator',
-    text: "That's on my list! Should be out next week.",
-    likes: 8,
-    dislikes: 0,
-    timestamp: '1 day ago'
-  },
-  {
-    id: 'c_k5m1x9',
-    parent_id: 'c_x7p91d',
-    user: 'BackendBro',
-    text: 'Advanced techniques would be great, especially error handling.',
-    likes: 6,
-    dislikes: 0,
-    timestamp: '20 hours ago'
-  },
-  {
-    id: 'c_8wq4n2',
-    parent_id: 'c_k5m1x9',
-    user: 'CodeMaster99',
-    text: 'Yes! Error handling and logging are usually skipped.',
-    likes: 3,
-    dislikes: 0,
-    timestamp: '18 hours ago'
-  },
-
-  // ===== Replies to comment 3 =====
-  {
-    id: 'c_d7h2p4',
-    parent_id: 'c_m4q8zs',
-    user: 'HelpfulDev',
-    text: 'Welcome! This channel helped me a ton when I started too.',
-    likes: 5,
-    dislikes: 0,
-    timestamp: '11 hours ago'
-  },
-  {
-    id: 'c_j9s5e1',
-    parent_id: 'c_m4q8zs',
-    user: 'VideoCreator',
-    text: 'Really appreciate that — beginner-friendly is always my goal.',
-    likes: 10,
-    dislikes: 0,
-    timestamp: '10 hours ago'
-  },
-
-  // ===== Disagreement thread =====
-  {
-    id: 'c_q3k9w8',
-    parent_id: 'c_r2w8k9',
-    user: 'DefenderUser',
-    text: 'What alternatives would you suggest? This worked perfectly for my use case.',
-    likes: 7,
-    dislikes: 1,
-    timestamp: '6 hours ago'
-  },
-  {
-    id: 'c_1x8r6p',
-    parent_id: 'c_r2w8k9',
-    user: 'AnotherSkeptic',
-    text: 'I kind of agree. this can get messy at scale.',
-    likes: 4,
-    dislikes: 2,
-    timestamp: '6 hours ago'
-  },
-  {
-    id: 'c_m9d2k4',
-    parent_id: 'c_q3k9w8',
-    user: 'SkepticalUser',
-    text: 'For larger systems, I’d recommend an event-driven approach instead.',
-    likes: 2,
-    dislikes: 6,
-    timestamp: '5 hours ago'
-  },
-  {
-    id: 'c_7f4z2e',
-    parent_id: 'c_q3k9w8',
-    user: 'DefenderUser',
-    text: 'Fair point, but that adds complexity most people here don’t need.',
-    likes: 8,
-    dislikes: 1,
-    timestamp: '4 hours ago'
-  },
-
-  // ===== Performance thread =====
-  {
-    id: 'c_5n8qj2',
-    parent_id: 'c_p6e3v4',
-    user: 'PerfNerd',
-    text: 'I benchmarked something similar, works fine under moderate load.',
-    likes: 6,
-    dislikes: 0,
-    timestamp: '6 hours ago'
-  },
-  {
-    id: 'c_h4s7w9',
-    parent_id: 'c_p6e3v4',
-    user: 'SilentWatcher',
-    text: 'Good to know, thanks for testing.',
-    likes: 2,
-    dislikes: 0,
-    timestamp: '5 hours ago'
-  },
-
-  // ===== Late reply =====
-  {
-    id: 'c_u8v3r5',
-    parent_id: 'c_a9f3k2',
-    user: 'LateComer',
-    text: 'Just watched this today. Still relevant!',
-    likes: 3,
-    dislikes: 0,
-    timestamp: '1 hour ago'
+async function postComment(videoId: string, message: string) {
+  const response = await fetch(`/api/videos/${videoId}/comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to post comment');
   }
-];
+  return response.json();
+}
 
-// Helper function to build a tree from flat comments
+async function postReply(videoId: string, commentId: string, message: string) {
+  const response = await fetch(
+    `/api/videos/${videoId}/comments/${commentId}/reply`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to post reply');
+  }
+  return response.json();
+}
+
+async function likeComment(videoId: string, commentId: string) {
+  const response = await fetch(
+    `/api/videos/${videoId}/comments/${commentId}/like`,
+    { method: 'POST' }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to like comment');
+  }
+  return response.json();
+}
+
+async function dislikeComment(videoId: string, commentId: string) {
+  const response = await fetch(
+    `/api/videos/${videoId}/comments/${commentId}/dislike`,
+    { method: 'POST' }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to dislike comment');
+  }
+  return response.json();
+}
+
+async function editComment(videoId: string, commentId: string, message: string) {
+  const response = await fetch(
+    `/api/videos/${videoId}/comments/${commentId}/edit`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to edit comment');
+  }
+  return response.json();
+}
+
+async function deleteComment(videoId: string, commentId: string) {
+  const response = await fetch(
+    `/api/videos/${videoId}/comments/${commentId}/delete`,
+    { method: 'DELETE' }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to delete comment');
+  }
+  return response.json();
+}
+
 function buildCommentTree(comments: Comment[]): CommentWithChildren[] {
   const map = new Map<string, CommentWithChildren>();
-  // Create nodes and preserve original order by iterating original array
   comments.forEach(c => map.set(c.id, { ...c, children: [] }));
 
   const roots: CommentWithChildren[] = [];
 
   comments.forEach(c => {
     const node = map.get(c.id)!;
-    if (c.parent_id && map.has(c.parent_id)) {
-      map.get(c.parent_id)!.children!.push(node);
+    if (c.parent_comment_id && map.has(c.parent_comment_id)) {
+      map.get(c.parent_comment_id)!.children!.push(node);
     } else {
       roots.push(node);
     }
@@ -270,49 +152,37 @@ function buildCommentTree(comments: Comment[]): CommentWithChildren[] {
   return roots;
 }
 
-// Helper function to format timestamp
 function formatTimeAgo(timestamp: string): string {
   try {
-  const now = new Date();
-  const created = new Date(timestamp);
-  const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
+    const now = new Date();
+    const created = new Date(timestamp);
+    const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
 
-  if (diffInSeconds < 60) {
-    return 'just now';
-  }
+    if (diffInSeconds < 60) return 'just now';
 
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
-  }
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
 
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
-  }
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
 
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) {
-    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
-  }
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
 
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths < 12) {
-    return `${diffInMonths} month${diffInMonths === 1 ? '' : 's'} ago`;
-  }
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths} month${diffInMonths === 1 ? '' : 's'} ago`;
 
-  const diffInYears = Math.floor(diffInMonths / 12);
-  return `${diffInYears} year${diffInYears === 1 ? '' : 's'} ago`;
+    const diffInYears = Math.floor(diffInMonths / 12);
+    return `${diffInYears} year${diffInYears === 1 ? '' : 's'} ago`;
   } catch {
     return timestamp;
   }
 }
 
-// Helper function to check if view should be counted
 function shouldCountView(videoId: string): boolean {
   try {
     const viewsKey = 'stellicast_views';
-    const viewCooldown = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const viewCooldown = 30 * 60 * 1000;
 
     const viewsData = localStorage.getItem(viewsKey);
     const views = viewsData ? JSON.parse(viewsData) : {};
@@ -320,7 +190,6 @@ function shouldCountView(videoId: string): boolean {
     const lastViewTime = views[videoId];
     const now = Date.now();
 
-    // Count view if never viewed or cooldown period has passed
     if (!lastViewTime || now - lastViewTime > viewCooldown) {
       views[videoId] = now;
       localStorage.setItem(viewsKey, JSON.stringify(views));
@@ -329,161 +198,272 @@ function shouldCountView(videoId: string): boolean {
 
     return false;
   } catch (error) {
-    // If localStorage fails, count the view anyway
     console.error('Error checking view cooldown:', error);
     return true;
   }
 }
 
-// Threaded comment component
 function CommentComponent({
   comment,
-  depth = 0
+  videoId,
+  currentUserId,
+  userLikedComments,
+  userDislikedComments,
+  depth = 0,
+  onReplySubmit,
+  onCommentUpdate
 }: {
   comment: CommentWithChildren;
+  videoId: string;
+  currentUserId?: string;
+  userLikedComments: string[];
+  userDislikedComments: string[];
   depth?: number;
+  onReplySubmit?: () => void;
+  onCommentUpdate?: () => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [replyText, setReplyText] = useState('');
-  const [liked, setLiked] = useState(false);
-  const [disliked, setDisliked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(comment.message);
+  const [localLikeCount, setLocalLikeCount] = useState(comment.like_count);
+  const [localDislikeCount, setLocalDislikeCount] = useState(comment.dislike_count);
+  const [isLiked, setIsLiked] = useState(userLikedComments.includes(comment.id));
+  const [isDisliked, setIsDisliked] = useState(userDislikedComments.includes(comment.id));
+  const [isDeleted, setIsDeleted] = useState(false);
 
   const hasReplies = comment.children && comment.children.length > 0;
   const replyCount = comment.children?.length || 0;
+  const displayName = comment.user?.display_name || comment.user?.username || 'Unknown User';
+  const isOwner = currentUserId === comment.user_id;
 
-  const handleLike = () => {
-    if (liked) {
-      setLiked(false);
-    } else {
-      setLiked(true);
-      if (disliked) setDisliked(false);
+  const handleReplySubmit = async () => {
+    if (!replyText.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await postReply(videoId, comment.id, replyText.trim());
+      setReplyText('');
+      setShowReplyBox(false);
+      onReplySubmit?.();
+    } catch (error: any) {
+      alert(error.message || 'Failed to post reply');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDislike = () => {
-    if (disliked) {
-      setDisliked(false);
-    } else {
-      setDisliked(true);
-      if (liked) setLiked(false);
+  const handleLike = async () => {
+    try {
+      const result = await likeComment(videoId, comment.id);
+      setLocalLikeCount(result.like_count);
+      setLocalDislikeCount(result.dislike_count);
+      setIsLiked(result.liked);
+      if (result.liked) setIsDisliked(false);
+    } catch (error: any) {
+      if (error.message.includes('wait')) {
+        alert(error.message);
+      } else if (error.message.includes('sign in')) {
+        alert('Please sign in to like comments');
+      } else {
+        console.error('Error liking comment:', error);
+      }
     }
   };
 
-  const displayLikes = comment.likes + (liked ? 1 : 0) - (disliked && !liked ? 0 : 0);
-  const displayDislikes = comment.dislikes + (disliked ? 1 : 0) - (liked && !disliked ? 0 : 0);
+  const handleDislike = async () => {
+    try {
+      const result = await dislikeComment(videoId, comment.id);
+      setLocalLikeCount(result.like_count);
+      setLocalDislikeCount(result.dislike_count);
+      setIsDisliked(result.disliked);
+      if (result.disliked) setIsLiked(false);
+    } catch (error: any) {
+      if (error.message.includes('wait')) {
+        alert(error.message);
+      } else if (error.message.includes('sign in')) {
+        alert('Please sign in to dislike comments');
+      } else {
+        console.error('Error disliking comment:', error);
+      }
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editText.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await editComment(videoId, comment.id, editText.trim());
+      setIsEditing(false);
+      onCommentUpdate?.();
+    } catch (error: any) {
+      alert(error.message || 'Failed to edit comment');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      await deleteComment(videoId, comment.id);
+      setIsDeleted(true);
+      onCommentUpdate?.();
+    } catch (error: any) {
+      alert(error.message || 'Failed to delete comment');
+    }
+  };
+
+  if (isDeleted) {
+    return null;
+  }
 
   return (
     <div className={`${depth > 0 ? 'ml-4' : ''}`}>
       <div className="flex gap-3 py-2">
-        {/* Avatar */}
         <div className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white">
-            {comment.user[0]?.toUpperCase() ?? '?'}
+          {displayName[0]?.toUpperCase() ?? '?'}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-200">{displayName}</span>
+            <span className="text-xs text-gray-500">{formatTimeAgo(comment.created_at)}</span>
           </div>
 
-        {/* Content */}
-          <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-200">{comment.user}</span>
-              <span className="text-xs text-gray-500">{comment.timestamp}</span>
-            </div>
-
-          {/* Comment text */}
           {!collapsed && (
-              <>
-              <div className="mt-1 text-sm text-gray-300 break-words leading-relaxed">
-                {comment.text}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3 mt-2">
-                {/* Like button */}
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center gap-1 text-xs font-medium transition ${
-                    liked ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  <ThumbsUp className="w-3.5 h-3.5" />
-                  {displayLikes > 0 && <span>{displayLikes}</span>}
-                </button>
-
-                {/* Dislike button */}
-                <button
-                  onClick={handleDislike}
-                  className={`flex items-center gap-1 text-xs font-medium transition ${
-                    disliked ? 'text-red-400' : 'text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  <ThumbsDown className="w-3.5 h-3.5" />
-                  {displayDislikes > 0 && <span>{displayDislikes}</span>}
-                </button>
-
-                {/* Reply button */}
-                <button
-                  onClick={() => setShowReplyBox(!showReplyBox)}
-                  className="text-xs font-medium text-gray-400 hover:text-white transition"
-                >
-                    Reply
-            </button>
-
-                {/* Share button */}
-                <button className="text-xs font-medium text-gray-400 hover:text-white transition">
-                    Share
-              </button>
-
-                {/* Reply count / collapse button */}
-                {hasReplies && (
-                  <button
-                    onClick={() => setCollapsed(true)}
-                    className="text-xs font-medium text-blue-400 hover:text-blue-300 transition flex items-center gap-1 ml-1"
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                    {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
-                  </button>
-                )}
-              </div>
-
-              {/* Reply box */}
-              {showReplyBox && (
-                <div className="mt-3">
+            <>
+              {isEditing ? (
+                <div className="mt-2">
                   <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Add a reply..."
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none"
-                    rows={2}
+                    rows={3}
                     autoFocus
                   />
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => {
-                        setShowReplyBox(false);
-                        setReplyText('');
+                        setIsEditing(false);
+                        setEditText(comment.message);
                       }}
                       className="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition"
                     >
                       Cancel
                     </button>
                     <button
-                      onClick={() => {
-                        // Handle reply submission
-                        setShowReplyBox(false);
-                        setReplyText('');
-                      }}
-                      disabled={!replyText.trim()}
+                      onClick={handleEdit}
+                      disabled={!editText.trim() || isSubmitting}
                       className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
                     >
-                      Reply
+                      {isSubmitting ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div className="mt-1 text-sm text-gray-300 break-words leading-relaxed">
+                    {comment.message}
+                  </div>
+
+                  <div className="flex items-center gap-3 mt-2 flex-wrap">
+                    <button
+                      onClick={handleLike}
+                      className={`flex items-center gap-1 text-xs font-medium transition ${
+                        isLiked ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+                      }`}
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      {localLikeCount > 0 && <span>{localLikeCount}</span>}
+                    </button>
+
+                    <button
+                      onClick={handleDislike}
+                      className={`flex items-center gap-1 text-xs font-medium transition ${
+                        isDisliked ? 'text-red-400' : 'text-gray-400 hover:text-gray-200'
+                      }`}
+                    >
+                      <ThumbsDown className="w-3.5 h-3.5" />
+                      {localDislikeCount > 0 && <span>{localDislikeCount}</span>}
+                    </button>
+
+                    <button
+                      onClick={() => setShowReplyBox(!showReplyBox)}
+                      className="text-xs font-medium text-gray-400 hover:text-white transition"
+                    >
+                      Reply
+                    </button>
+
+                    {isOwner && (
+                      <>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-white transition"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-red-400 transition"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </>
+                    )}
+
+                    {hasReplies && (
+                      <button
+                        onClick={() => setCollapsed(true)}
+                        className="text-xs font-medium text-blue-400 hover:text-blue-300 transition flex items-center gap-1 ml-1"
+                      >
+                        <ChevronDown className="w-3 h-3" />
+                        {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                      </button>
+                    )}
+                  </div>
+
+                  {showReplyBox && (
+                    <div className="mt-3">
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="Add a reply..."
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none"
+                        rows={2}
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => {
+                            setShowReplyBox(false);
+                            setReplyText('');
+                          }}
+                          className="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleReplySubmit}
+                          disabled={!replyText.trim() || isSubmitting}
+                          className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+                        >
+                          {isSubmitting ? 'Posting...' : 'Reply'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-              </>
+            </>
           )}
 
-          {/* Collapsed state */}
           {collapsed && (
             <button
               onClick={() => setCollapsed(false)}
@@ -492,18 +472,27 @@ function CommentComponent({
               <ChevronRight className="w-3 h-3" />
               Show {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
             </button>
-            )}
-          </div>
+          )}
         </div>
+      </div>
 
-      {/* Nested replies */}
       {!collapsed && hasReplies && (
         <div className="mt-2 border-l-2 border-gray-800 pl-2">
           {comment.children!.map((child) => (
-              <CommentComponent key={child.id} comment={child} depth={depth + 1} />
-            ))}
-      </div>
-        )}
+            <CommentComponent
+              key={child.id}
+              comment={child}
+              videoId={videoId}
+              currentUserId={currentUserId}
+              userLikedComments={userLikedComments}
+              userDislikedComments={userDislikedComments}
+              depth={depth + 1}
+              onReplySubmit={onReplySubmit}
+              onCommentUpdate={onCommentUpdate}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -519,17 +508,43 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [starred, setStarred] = useState(false);
   const [canStar, setCanStar] = useState(false);
   const [watchedSeconds, setWatchedSeconds] = useState(0);
-  const [commentSearch, setCommentSearch] = useState('');
-  const [filteredComments, setFilteredComments] = useState<Comment[]>(mockComments);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showShareCopied, setShowShareCopied] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>();
   const [likeLoading, setLikeLoading] = useState(false);
   const [dislikeLoading, setDislikeLoading] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
   const likeIconRef = useRef<ThumbsUpIconHandle>(null);
   const dislikeIconRef = useRef<ThumbsDownIconHandle>(null);
+  const [comments, setComments] = useState<CommentWithChildren[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [commentCount, setCommentCount] = useState(0);
+  const [userLikedComments, setUserLikedComments] = useState<string[]>([]);
+  const [userDislikedComments, setUserDislikedComments] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadComments() {
+      if (!video) return;
+
+      try {
+        const data = await fetchComments(video.id);
+        setComments(buildCommentTree(data.comments));
+        setCommentCount(data.comments.length);
+
+        if (data.userEngagement) {
+          setUserLikedComments(data.userEngagement.likedComments || []);
+          setUserDislikedComments(data.userEngagement.dislikedComments || []);
+        }
+      } catch (error) {
+        console.error('Error loading comments:', error);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    }
+    loadComments();
+  }, [video]);
 
   useEffect(() => {
     async function loadData() {
@@ -537,14 +552,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       const { id } = resolvedParams;
 
       try {
-        // Check authentication status and get user preferences
         const supabase = createSupabaseBrowserClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
           setIsAuthenticated(true);
+          setCurrentUserId(user.id);
 
-          // Fetch user's engagement data
           const { data: userData } = await supabase
             .from('users')
             .select('liked_videos, disliked_videos, starred_videos')
@@ -558,7 +572,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           }
         }
 
-        // Fetch current video
         const videoRes = await fetch(`/api/videos/${id}`);
         if (!videoRes.ok) {
           notFound();
@@ -577,29 +590,23 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         };
 
         setVideo(videoObj);
-
-        // Update page title
         document.title = `${videoObj.title} - Stellicast`;
 
-        // Increment view count if cooldown has passed
         if (shouldCountView(id)) {
           fetch(`/api/videos/${id}/view`, { method: 'POST' })
             .then(async res => {
               const data = await res.json();
               if (res.status === 429) {
-                // Rate limited - silently ignore
                 console.log('View rate limited:', data.message);
                 return;
               }
               if (data.success && data.view_count) {
-                // Update the local video object with new view count
                 setVideo(prev => prev ? { ...prev, view_count: data.view_count } : null);
               }
             })
             .catch(error => console.error('Error incrementing view:', error));
         }
 
-        // Fetch all videos for up next
         const allRes = await fetch(`/api/videos`);
         if (allRes.ok) {
           const allData = await allRes.json();
@@ -619,54 +626,52 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     loadData();
   }, [params]);
 
-  // Check if user can star based on watched time
   useEffect(() => {
     if (!video) return;
-
     const requiredWatchTime = (video.duration || 0) * 0.20;
     setCanStar(watchedSeconds >= requiredWatchTime);
   }, [watchedSeconds, video]);
 
   useEffect(() => {
-    // Update displayed videos when videosToShow changes
     setUpNext(allVideos.slice(0, videosToShow));
   }, [videosToShow, allVideos]);
 
-  // Search across the flat list and include parent chain for context
-  useEffect(() => {
-    if (commentSearch.trim() === '') {
-      setFilteredComments(mockComments);
+  const handleWatchedTimeUpdate = (seconds: number) => {
+    setWatchedSeconds(seconds);
+  };
+
+  const refreshComments = async () => {
+    if (!video) return;
+    try {
+      const data = await fetchComments(video.id);
+      setComments(buildCommentTree(data.comments));
+      setCommentCount(data.comments.length);
+
+      if (data.userEngagement) {
+        setUserLikedComments(data.userEngagement.likedComments || []);
+        setUserDislikedComments(data.userEngagement.dislikedComments || []);
+      }
+    } catch (error) {
+      console.error('Error refreshing comments:', error);
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!newComment.trim() || !video) return;
+
+    if (!isAuthenticated) {
+      alert('Please sign in to comment');
       return;
     }
 
-    const q = commentSearch.toLowerCase();
-    const byId = new Map<string, Comment>(mockComments.map(c => [c.id, c]));
-    const matched = mockComments.filter(c =>
-      c.text.toLowerCase().includes(q) || c.user.toLowerCase().includes(q)
-      );
-
-    const include = new Set<string>(matched.map(c => c.id));
-
-    // add parents for context
-    matched.forEach(c => {
-      let pid = c.parent_id;
-      while (pid) {
-        if (include.has(pid)) break;
-        include.add(pid);
-        const parent = byId.get(pid);
-        pid = parent?.parent_id;
+    try {
+      await postComment(video.id, newComment.trim());
+      setNewComment('');
+      setShowCommentModal(false);
+      await refreshComments();
+    } catch (error: any) {
+      alert(error.message || 'Failed to post comment');
     }
-    });
-
-    // keep original order
-    const result = mockComments.filter(c => include.has(c.id));
-    setFilteredComments(result);
-  }, [commentSearch]);
-
-  const commentTree = useMemo(() => buildCommentTree(filteredComments), [filteredComments]);
-
-  const handleWatchedTimeUpdate = (seconds: number) => {
-    setWatchedSeconds(seconds);
   };
 
   const handleLikeClick = async () => {
@@ -697,23 +702,20 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         throw new Error(data.error || 'Failed to like video');
       }
 
-      // Update local state
       setLiked(data.liked);
       if (data.liked && disliked) {
         setDisliked(false);
       }
 
-      // Update video counts
       setVideo(prev => prev ? {
         ...prev,
         like_count: data.like_count,
         dislike_count: data.dislike_count
       } : null);
 
-    // Only animate if adding a like (not removing)
       if (data.liked && !wasLiked) {
-      likeIconRef.current?.startAnimation();
-    }
+        likeIconRef.current?.startAnimation();
+      }
 
     } catch (error) {
       console.error('Error liking video:', error);
@@ -751,23 +753,20 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         throw new Error(data.error || 'Failed to dislike video');
       }
 
-      // Update local state
       setDisliked(data.disliked);
       if (data.disliked && liked) {
         setLiked(false);
       }
 
-      // Update video counts
       setVideo(prev => prev ? {
         ...prev,
         like_count: data.like_count,
         dislike_count: data.dislike_count
       } : null);
 
-    // Only animate if adding a dislike (not removing)
       if (data.disliked && !wasDisliked) {
-      dislikeIconRef.current?.startAnimation();
-    }
+        dislikeIconRef.current?.startAnimation();
+      }
 
     } catch (error) {
       console.error('Error disliking video:', error);
@@ -820,10 +819,8 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         throw new Error(data.error || 'Failed to star video');
       }
 
-      // Update local state
       setStarred(data.starred);
 
-      // Update video star count
       setVideo(prev => prev ? {
         ...prev,
         star_count: data.star_count
@@ -867,18 +864,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 max-w-[1800px] mx-auto px-4">
-      {/* Left side: Video Player and Info */}
       <div className="flex-1 min-w-0">
-        {/* Video Player */}
         <VideoPlayer video={video} onWatchedTimeUpdate={handleWatchedTimeUpdate} />
 
-        {/* Video Title and Engagement */}
         <div className="mt-4 space-y-3">
           <h1 className="text-xl sm:text-2xl font-semibold">{video.title}</h1>
 
-          {/* Engagement Row with Channel Widget */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between">
-            {/* Channel Widget */}
             <div className="flex items-center justify-between sm:justify-start gap-4 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-3">
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-blue-600 text-sm font-bold text-white flex-shrink-0">
@@ -898,9 +890,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               </button>
             </div>
 
-            {/* Engagement Buttons */}
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Like/Dislike Buttons with Labels */}
               <div className="flex items-center gap-2">
                 <div className="flex flex-col rounded-lg overflow-hidden border border-gray-800">
                   <button
@@ -929,7 +919,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
               </div>
 
-              {/* Star Button with Label */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleStarClick}
@@ -951,7 +940,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </span>
               </div>
 
-              {/* Share Button */}
               <div className="relative">
                 <button
                   onClick={handleShare}
@@ -969,7 +957,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             </div>
           </div>
 
-          {/* Description */}
           <div className="rounded-2xl border border-gray-800 bg-[#0a0a0a] p-4">
             <details open className="group">
               <summary className="cursor-pointer list-none text-sm font-semibold text-gray-100">
@@ -994,7 +981,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           </div>
         </div>
 
-        {/* More Videos Section */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1023,38 +1009,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         </div>
       </div>
 
-      {/* Right side: Comments */}
       <div className="w-full lg:w-96 bg-gray-900/50 rounded-lg p-4 flex flex-col lg:h-[calc(100vh-8rem)] lg:sticky lg:top-4">
-        {/* Header with Title and Search */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
-          <h2 className="text-lg font-semibold">{mockComments.length} Comments</h2>
-
-          {/* Comment Search - Desktop */}
-          <div className="hidden lg:block relative w-48">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={commentSearch}
-              onChange={(e) => setCommentSearch(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-1.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600"
-            />
-          </div>
+          <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
         </div>
 
-        {/* Comment Search - Mobile */}
-        <div className="lg:hidden relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search comments..."
-            value={commentSearch}
-            onChange={(e) => setCommentSearch(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600"
-          />
-        </div>
-
-        {/* Add Comment - Desktop */}
         <div className="hidden lg:block mb-4">
           <textarea
             value={newComment}
@@ -1071,10 +1030,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               Cancel
             </button>
             <button
-              onClick={() => {
-                // Handle comment submission (mock)
-                setNewComment('');
-              }}
+              onClick={handleCommentSubmit}
               disabled={!newComment.trim()}
               className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
             >
@@ -1083,7 +1039,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           </div>
         </div>
 
-        {/* Add Comment Button - Mobile */}
         <button
           onClick={() => setShowCommentModal(true)}
           className="lg:hidden flex items-center justify-center gap-2 w-full bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-blue-500 transition mb-4"
@@ -1093,19 +1048,29 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         </button>
 
         <div className="flex-1 overflow-y-auto">
-          {commentTree.length > 0 ? (
+          {isLoadingComments ? (
+            <p className="text-sm text-gray-400 text-center py-8">Loading comments...</p>
+          ) : comments.length > 0 ? (
             <div className="space-y-1">
-              {commentTree.map((comment) => (
-              <CommentComponent key={comment.id} comment={comment} />
+              {comments.map((comment) => (
+                <CommentComponent
+                  key={comment.id}
+                  comment={comment}
+                  videoId={video.id}
+                  currentUserId={currentUserId}
+                  userLikedComments={userLikedComments}
+                  userDislikedComments={userDislikedComments}
+                  onReplySubmit={refreshComments}
+                  onCommentUpdate={refreshComments}
+                />
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-8">No comments found</p>
+            <p className="text-sm text-gray-400 text-center py-8">No comments yet. Be the first to comment!</p>
           )}
         </div>
       </div>
 
-      {/* Mobile Comment Modal */}
       {showCommentModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-end lg:hidden">
           <div className="bg-gray-900 rounded-t-2xl w-full p-6 animate-slide-up">
@@ -1140,11 +1105,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Handle comment submission (mock)
-                  setShowCommentModal(false);
-                  setNewComment('');
-                }}
+                onClick={handleCommentSubmit}
                 disabled={!newComment.trim()}
                 className="flex-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
               >
