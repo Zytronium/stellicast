@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'share.zytronium.dev',
+      },
     ],
   },
   reactCompiler: true,
