@@ -61,12 +61,12 @@ export default function Home() {
           {videos.map((video) => (
             <Card
               key={video.id}
-              href={`/watch/${video.id}`}
-              duration={video.duration ? `${Math.floor(video.duration / 60)}:${(video.duration % 60).toString().padStart(2, '0')}` : "0:00"}
+              id={video.id}
+              duration={video.duration}
               title={video.title}
-              creator_name={video.channels?.display_name || "Unknown Creator"}
-              views={`${video.view_count || 0} view${video.view_count === 1 ? '' : 's'}`}
-              date={new Date(video.created_at).toLocaleDateString()}
+              creator_name={video.channels?.display_name || 'Unknown Creator'}
+              views={video.view_count}
+              date={video.created_at}
               thumbnail_src={video.thumbnail_url}
               is_ai={video.is_ai}
             />
