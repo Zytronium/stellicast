@@ -30,6 +30,8 @@ Create a public user profile page for every user.
 Create public channel profiles that show videos uploaded by
 that channel.
 
+**Status:** Done
+
 ### 0.5. Edit profile
 Allow users to edit their profiles. Add certain buttons 
 on the profile page when that user is logged in.
