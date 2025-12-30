@@ -19,7 +19,7 @@ export default async function ChannelPage({ params }: PageProps) {
   const { data: channel, error } = await supabase
     .from('channels')
     .select('*')
-    .eq('handle', id)
+    .eq('handle', id.toLowerCase())
     .single();
 
   if (error || !channel) {
