@@ -6,18 +6,36 @@ import Link from 'next/link';
 import { PlayIcon } from '@heroicons/react/24/solid';
 
 type CardProps = {
-  href: string;
-  duration: string;
+  id: string;
+  duration?: number | null;        // seconds
   title: string;
   creator_name: string;
-  views: string;
-  date: string;
+  views?: number | null;
+  date: string | Date;            // ISO string or Date
   thumbnail_src: string;
   is_ai: boolean;
 };
 
+function formatDuration(duration?: number | null): string {
+  if (!duration || duration <= 0) return '0:00';
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function formatViews(views?: number | null): string {
+  const v = views ?? 0;
+  return `${v} view${v === 1 ? '' : 's'}`;
+}
+
+function formatDate(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString();
+}
+
 export default function Card({
-  href,
+  id,
   duration,
   title,
   creator_name,
@@ -30,7 +48,7 @@ export default function Card({
 
   return (
     <Link
-      href={href}
+      href={`/watch/${id}`}
       className="group block overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md border-gray-800 bg-[#0a0a0a]"
     >
       <div className="relative aspect-video bg-gray-900">
@@ -51,7 +69,7 @@ export default function Card({
         )}
 
         <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white">
-          {duration}
+          {formatDuration(duration)}
         </div>
 
         <div
@@ -63,14 +81,16 @@ export default function Card({
       </div>
 
       <div className="space-y-2 p-4">
-        <div className="line-clamp-2 text-sm font-semibold leading-snug">{title}</div>
+        <div className="line-clamp-2 text-sm font-semibold leading-snug">
+          {title}
+        </div>
 
         <div className="flex items-center justify-between gap-3">
           <span className="truncate text-xs text-gray-400">
             {creator_name}
           </span>
           <span className="shrink-0 text-xs text-gray-500">
-            {views} • {date}
+            {formatViews(views)} • {formatDate(date)}
           </span>
         </div>
       </div>

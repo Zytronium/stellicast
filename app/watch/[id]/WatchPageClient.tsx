@@ -20,11 +20,13 @@ export type Video = {
   creator: string;
   creator_videos: number;
   creator_followers: number;
+  creator_handle: string;
   description: string;
   thumbnail: string;
   src: string;
   duration?: number;
   created_at?: string;
+  creator_avatar?: string | null;
 };
 
 type Comment = {
@@ -585,8 +587,10 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           creator: videoData.channels?.display_name || "Unknown Creator",
           creator_videos: videoData.channels?.video_count ?? 0,
           creator_followers: videoData.channels?.follower_count ?? 0,
+          creator_handle: videoData.channels?.handle ?? "",
           duration: videoData.duration,
-          created_at: videoData.created_at
+          created_at: videoData.created_at,
+          creator_avatar: videoData.channels?.avatar_url ?? null,
         };
 
         setVideo(videoObj);
@@ -873,12 +877,33 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between">
             <div className="flex items-center justify-between sm:justify-start gap-4 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-3">
               <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-blue-600 text-sm font-bold text-white flex-shrink-0">
-                  {video.creator?.[0]?.toUpperCase() ?? 'C'}
-                </div>
+                <a
+                  className="grid h-10 w-10 place-items-center rounded-full bg-zinc-600 text-sm font-bold text-white flex-shrink-0 overflow-hidden"
+                  href={`/channel/${video.creator_handle}`}
+                >
+                  {video.creator_avatar ? (
+                    <img
+                      src={video.creator_avatar}
+                      alt={video.creator}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    video.creator?.[0]?.toUpperCase() ?? "C"
+                  )}
+                </a>
                 <div>
-                  <div className="text-sm font-semibold text-gray-100">{video.creator}</div>
-                  <div className="text-xs text-gray-400">{video.creator_videos} video{video.creator_videos === 1 ? '' : 's'} • {video.creator_followers} follower{video.creator_followers === 1 ? '' : 's'}</div>
+                  <a
+                    className="text-sm font-semibold text-gray-100"
+                    href={`/channel/${video.creator_handle}`}
+                  >
+                    {video.creator}
+                  </a>
+                  <div className="text-xs text-gray-400">
+                    {video.creator_videos} video
+                    {video.creator_videos === 1 ? "" : "s"} •{" "}
+                    {video.creator_followers} follower
+                    {video.creator_followers === 1 ? "" : "s"}
+                  </div>
                 </div>
               </div>
 
