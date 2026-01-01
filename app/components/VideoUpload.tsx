@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, KeyboardEvent } from 'react';
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from '@heroicons/react/20/solid';
 
 export default function VideoUpload({ channelId }: { channelId?: string }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState('');
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,8 +34,9 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         body: JSON.stringify({
           title,
           description: formData.get('description'),
+          tags: tags,
           is_ai: formData.get('is_ai') === 'on',
-          channel_id: channelId, // Add this line
+          channel_id: channelId,
         }),
       });
 
@@ -82,6 +86,47 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     }
   };
 
+  const addTag = (tagText: string) => {
+    const trimmed = tagText.trim();
+    if (!trimmed) return;
+
+    // Check for case-insensitive duplicates
+    const lowerTags = tags.map(t => t.toLowerCase());
+    if (lowerTags.includes(trimmed.toLowerCase())) {
+      setInputValue('');
+      return;
+    }
+
+    setTags([...tags, trimmed]);
+    setInputValue('');
+  };
+
+  const removeTag = (index: number) => {
+    setTags(tags.filter((_, i) => i !== index));
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag(inputValue);
+    } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
+      // Remove last tag on backspace if input is empty
+      setTags(tags.slice(0, -1));
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // If user types comma, add the tag
+    if (value.includes(',')) {
+      const parts = value.split(',');
+      parts.slice(0, -1).forEach(part => addTag(part));
+      setInputValue(parts[parts.length - 1]);
+    } else {
+      setInputValue(value);
+    }
+  };
+
   return (
     <form onSubmit={handleUpload} className="space-y-6">
       {!channelId && (
@@ -112,6 +157,46 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             rows={4}
             className="w-full px-4 py-2.5 bg-black border border-gray-800 rounded-xl focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all resize-none"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-400 mb-1.5">Tags</label>
+
+          {/* Hidden input for form submission */}
+          <input type="hidden" name="tags" value={tags.join(', ')} />
+
+          <div className="w-full px-4 py-2.5 bg-black border border-gray-800 rounded-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
+            <div className="flex flex-wrap gap-2 items-center">
+              {tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600/20 text-blue-400 text-sm rounded-lg border border-blue-600/30"
+                >
+              {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(index)}
+                    className="hover:bg-blue-600/30 rounded-full p-0.5 transition-colors"
+                  >
+                <XMarkIcon className="w-3.5 h-3.5" />
+              </button>
+            </span>
+              ))}
+
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder={tags.length === 0 ? "Gaming, Music, Science..." : "Add a tag..."}
+                className="flex-1 min-w-[120px] bg-transparent outline-none text-white placeholder-gray-500"
+              />
+            </div>
+          </div>
+
+          <p className="mt-1.5 text-xs text-gray-500">
+            Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> or <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">,</kbd> to add tags
+          </p>
         </div>
 
         <div className="flex items-center gap-3 p-4 bg-gray-900/30 border border-gray-800 rounded-xl">
