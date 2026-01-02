@@ -99,5 +99,6 @@ that doesn't exclude Creators who also aim to monetize their work.
 [Me ("Zytronium")](https://github.com/Zytronium)
 
 ## Preview
-Visit the website preview at https://stellicast.vercel.app/  
-Or view the roadmap at https://stellicast-roadmap.vercel.app/
+Visit the website preview at https://stellicast.com/  
+Visit the beta preview at https://beta.stellicast.com/  
+View the roadmap at https://stellicast-roadmap.vercel.app/ (may not always be up to date)
