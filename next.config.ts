@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'share.zytronium.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'bfbgxztphnbtrlplityh.supabase.co',
+      },
     ],
   },
   reactCompiler: true,
