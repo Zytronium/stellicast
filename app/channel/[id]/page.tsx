@@ -31,6 +31,7 @@ export default async function ChannelPage({ params }: PageProps) {
     .from('videos')
     .select('*')
     .eq('channel_id', channel.id)
+    .eq('visibility', 'public')
     .order('created_at', { ascending: false });
 
   const { data: userData } = await supabase.auth.getUser();

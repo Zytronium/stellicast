@@ -8,7 +8,7 @@ export async function GET() {
     const { data: videos, error } = await supabase
       .from('videos')
       .select('*, channels(display_name)')
-      .filter('visibility', 'eq', 'public')
+      .eq('visibility', 'public')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
