@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/../lib/supabase-server';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Card from "@/components/Card";
+import Link from 'next/link';
 
 type PageParams = {
   id: string;
@@ -32,6 +33,10 @@ export default async function ChannelPage({ params }: PageProps) {
     .eq('channel_id', channel.id)
     .order('created_at', { ascending: false });
 
+  const { data: userData } = await supabase.auth.getUser();
+  const currentUser = userData?.user ?? null;
+  const isOwner = currentUser?.id === channel.owner_id;
+
   return (
     <div className="relative">
       <div className="w-full h-64 relative">
@@ -49,7 +54,7 @@ export default async function ChannelPage({ params }: PageProps) {
 
       <div className="container mx-auto pl-12 px-10">
         <div className="relative mt-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pr-4">
             {/* Avatar */}
             <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
             {channel.avatar_url ? (
@@ -84,11 +89,19 @@ export default async function ChannelPage({ params }: PageProps) {
               </p>
             </div>
 
-            {/* Follow button */}
+            {/* Follow/Manage button */}
             <div className="w-full sm:w-auto flex-shrink-0">
-            <button
-              type="button"
-                className="
+              {isOwner ? (
+                <Link href={`/channel/${channel.handle}/manage`}
+                      className="inline-flex items-center h-10 px-6 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+                      aria-label="Manage"
+                      title="Manage"
+                      >Manage</Link>
+              ) : (
+
+                <button
+                  type="button"
+                  className="
                   h-10
                   px-6
                   w-full sm:w-auto
@@ -100,9 +113,8 @@ export default async function ChannelPage({ params }: PageProps) {
                   self-center
                   hover:shadow-lg hover:shadow-blue-600/30
                 "
-            >
-              Follow
-            </button>
+                >Follow</button>
+              )}
           </div>
           </div>
 

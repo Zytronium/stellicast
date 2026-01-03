@@ -1,6 +1,6 @@
 # Stellicast Privacy Policy
 
-_<small>Last updated: December 25, 2025</small>_
+_<small>Last updated: January 3, 2026</small>_
 
 Stellicast ("we", "us", "our") is a work-in-progress video streaming platform. This Privacy Policy explains how we collect, use, and protect your information when you use our website and related services (collectively, the "Service").
 
@@ -16,7 +16,7 @@ Stellicast is an independent project aimed at building a privacy-focused alterna
 
 If you have questions about this Privacy Policy, you can contact the project owner at:
 
-- **Contact:** stellicast@zytronium.dev  
+- **Contact:** [contact@stellicast.com](mailto:contact@stellicast.com)  
 
 ---
 
@@ -243,7 +243,7 @@ Your rights will depend on your jurisdiction, but may include:
 - **Objection:** Object to certain types of processing, including profiling based on legitimate interests.
 - **Portability:** Request a copy of your data in a commonly used, machine-readable format where technically feasible.
 
-To exercise any of these rights, please contact us at stellicast@zytronium.dev. We may need to verify your identity before responding.
+To exercise any of these rights, please contact us at contact@stellicast.com. We may need to verify your identity before responding.
 
 If you are in the EEA/UK or a similar jurisdiction, you also have the right to lodge a complaint with your local data protection authority.
 
@@ -289,12 +289,11 @@ Your continued use of the Service after changes take effect will constitute acce
 
 If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, you can contact us at:
 
-- **Email:** stellicast@zytronium.dev
-
-This is a temporary email address and will stop being monitored in January, 2026, being replaced with a new, permanent email address.
+- **Email:** [contact@stellicast.com](mailto:contact@stellicast.com)
 
 Stellicast is a team of one unpaid developer at the time of writing this document. Please be patient and do not expect a quick response.
 
 ---
 
 This Privacy Policy was not written by legal experts. If you find any potential errors or legal concerns, please contact us at the email listed above.
+For legal inquiries or demands, contact us at [legal@stellicast.com](mailto:legal@stellicast.com), though please note that our team consists of one unpaid developer who is not a legal expert.
