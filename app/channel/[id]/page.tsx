@@ -54,7 +54,7 @@ export default async function ChannelPage({ params }: PageProps) {
 
       <div className="container mx-auto pl-12 px-10">
         <div className="relative mt-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pr-4">
             {/* Avatar */}
             <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
             {channel.avatar_url ? (

@@ -96,10 +96,10 @@ export default function ManageChannelClient({ channel, videos: initialVideos }: 
   const [videos, setVideos] = useState<Video[]>(initialVideos);
 
   return (
-    <div className="relative min-h-screen">
-      <div className="container mx-auto pl-12 px-10 py-8">
+    <div className="relative min-h-full">
+      <div className="container mx-auto">
         <Header channel={currentChannel} setChannel={setCurrentChannel} supabase={supabase} />
-        <Tabs defaultTab="videos" className="mt-8">
+        <Tabs defaultTab="videos" className="mt-8 px-12 ">
           <TabPanel id="videos">
             <VideoManager videos={videos} setVideos={setVideos} channelId={channel.id} supabase={supabase} />
           </TabPanel>
@@ -124,8 +124,9 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
-      const fileName = `${channel.id}-${type}-${Date.now()}.${fileExt}`;
-      const filePath = `${type}s/${fileName}`;
+    const fileName = `${type}-${Date.now()}.${fileExt}`;
+    // Changed: Use channel.id as folder name
+    const filePath = `${channel.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('channel-images')
@@ -186,7 +187,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
   return (
     <div className="relative">
       {/* Banner */}
-      <div className="w-full h-64 relative rounded-lg overflow-hidden">
+      <div className="w-full h-64 relative rounded-b-lg overflow-hidden">
         {bannerPreview || channel.banner_url ? (
           <Image
             src={bannerPreview || channel.banner_url || ''}
@@ -214,7 +215,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
       </div>
 
       {/* Profile section */}
-      <div className="relative mt-4">
+      <div className="relative mt-4 px-12">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           {/* Avatar */}
           <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
