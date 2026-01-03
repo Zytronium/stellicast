@@ -356,7 +356,7 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
     }
   };
 
-  const bulkDelete = async () => {
+const bulkDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedVideos.length} video(s)? This cannot be undone.`)) {
       return;
     }
@@ -364,25 +364,32 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
     try {
       setLoading(true);
 
-      // Get the videos to be deleted for storage cleanup
+      // Get the videos to be deleted
       const videosToDelete = videos.filter(v => selectedVideos.includes(v.id));
 
-      // Delete video files and thumbnails from storage
+      // Delete videos from Bunny.net
       for (const video of videosToDelete) {
         try {
-          // Extract file paths from URLs if they exist
+          // Extract GUID from video_url: https://${pullZone}/${guid}/playlist.m3u8
           if (video.video_url) {
-            const videoPath = video.video_url.split('/').slice(-2).join('/');
-            await supabase.storage.from('videos').remove([videoPath]);
-          }
+            const urlParts = video.video_url.split('/');
+            const guid = urlParts[urlParts.length - 2]; // GUID is before 'playlist.m3u8'
 
-          if (video.thumbnail_url && !video.thumbnail_url.includes('Placeholder')) {
-            const thumbPath = video.thumbnail_url.split('/').slice(-2).join('/');
-            await supabase.storage.from('thumbnails').remove([thumbPath]);
+            // Delete from Bunny Stream
+            const deleteResponse = await fetch(`/api/videos/delete-bunny`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ guid }),
+            });
+
+            if (!deleteResponse.ok) {
+              console.error(`Failed to delete video ${guid} from Bunny.net`);
+            }
           }
-        } catch (storageError) {
-          console.error('Error deleting storage files:', storageError);
-          // Continue even if storage deletion fails
+        } catch (bunnyError) {
+          console.error('Error deleting from Bunny.net:', bunnyError);
+          // Continue even if Bunny deletion fails
+          // todo: maybe log this somewhere where admins can see
         }
       }
 
