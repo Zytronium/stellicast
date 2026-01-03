@@ -1,6 +1,6 @@
 # Stellicast Terms of Use
 
-_<small>Last updated: December 25, 2025</small>_
+_<small>Last updated: January 3, 2026</small>_
 
 These Terms of Use ("Terms") govern your access to and use of Stellicast (the "Service"), including the website, web application, and any related features operated under the Stellicast name.
 
@@ -17,7 +17,7 @@ Stellicast is an in-development video streaming platform designed to be privacy-
 - "Stellicast", "we", "us", or "our" refers to the operator of the Service.
 - "You" or "user" refers to any person or entity that accesses or uses the Service.
 
-If you have questions about these Terms, please contact us at [stellicast@zytronium.dev](mailto:stellicast@zytronium.dev).
+If you have questions about these Terms, please contact us at [contact@stellicast.com](mailto:contact@stellicast.com).
 
 ---
 
@@ -45,6 +45,7 @@ Stellicast is currently a **work in progress**. This means:
 - Data may be lost or changed due to ongoing development.
 - There is **no guarantee** of uptime, availability, or continued support.
 - We may change or remove any part of the Service at any time, with or without notice.
+- Accounts may be deleted at any time, with or without notice.
 
 You use Stellicast at your own risk and understand that it is not yet a finished, production-ready platform.
 
@@ -110,7 +111,7 @@ While Stellicast encourages free speech, you agree **not** to use the Service to
     - Post content that is illegal, fraudulent, or deceptive.
     - Post content that is hateful, harassing, threatening, or that incites violence or harm.
     - Post sexually explicit content involving minors or any form of child sexual abuse material.
-    - Post sexually explicit content.
+    - Post sexually explicit or suggestive content.
     - Post excessively graphic or violent content.
 
 3. **Exploit or harm others**
@@ -305,12 +306,12 @@ unless otherwise required by applicable law.
 
 If you have any questions about these Terms, please contact:
 
-- **Email:** stellicast@zytronium.dev
-
-This is a temporary email address and will stop being monitored in January, 2026, being replaced with a new, permanent email address.
+- **General Contact:** [contact@stellicast.com](mailto:contact@stellicast.com)
+- **Legal Contact:** [legal@stellicast.com](mailto:legal@stellicast.com)
 
 Stellicast is a team of one unpaid developer at the time of writing this document. Please be patient and do not expect a quick response.
 
 ---
 
-This document was not written by legal experts. If you find any potential errors or legal concerns, please contact us at the email listed above.
+This document was not written by legal experts. If you find any potential errors or legal concerns, please contact us at the general contact email listed above.
+For legal inquiries or demands, contact us at the legal contact email listed above, though please note that our team consists of one unpaid developer who is not a legal expert.
