@@ -1,28 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createSupabaseServerClient } from '@/../lib/supabase-server';
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const cookieStore = await cookies();
+  const supabase = await createSupabaseServerClient();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() {},
-      },
-    }
-  );
+  // Get the authenticated user
+  const { data: { user } } = await supabase.auth.getUser();
 
+  // Fetch the video with channel owner information
   const { data: video, error } = await supabase
     .from('videos')
-      .select(`
+    .select(`
         *,
         channels (
           id,
@@ -30,14 +22,22 @@ export async function GET(
           handle,
           avatar_url,
           follower_count,
-          video_count
+          video_count,
+          owner_id
         )
       `)
     .eq('id', id)
-    .filter('visibility', 'not.eq', 'private')
     .single();
 
   if (error || !video) {
+    return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+  }
+
+  // Check if user owns the channel
+  const isOwner = user && video.channels?.owner_id === user.id;
+
+  // If video is private and user doesn't own it, return 404
+  if (video.visibility === 'private' && !isOwner) {
     return NextResponse.json({ error: 'Video not found' }, { status: 404 });
   }
 
