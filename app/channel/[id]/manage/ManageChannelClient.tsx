@@ -4,11 +4,96 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-export default function ManageChannelClient({ channel, videos: initialVideos }) {
+// Type definitions
+interface Channel {
+  id: string;
+  handle: string;
+  display_name: string;
+  description: string | null;
+  banner_url: string | null;
+  avatar_url: string | null;
+  video_count: number | null;
+  follower_count: number | null;
+}
+
+interface Video {
+  id: string;
+  channel_id: string;
+  title: string;
+  description: string | null;
+  video_url: string;
+  thumbnail_url: string | null;
+  duration: number;
+  view_count: number | null;
+  like_count: number | null;
+  dislike_count: number | null;
+  star_count: number | null;
+  visibility: 'public' | 'private' | 'unlisted';
+  is_ai: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ManageChannelClientProps {
+  channel: Channel;
+  videos: Video[];
+}
+
+interface HeaderProps {
+  channel: Channel;
+  setChannel: (channel: Channel) => void;
+  supabase: SupabaseClient;
+}
+
+interface TabPanelProps {
+  children: React.ReactNode;
+  id: string;
+}
+
+interface TabsProps {
+  children: React.ReactNode[];
+  defaultTab: string;
+  className?: string;
+}
+
+interface VideoManagerProps {
+  videos: Video[];
+  setVideos: (videos: Video[]) => void;
+  channelId: string;
+  supabase: SupabaseClient;
+}
+
+interface VideoCardProps {
+  video: Video;
+  isSelected: boolean;
+  onToggleSelect: () => void;
+  onEdit: () => void;
+}
+
+interface EditVideoModalProps {
+  video: Video;
+  onClose: () => void;
+  supabase: SupabaseClient;
+  onUpdate: (video: Video) => void;
+}
+
+interface ProfileEditorProps {
+  channel: Channel;
+  setChannel: (channel: Channel) => void;
+  supabase: SupabaseClient;
+}
+
+interface AdvancedSettingsProps {
+  channel: Channel;
+  supabase: SupabaseClient;
+}
+
+export default function ManageChannelClient({ channel, videos: initialVideos }: ManageChannelClientProps) {
   const supabase = createSupabaseBrowserClient();
-  const [currentChannel, setCurrentChannel] = useState(channel);
-  const [videos, setVideos] = useState(initialVideos);
+  const [currentChannel, setCurrentChannel] = useState<Channel>(channel);
+  const [videos, setVideos] = useState<Video[]>(initialVideos);
 
   return (
     <div className="relative min-h-screen">
@@ -30,12 +115,12 @@ export default function ManageChannelClient({ channel, videos: initialVideos }) 
   );
 }
 
-function Header({ channel, setChannel, supabase }) {
-  const [bannerPreview, setBannerPreview] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
-  const [uploading, setUploading] = useState(false);
+function Header({ channel, setChannel, supabase }: HeaderProps) {
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<boolean>(false);
 
-  const uploadImage = async (file, type) => {
+  const uploadImage = async (file: File, type: 'banner' | 'avatar') => {
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
@@ -63,27 +148,36 @@ function Header({ channel, setChannel, supabase }) {
       setChannel({ ...channel, [updateField]: publicUrl });
       alert(`${type} updated successfully!`);
     } catch (error) {
-      alert(`Error uploading ${type}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error uploading ${type}: ${errorMessage}`);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleBannerChange = (e) => {
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => setBannerPreview(e.target.result);
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        if (event.target?.result && typeof event.target.result === 'string') {
+          setBannerPreview(event.target.result);
+        }
+      };
       reader.readAsDataURL(file);
       uploadImage(file, 'banner');
     }
   };
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => setAvatarPreview(e.target.result);
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        if (event.target?.result && typeof event.target.result === 'string') {
+          setAvatarPreview(event.target.result);
+        }
+      };
       reader.readAsDataURL(file);
       uploadImage(file, 'avatar');
     }
@@ -95,7 +189,7 @@ function Header({ channel, setChannel, supabase }) {
       <div className="w-full h-64 relative rounded-lg overflow-hidden">
         {bannerPreview || channel.banner_url ? (
           <Image
-            src={bannerPreview || channel.banner_url}
+            src={bannerPreview || channel.banner_url || ''}
             alt={`${channel.display_name}'s banner`}
             fill
             className="object-cover"
@@ -126,7 +220,7 @@ function Header({ channel, setChannel, supabase }) {
           <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
             {avatarPreview || channel.avatar_url ? (
               <Image
-                src={avatarPreview || channel.avatar_url}
+                src={avatarPreview || channel.avatar_url || ''}
                 alt={`${channel.display_name}'s profile picture`}
                 fill
                 className="object-cover"
@@ -188,12 +282,12 @@ function Header({ channel, setChannel, supabase }) {
   );
 }
 
-function TabPanel({ children, id }) {
+function TabPanel({ children, id }: TabPanelProps) {
   return <div role="tabpanel" id={`panel-${id}`}>{children}</div>;
 }
 
-function Tabs({ children, defaultTab, className }) {
-  const [active, setActive] = useState(defaultTab);
+function Tabs({ children, defaultTab, className }: TabsProps) {
+  const [active, setActive] = useState<string>(defaultTab);
   const tabs = ['videos', 'profile', 'settings'];
 
   return (
@@ -228,18 +322,18 @@ function Tabs({ children, defaultTab, className }) {
   );
 }
 
-function VideoManager({ videos, setVideos, channelId, supabase }) {
-  const [selectedVideos, setSelectedVideos] = useState([]);
-  const [editVideo, setEditVideo] = useState(null);
-  const [loading, setLoading] = useState(false);
+function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerProps) {
+  const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
+  const [editVideo, setEditVideo] = useState<Video | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const toggleSelect = (id) => {
+  const toggleSelect = (id: string) => {
     setSelectedVideos(prev =>
       prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
     );
   };
 
-  const bulkUpdateVisibility = async (visibility) => {
+  const bulkUpdateVisibility = async (visibility: 'public' | 'private' | 'unlisted') => {
     try {
       setLoading(true);
       const { error } = await supabase
@@ -255,7 +349,8 @@ function VideoManager({ videos, setVideos, channelId, supabase }) {
       setSelectedVideos([]);
       alert(`Updated ${selectedVideos.length} video(s) to ${visibility}`);
     } catch (error) {
-      alert(`Error updating videos: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error updating videos: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -269,29 +364,29 @@ function VideoManager({ videos, setVideos, channelId, supabase }) {
     try {
       setLoading(true);
 
-    // Get the videos to be deleted for storage cleanup
-    const videosToDelete = videos.filter(v => selectedVideos.includes(v.id));
+      // Get the videos to be deleted for storage cleanup
+      const videosToDelete = videos.filter(v => selectedVideos.includes(v.id));
 
-    // Delete video files and thumbnails from storage
-    for (const video of videosToDelete) {
-      try {
-        // Extract file paths from URLs if they exist
-        if (video.video_url) {
-          const videoPath = video.video_url.split('/').slice(-2).join('/');
-          await supabase.storage.from('videos').remove([videoPath]);
-        }
+      // Delete video files and thumbnails from storage
+      for (const video of videosToDelete) {
+        try {
+          // Extract file paths from URLs if they exist
+          if (video.video_url) {
+            const videoPath = video.video_url.split('/').slice(-2).join('/');
+            await supabase.storage.from('videos').remove([videoPath]);
+          }
 
-        if (video.thumbnail_url && !video.thumbnail_url.includes('Placeholder')) {
-          const thumbPath = video.thumbnail_url.split('/').slice(-2).join('/');
-          await supabase.storage.from('thumbnails').remove([thumbPath]);
+          if (video.thumbnail_url && !video.thumbnail_url.includes('Placeholder')) {
+            const thumbPath = video.thumbnail_url.split('/').slice(-2).join('/');
+            await supabase.storage.from('thumbnails').remove([thumbPath]);
+          }
+        } catch (storageError) {
+          console.error('Error deleting storage files:', storageError);
+          // Continue even if storage deletion fails
         }
-      } catch (storageError) {
-        console.error('Error deleting storage files:', storageError);
-        // Continue even if storage deletion fails
       }
-    }
 
-    // Delete from database
+      // Delete from database
       const { error } = await supabase
         .from('videos')
         .delete()
@@ -299,13 +394,14 @@ function VideoManager({ videos, setVideos, channelId, supabase }) {
 
       if (error) throw error;
 
-    // Update UI
+      // Update UI
       setVideos(videos.filter(v => !selectedVideos.includes(v.id)));
       setSelectedVideos([]);
-    alert(`Successfully deleted ${videosToDelete.length} video(s)`);
+      alert(`Successfully deleted ${videosToDelete.length} video(s)`);
     } catch (error) {
-    console.error('Delete error:', error);
-      alert(`Error deleting videos: ${error.message}`);
+      console.error('Delete error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error deleting videos: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -371,17 +467,17 @@ function VideoManager({ videos, setVideos, channelId, supabase }) {
   );
 }
 
-function VideoCard({ video, isSelected, onToggleSelect, onEdit }) {
-  const [imgSrc, setImgSrc] = useState(video.thumbnail_url || '/StellicastPlaceholderThumbnail.png');
+function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps) {
+  const [imgSrc, setImgSrc] = useState<string>(video.thumbnail_url || '/StellicastPlaceholderThumbnail.png');
 
-  const formatDuration = (duration) => {
+  const formatDuration = (duration: number) => {
     if (!duration || duration <= 0) return '0:00';
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const formatViews = (views) => {
+  const formatViews = (views: number | null) => {
     const v = views ?? 0;
     return `${v} view${v === 1 ? '' : 's'}`;
   };
@@ -454,16 +550,16 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }) {
   );
 }
 
-function EditVideoModal({ video, onClose, supabase, onUpdate }) {
+function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalProps) {
   const [form, setForm] = useState({
     title: video.title,
     description: video.description ?? "",
     visibility: video.visibility,
     is_ai: video.is_ai,
   });
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<boolean>(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       setSaving(true);
@@ -482,10 +578,11 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }) {
 
       if (error) throw error;
 
-      onUpdate(data);
+      onUpdate(data as Video);
       alert('Video updated successfully!');
     } catch (error) {
-      alert(`Error updating video: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error updating video: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
@@ -525,7 +622,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }) {
             <select
               id="visibility"
               value={form.visibility}
-              onChange={e => setForm({ ...form, visibility: e.target.value })}
+              onChange={e => setForm({ ...form, visibility: e.target.value as 'public' | 'private' | 'unlisted' })}
               className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="public">Public</option>
@@ -568,14 +665,15 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }) {
   );
 }
 
-function ProfileEditor({ channel, setChannel, supabase }) {
+function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
   const [form, setForm] = useState({
     display_name: channel.display_name,
     description: channel.description ?? "",
   });
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<boolean>(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async () => {
     try {
@@ -593,10 +691,11 @@ function ProfileEditor({ channel, setChannel, supabase }) {
 
       if (error) throw error;
 
-      setChannel(data);
+      setChannel(data as Channel);
       alert('Profile updated successfully!');
     } catch (error) {
-      alert(`Error updating profile: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error updating profile: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
@@ -646,9 +745,9 @@ function ProfileEditor({ channel, setChannel, supabase }) {
   );
 }
 
-function AdvancedSettings({ channel, supabase }) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
 
   const handleExport = async () => {
     try {
@@ -661,7 +760,7 @@ function AdvancedSettings({ channel, supabase }) {
 
       const csv = [
         ['Title', 'Views', 'Likes', 'Dislikes', 'Stars', 'Created At', 'Visibility'].join(','),
-        ...data.map(v => [
+        ...(data as Video[]).map(v => [
           `"${v.title}"`,
           v.view_count,
           v.like_count,
@@ -680,7 +779,8 @@ function AdvancedSettings({ channel, supabase }) {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert(`Error exporting analytics: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error exporting analytics: ${errorMessage}`);
     }
   };
 
@@ -707,7 +807,8 @@ function AdvancedSettings({ channel, supabase }) {
       alert('Channel deleted successfully!');
       window.location.href = '/';
     } catch (error) {
-      alert(`Error deleting channel: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error deleting channel: ${errorMessage}`);
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
