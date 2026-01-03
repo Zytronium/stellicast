@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronLeftIcon, FunnelIcon, InformationCircleIcon, BookmarkIcon, RssIcon } from '@heroicons/react/24/solid';
+import { FunnelIcon, InformationCircleIcon, BookmarkIcon, RssIcon } from '@heroicons/react/24/solid';
 import FilterAccordion from './FilterAccordion';
 import Tooltip from './Tooltip';
 
 interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  showFilters?: boolean; // Only show filters tab on search/feed pages
+  showFilters?: boolean;
 }
 
 type TabType = 'filters' | 'library' | 'following';

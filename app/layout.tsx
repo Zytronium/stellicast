@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const pathsWithFilters = ['/feed', '/explore']; // and `/`
+  const pathsWithFilters = ['/explore']; // and `/`
   const pathsWithoutSidebar = ['/about', '/auth'];
   const showFilters = pathsWithFilters.some(path => pathname.startsWith(path) || pathname === '/');
   const showSidebar = !pathsWithoutSidebar.some(path => pathname.startsWith(path));
