@@ -34,6 +34,7 @@ export async function GET(
         )
       `)
     .eq('id', id)
+    .filter('visibility', 'not.eq', 'private')
     .single();
 
   if (error || !video) {
