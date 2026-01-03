@@ -24,7 +24,7 @@ in. Show a signin/signup button when not logged in.
 ### 0.4. User profiles
 Create a public user profile page for every user.
 
-**Status:** Todo
+**Status:** In Progress
 
 ### 0.4.5. Channel profiles
 Create public channel profiles that show videos uploaded by
@@ -36,7 +36,7 @@ that channel.
 Allow users to edit their profiles. Add certain buttons 
 on the profile page when that user is logged in.
 
-**Status:** Todo
+**Status:** In Progress
 
 ### 0.6. Channel creation
 Allow users to create new Creator channels.
