@@ -12,8 +12,15 @@ import {
 } from '@heroicons/react/24/outline';
 import VideoPlayer from "@/components/VideoPlayer";
 
+interface FundsData {
+  "funds_spent": number;
+  "profit_earned": number;
+  "number_donations": number;
+  "last_updated": number;
+}
+
 export default function AboutPage() {
-  const [fundsData, setFundsData] = useState(null);
+  const [fundsData, setFundsData] = useState<FundsData>();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
