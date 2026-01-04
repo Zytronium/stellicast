@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import {
   ShieldCheckIcon,
   NoSymbolIcon,
@@ -12,6 +13,22 @@ import {
 import VideoPlayer from "@/components/VideoPlayer";
 
 export default function AboutPage() {
+  const [fundsData, setFundsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('https://zytronium.github.io/stellicast_data_api/funds.json')
+      .then(res => res.json())
+      .then(data => {
+        setFundsData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch funds data:', err);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section */}
@@ -146,6 +163,32 @@ export default function AboutPage() {
           Stellicast is independently developed. Donations help cover infrastructure,
           moderation tools, and continued development.
         </p>
+
+        {!loading && fundsData && (
+          <div className="mb-10 p-6 rounded-2xl bg-gray-900/50 border border-gray-800 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Funds Spent</p>
+                <p className="text-2xl font-bold text-red-400">${fundsData.funds_spent.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Profit Earned</p>
+                <p className="text-2xl font-bold text-green-400">${fundsData.profit_earned.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Donations</p>
+                <p className="text-2xl font-bold text-blue-400">{fundsData.number_donations}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-600">
+              Last updated: {new Date(fundsData.last_updated).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+          </div>
+        )}
 
         <a
           href="https://www.buymeacoffee.com/zytronium"
