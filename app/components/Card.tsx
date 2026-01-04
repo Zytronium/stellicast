@@ -57,7 +57,7 @@ export default function Card({
           alt={title}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          onError={() => setImgSrc('/StellicastPlaceholderThumbnail.png')}
+          onError={() => setImgSrc('/Stellicast404Thumbnail.png')}
         />
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/10 to-white/5" />
