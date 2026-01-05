@@ -327,9 +327,11 @@ function CommentComponent({
   return (
     <div className={`${depth > 0 ? 'ml-4' : ''}`}>
       <div className="flex gap-3 py-2">
-        <div className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white">
+        <Link className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white"
+              href={`/user/${comment.user?.username}`}
+        >
           {displayName[0]?.toUpperCase() ?? '?'}
-        </div>
+        </Link>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
