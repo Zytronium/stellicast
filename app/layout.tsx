@@ -11,8 +11,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const pathsWithFilters = ['/explore']; // and `/`
   const pathsWithoutSidebar = ['/about', '/auth'];
+  const pathsWithoutPadding = ['/channel/', '/user/', '/profile'];
   const showFilters = pathsWithFilters.some(path => pathname.startsWith(path) || pathname === '/');
   const showSidebar = !pathsWithoutSidebar.some(path => pathname.startsWith(path));
+  const noPadding = pathsWithoutPadding.some(path => pathname.startsWith(path));
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -39,7 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             ].join(' ')}
           >
             <div className="min-h-full bg-gradient-darker flex flex-col">
-              <div className={`w-full ${pathname.startsWith('/channel') || pathname.startsWith('/user') ? 'pb-6' : 'px-6 pl-10 py-6'} flex-1 flex flex-col`}>{children}</div>
+              <div className={`w-full ${noPadding ? 'pb-6' : 'px-6 pl-10 py-6'} flex-1 flex flex-col`}>
+                {children}
+              </div>
+
             </div>
           </main>
         </div>
