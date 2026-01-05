@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -25,30 +25,7 @@ export default function TopBar() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Get initial user
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      setUser(user);
-      if (user) {
-        await fetchUserProfile(user.id);
-      }
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserProfile(session.user.id);
-      } else {
-        setUserProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -65,7 +42,38 @@ export default function TopBar() {
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    // Get initial user
+    const initAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        await fetchUserProfile(user.id);
+      }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+      setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, fetchUserProfile]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
