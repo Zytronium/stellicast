@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         channel_id: channel_id,
         view_count: 0,
         duration: 0,
-        visibility: 'public', // todo: allow users to select visibility level
+        visibility: body.visibility,
         is_ai: body.is_ai || false,
         is_promotional: body.is_promotional || false,
         tags: body.tags || [],
