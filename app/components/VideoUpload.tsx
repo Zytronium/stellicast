@@ -106,7 +106,6 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     videoEl.preload = 'metadata';
     videoEl.onloadedmetadata = () => {
       const dur = isFinite(videoEl.duration) ? Math.floor(videoEl.duration) : 0;
-      window.URL.revokeObjectURL(videoEl.src);
       setVideoPreview({
         file,
         url,
@@ -437,11 +436,18 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       {/* Video preview */}
       {videoPreview && (
         <div className="space-y-3">
-          <div className="rounded-xl overflow-hidden bg-black">
-            <video
-              src={videoPreview.url}
-              controls
-              className="w-full aspect-video"
+          <div className="rounded-xl overflow-hidden">
+            <VideoPlayer
+              video={{
+                id: 'preview',
+                title: title || videoPreview.file.name,
+                creator: '',
+                description: description,
+                thumbnail: '',
+                src: videoPreview.url,
+                duration: videoPreview.duration,
+              }}
+              onWatchedTimeUpdate={() => {}}
             />
           </div>
 
@@ -490,10 +496,10 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         </button>
         <button
           onClick={handlePublish}
-          disabled={uploading || !title.trim() || !channelId || !videoPreview}
+          disabled={uploading || uploadCompleted || !title.trim() || !channelId || !videoPreview}
           className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
         >
-          {uploading ? `Uploading... ${Math.round(uploadProgress)}%` : 'Publish Video'}
+          {uploading ? `Uploading... ${Math.round(uploadProgress)}%` : uploadCompleted ? 'Published' : 'Publish Video'}
         </button>
       </div>
     </div>
