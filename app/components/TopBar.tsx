@@ -26,6 +26,7 @@ export default function TopBar() {
   const [loading, setLoading] = useState(true);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+  console.log('Fetching profile for user:', userId); // DEBUG
     try {
       const { data, error } = await supabase
         .from('users')
@@ -33,11 +34,14 @@ export default function TopBar() {
         .eq('id', userId)
         .single();
 
+    console.log('Profile fetch result:', { data, error }); // DEBUG
+
       if (error) {
         console.error('Error fetching user profile:', error);
         return;
       }
 
+    console.log('Setting profile:', data); // DEBUG
       setUserProfile(data);
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -48,10 +52,26 @@ export default function TopBar() {
     // Get initial user
     const initAuth = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        await fetchUserProfile(user.id);
+      // Try to get the current session
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error('Session error:', error);
+        await supabase.auth.signOut();
+        setUser(null);
+        setUserProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      if (session) {
+      setUser(session.user);
+      if (session.user) {
+        await fetchUserProfile(session.user.id);
+      }
+      } else {
+        setUser(null);
+        setUserProfile(null);
       }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -64,14 +84,16 @@ export default function TopBar() {
 
     // Listen for auth changes
 const { data: { subscription } } = supabase.auth.onAuthStateChange(
-  async (_event: AuthChangeEvent, session: Session | null) => {
+    async (event: AuthChangeEvent, session: Session | null) => {
+      console.log('Auth state changed:', event); // Debug log
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchUserProfile(session.user.id);
       } else {
         setUserProfile(null);
       }
-    });
+    }
+  );
 
     return () => subscription.unsubscribe();
   }, [fetchUserProfile]);
