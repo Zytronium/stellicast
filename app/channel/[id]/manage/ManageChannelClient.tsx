@@ -539,8 +539,14 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <span className={`text-xs px-2 py-1 rounded-md font-medium ${video.visibility === 'public' ? 'bg-green-600/20 text-green-400' : 'bg-yellow-600/20 text-yellow-400'}`}>
-            {video.visibility === 'public' ? 'Public' : 'Private'}
+<span className={`text-xs px-2 py-1 rounded-md font-medium ${
+            video.visibility === 'public' 
+              ? 'bg-blue-600/20 text-blue-300' 
+              : video.visibility === 'unlisted'
+              ? 'bg-yellow-600/20 text-yellow-300'
+              : 'bg-slate-600/20 text-slate-300'
+          }`}>
+            {video.visibility.charAt(0).toUpperCase() + video.visibility.slice(1)}
           </span>
           <button
             onClick={(e) => {
