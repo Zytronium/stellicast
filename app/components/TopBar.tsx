@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
-import type { User } from '@supabase/supabase-js';
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -42,7 +42,7 @@ export default function TopBar() {
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     // Get initial user
@@ -63,7 +63,8 @@ export default function TopBar() {
     initAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+const { data: { subscription } } = supabase.auth.onAuthStateChange(
+  async (_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchUserProfile(session.user.id);
@@ -73,7 +74,7 @@ export default function TopBar() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase, fetchUserProfile]);
+  }, [fetchUserProfile]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
