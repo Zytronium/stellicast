@@ -7,7 +7,14 @@ let client: ReturnType<typeof createBrowserClient> | null = null;
 
 export function createSupabaseBrowserClient() {
   if (!client) {
-    client = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    client = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        // Force token refresh on every getUser/getSession call
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+      },
+    });
   }
   return client;
 }
