@@ -56,7 +56,7 @@ function UploadContent() {
 
       // Select channel based on URL parameter or default to first channel
       if (urlChannelId) {
-        const channel = userChannels?.find(ch => ch.id === urlChannelId);
+        const channel = userChannels?.find((ch: Channel) => ch.id === urlChannelId);
         setSelectedChannel(channel || userChannels?.[0] || null);
       } else {
         setSelectedChannel(userChannels?.[0] || null);
@@ -65,7 +65,7 @@ function UploadContent() {
       setLoading(false);
     };
     initUpload();
-  }, [router, supabase, urlChannelId]);
+  }, [router, urlChannelId]);
 
   const handleChannelSelect = (channel: Channel) => {
     setSelectedChannel(channel);
