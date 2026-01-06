@@ -529,7 +529,7 @@ function ChannelsList({ channels }: ChannelsListProps) {
     <div>
       {channels.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">You don't have any channels yet</p>
+          <p className="text-gray-400 mb-4">You don&apos;t have any channels yet</p>
           <Link
             href="/account"
             className="inline-flex items-center h-10 px-6 rounded-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30"
@@ -543,7 +543,7 @@ function ChannelsList({ channels }: ChannelsListProps) {
             <Link
               key={channel.id}
               href={`/channel/${channel.handle}`}
-              className="group block p-6 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
+              className="group block p-6 rounded-lg bg-gradient-darker border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
             >
               <div className="flex flex-col items-center text-center">
                 {/* Channel Avatar */}
