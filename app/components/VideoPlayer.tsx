@@ -622,8 +622,6 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
       onMouseMove={handleActivity}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleActivity}
-      onClick={handleVideoClick}
-      onContextMenu={handleContextMenu}
     >
       <div aria-live="polite" className="sr-only" role="status">
         {announcement}
@@ -631,15 +629,23 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
 
       <video
         ref={videoRef}
-  className="w-full h-full bg-black select-none object-contain"
+        className="w-full h-full bg-black select-none object-contain"
         poster={video.thumbnail}
+        onClick={handleVideoClick}
+        onContextMenu={handleContextMenu}
         onTouchStart={onVideoTouchStart}
         tabIndex={0}
         aria-label={`${video.title} video player`}
-  style={{ pointerEvents: 'none' }}
       >
         <source src={video.src} type="video/mp4" />
       </video>
+
+      <div
+        className="absolute inset-0 -z-10"
+        onClick={handleVideoClick}
+        onContextMenu={handleContextMenu}
+        style={{ pointerEvents: 'auto' }}
+      />
 
       {(isLoading || isBuffering) && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none">
@@ -667,6 +673,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
         className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-200 ${
           showControls ? 'opacity-100' : 'opacity-0'
         }`}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
