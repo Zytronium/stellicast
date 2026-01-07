@@ -1,104 +1,169 @@
 # Stellicast
-The YouTube alternative we're still waiting for.
 
-Stellicast is a WIP video streaming platform that cares about your privacy,
-doesn't track you, doesn't bombard you with ads, listens to community feedback,
-and aims to provide the features everyone wants that YouTube won't give us.
+**The YouTube alternative we're still waiting for.**
 
-With no official goal for a beta launch, Stellicast currently has no development
-team besides a single developer, though we, or rather I, plane to put together a
-team in 2026. We make no gaurantees about the future of Stellicast. It will either
-be a huge success or a huge failure, most likely the latter, but someone has to
-try.
+[![Website](https://img.shields.io/badge/website-stellicast.com-blue)](https://stellicast.com/)
+[![Beta](https://img.shields.io/badge/beta-preview-orange)](https://beta.stellicast.com/)
+[![Roadmap](https://img.shields.io/badge/roadmap-view-green)](https://stellicast-roadmap.vercel.app/)
 
-I'm aware there are other YouTube alternatives out there, but I haven't seen any
-that provide what I'm looking for in a YouTube alternative. Stellicast is my
-attempt to create something that can actually compete with YouTube and provide
-users with a non-google alternative. Stellicast plans to use zero third-party
-services that involve Google or anything they stand for (i.e. tracking and
-collecting personal data, using AI moderation without human review, etc.) While
-unfortunately laws in some areas may require us to use certain controversial
-features such as age verification, Stellicast will do its best to provide
-privacy-focused features and avoid any such controversial solutions if possible.
+Stellicast is a privacy-first video streaming platform built on the principles 
+YouTube has abandoned: respecting your privacy, listening to the community, and 
+putting creators before corporations.
 
-Stellicast is currently in early development and is not ready for use. As of the
-writing of this, it is not in a usable state. You cannot create accounts, upload
-videos, like videos, comment on videos, etc. However, these features will all
-be implemented in the future if this project continues to grow and develop.
+---
 
-This project currently has a budget of zero, and the only motivation that keeps
-development going is the slow deterioration of YouTube and its userbase getting
-more and more annoyed with YouTube. In the future, we will be accepting 
-donations to help fund and motivate development. As this is currently a solo
-project and I personally don't have any experience properly reviewing pull requests
-(I'm a little paranoid about security threats), contributions will likely not be 
-considered. 
+## What Makes Stellicast Different
 
-## Project Plan Summary
+- **Privacy-First**: No tracking, no data harvesting, no Google integration
+- **Ad-Conscious**: Maximum 1 ad per 30 minutes, all skippable, no ads on short or non-monetized videos
+- **Creator-Focused**: Algorithm favors personal creators over corporate studios
+- **Transparent Moderation**: Human-reviewed decisions with fair appeals process
+- **AI Transparency**: Mandatory disclosure of AI-generated content
+- **Community-Driven**: Built on feedback, not shareholder demands
 
-**UI/**: Dark, modern, and fully customizable UI. Several different layouts and themes will be available, including one that emulates YouTube, all for free. The default theme will be dark space blue.
+---
 
-**AI Policy**: All content that contains any AI-generated content **must** disclose what is AI-generated, and depending on what is AI generated and how much of the content is AI, may have an "AI" label on the video card. AI for moderation will be used strictly to assist moderation and will never be used as a final decision for moderation. Mainly, it will be used to flag potential rule-breaking content such as NSFW content. By default, content with AI will be less promoted than fully human-made content. Content that is found to use AI when it was not disclosed will be moderated. Content that contains enough AI content will receive a smaller share of profit, to discourage the usage of AI on the platform.
+# Project Status
 
-**Moderation**: As mentioned above, AI may be used to assist moderation, but will never be used as a final decision. Apeals will be easy with a fair copyright claim process that does not have any effect until the claim has been accepted and a fair amount of time has passed for an appeal to have been made.
+**Current Phase**: Early Development (Pre-Alpha)
 
-**Ads**: Maximum of 1 ad per 30 minutes of video, all skippable, no ads on videos shorter than 2 minutes or non-monetized videos. Ads will be strictly reviewed by humans before being accepted and publicly visible. No exceptions to rules.
+Stellicast is currently in active development by a solo developer with plans to 
+build a team in 2026. The platform is not yet full functional; there are no ads, 
+playlists, or even report systems. However, these features are on the roadmap.
 
-**Child Safety**: Age-based filtering without using invasive AI verification, biometric data, or any other invasive technique unless required by law.
+**Honesty Check**: This is an ambitious project with significant challenges 
+ahead. While I'm committed to making it succeed, there are no guarantees. 
+However, someone has to try, and existing alternatives don't deliver what I 
+envision for a true YouTube competitor.
 
-**Migration Tools**: (Stretch Goal, may not be possible and legal) Easy import of YouTube data (including videos, channels, account information, subscriptions to channels who have also imported, etc.)
+---
 
-**Revenue Model**: Free tier with ads and a paid premium tier with no ads, faster uploads, HD downloads, larger file size limit, and more.
+## Core Vision
 
-**Separation of Personal vs Corporate Channels**: Channels must declare if they are personal or commercial. The algorithm favors personal channels by default, though the user can change this preference.
+### The Creator vs. Studio Philosophy
 
-This separation of personal and corporate channels is the main feature of 
-Stellicast. The "You" has been taken out of "YouTube" and we want to put it back.
-Personal and corporate channels will be separated and will work differently, as 
-well as personal channels being promoted more. Personal channels will be called 
-Creators and corporate channels will be called Studios (These names are subject 
-to change).  
-Some examples of this would be:
-- Mr Beast from 2015: **Creator**
-- Mr Beast today: **Studio**
-- Deep Humor: **Creator**
-- Minecraft: **Studio**
-- You with your paid team of 1 camera man and 1 editor working from home: **Creator**
-- A large, organized team of 25 people who get paid to work on different aspects of each video: **Studio**
-- A large team where most of the people focus on what's being filmed rather than video production and monetization: **Creator**
+The "You" has been taken out of "YouTube" and we're putting it back. Stellicast 
+distinguishes between **Creators** (personal channels) and **Studios** 
+(commercial operations), with the algorithm favoring personal content by default.
+Viewers can change this preference at any time.
 
-Ultimately, a Creator can choose to become a Studio for the extra perks (and 
-less promotion) if they meet certain requirements (not yet decided, but most 
-likely will at least include minimum channel performance statistics to be met).
-If a channel's performance is high enough, they may be required to submit info
-about their production team, and depending on their team, may be required to
-become a Studio. For example, a Creator who has a team of 100 people focused on
-monetization, legal work, and video production will definately be required to
-become a Studio. However, a Creator making thousands of dollars but only has 
-a team of 3 people is not required to become a Studio.
+#### What Defines Each?
 
-The primary definition of a Studio is a channel with a team of people and a
-primary focus on monetization and video production.  
-The primary definition of a Creator is a personal channel with a focus on 
-broadcasting themself and/or their work rather than earning profit, though
-that doesn't exclude Creators who also aim to monetize their work.
+**Creators**
+- Personal channels focused on broadcasting themselves or their work
+- Small teams (typically 0–5 people) with minimal production infrastructure
+- Passion-driven content, though monetization is welcome
+- Examples: Early Mr. Beast, Deep Humor, solo creators with a cameraman and editor
 
-**Main Challenges**:
-- Infrastructure costs and scaling
-- Privacy-invasive laws
-- Standing out against other YouTube alternatives and being a notable competitor with YouTube
-- Building a proper moderation team
-- Building a proper development team that can accept a variable wage in the start
-- Marketing Stellicast
-- Providing certain features as well as YouTube without compromising on quality and revenue
-- Building a community around Stellicast
-- Staying motivated to continue development without funding and avoiding burnout
-- Putting privacy-focused ads on Stellicast
+**Studios**
+- Organized commercial operations with large production teams
+- Primary focus on monetization and professional video production
+- Large teams (25+ people) dedicated to different production aspects
+- Examples: Modern Mr. Beast, official brand channels like Minecraft, large video production teams
+
+Channels can voluntarily upgrade to Studio status once they meet performance 
+requirements. High-performing channels with large production-focused teams may 
+be required to transition to Studio status.
+
+---
+
+## Planned Features
+
+### User Experience
+- **Dark, Modern, Customizable UI**: Sleek by default and fully customizable with multiple layouts and themes
+- **Fewer Ads**: No more than 1 ad per 30 minutes of video; no ads on videos shorter than one minute.
+- **Fully Accessible**: Follows WCAG guidelines for accessibility
+
+### Content & Moderation
+- **AI Moderation Policy**: AI may assist, but humans always have the final say in moderation decisions
+- **Content Labeling**: AI-generated content must be disclosed and will be appropriately labeled
+- **Fair Copyright System**: Claims don't take effect until reviewed, with adequate appeal time unless required by law
+- **Age-Based Filtering**: Safe content filtering without invasive age verification methods
+
+### Monetization & Business Model
+- **Free Tier**: Ad-supported access to all content
+- **Premium Tier**: Ad-free experience with bonus features:
+    - Faster upload speeds
+    - HD video downloads
+    - Larger upload file size limits
+    - Additional perks TBD
+- **Creator Revenue**: AI-heavy content receives reduced profit share to incentivize human creativity
+- **Studio Revenue**: Studios receive higher profit share to offset reduced algorithmic promotion
+- **Ad Standards**: Human-reviewed ads only, strictly enforced guidelines
+
+### Migration (Stretch Goal)
+- Import YouTube data including videos, channels, and subscriptions
+- *(Subject to legal and technical feasibility)*
+
+---
+
+## Current Challenges
+
+Building a YouTube competitor requires overcoming significant obstacles:
+
+- Infrastructure costs and scaling to handle video hosting
+- Navigating privacy-invasive regulations in various jurisdictions
+- Standing out against other YouTube alternatives
+- Building experienced moderation and development teams
+- Marketing on a low budget
+- Implementing privacy-respecting advertising with reasonable profit
+- Maintaining development momentum and avoiding burnout
+- Building a sustainable community from the ground up
+
+---
+
+## Contributing
+
+Currently, this is a solo project. Due to security concerns and my limited 
+experience with pull request reviews, external contributions aren't being 
+accepted at this time. However, I encourage you to share your thoughts (and bug
+reports) by posting issues, and as the team grows, we'll establish proper
+contribution guidelines and start accepting pull requests. In the meantime,
+I encourage you to spread the word to help build awareness so Stellicast can
+grow.
+
+---
+
+## Funding
+
+**Current Budget**: $100
+**Money Spent**: $21.25
+**Money Donated**: $0
+**Profit Earned**: $0
+
+Development is fueled by frustration with YouTube's direction and the belief 
+that users deserve better. Any donations will greatly help improve motivation
+and improve infrastructure. 
+
+---
+
+## Preview & Resources
+
+- **Website Preview**: [stellicast.com](https://stellicast.com/)
+- **Beta Preview**: [beta.stellicast.com](https://beta.stellicast.com/)
+- **Roadmap**: [stellicast-roadmap.vercel.app](https://stellicast-roadmap.vercel.app/) *(may not always be current)*
+
+---
 
 ## Contributors
-[Me ("Zytronium")](https://github.com/Zytronium)
 
-## Preview
-Visit the website preview at https://stellicast.com/  
-Visit the beta preview at https://beta.stellicast.com/  
-View the roadmap at https://stellicast-roadmap.vercel.app/ (may not always be up to date)
+- [Zytronium](https://github.com/Zytronium) - Creator & Lead Developer
+
+---
+
+## License
+
+Coming soon. Please don't copy this project without due credit.
+
+---
+
+## Contact & Support
+
+- **General Contact & Support**: contact@stellicast.com
+- **Legal Contact**: legal@stellicast.com
+
+> **Note**: Inboxes are not always monitored daily. Stellicast is a team of one individual developer, so please be patient and give up to 48 hours for a response.
+
+---
+
+**Note**: Stellicast is an independent project and is not affiliated with YouTube, Google, or Alphabet Inc.
