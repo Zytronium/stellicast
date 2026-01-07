@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -24,9 +24,12 @@ export default function TopBar() {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+  const initAttemptedRef = useRef(false);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
-  console.log('Fetching profile for user:', userId); // DEBUG
+    if (!mountedRef.current) return;
+
     try {
       const { data, error } = await supabase
         .from('users')
@@ -34,49 +37,62 @@ export default function TopBar() {
         .eq('id', userId)
         .single();
 
-    console.log('Profile fetch result:', { data, error }); // DEBUG
-
       if (error) {
         console.error('Error fetching user profile:', error);
         return;
       }
 
-    console.log('Setting profile:', data); // DEBUG
+      if (mountedRef.current) {
       setUserProfile(data);
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     // Get initial user
     const initAuth = async () => {
+      // Prevent multiple initialization attempts
+      if (initAttemptedRef.current) return;
+      initAttemptedRef.current = true;
+
       try {
-      // Try to get the current session
+        // Add a small delay to ensure Supabase is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 50));
+
       const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (!mountedRef.current) return;
 
       if (error) {
         console.error('Session error:', error);
-        await supabase.auth.signOut();
         setUser(null);
         setUserProfile(null);
         setLoading(false);
         return;
       }
 
-      if (session) {
+        if (session?.user) {
       setUser(session.user);
-      if (session.user) {
         await fetchUserProfile(session.user.id);
-      }
       } else {
         setUser(null);
         setUserProfile(null);
       }
       } catch (error) {
         console.error('Error initializing auth:', error);
+        // Set null states but don't throw
+        if (mountedRef.current) {
+          setUser(null);
+          setUserProfile(null);
+        }
       } finally {
+        if (mountedRef.current) {
       setLoading(false);
+      }
       }
     };
 
@@ -86,17 +102,33 @@ export default function TopBar() {
 const { data: { subscription } } = supabase.auth.onAuthStateChange(
     async (event: AuthChangeEvent, session: Session | null) => {
       console.log('Auth state changed:', event); // Debug log
-      setUser(session?.user ?? null);
+
+        if (!mountedRef.current) return;
+
+        // Handle different auth events
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setUserProfile(null);
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          if (session?.user) {
+            setUser(session.user);
+            await fetchUserProfile(session.user.id);
+          }
+        } else if (event === 'INITIAL_SESSION') {
+          // Handle initial session separately
       if (session?.user) {
+            setUser(session.user);
         await fetchUserProfile(session.user.id);
-      } else {
-        setUserProfile(null);
+          }
       }
     }
   );
 
-    return () => subscription.unsubscribe();
-  }, [fetchUserProfile]);
+    return () => {
+      mountedRef.current = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchUserProfile, supabase]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,8 +137,12 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange(
 
   const handleLogout = async () => {
     setProfileMenuOpen(false);
+    try {
     await supabase.auth.signOut();
     router.refresh();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const displayName = userProfile?.display_name || userProfile?.username || user?.email?.split('@')[0] || 'User';

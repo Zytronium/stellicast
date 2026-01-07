@@ -528,6 +528,10 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [userLikedComments, setUserLikedComments] = useState<string[]>([]);
   const [userDislikedComments, setUserDislikedComments] = useState<string[]>([]);
 
+  const [authReady, setAuthReady] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
+
   useEffect(() => {
     async function loadComments() {
       if (!video) return;
@@ -550,37 +554,95 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     loadComments();
   }, [video]);
 
+  // Separate auth initialization from data loading
   useEffect(() => {
-    async function loadData() {
-      const resolvedParams = await Promise.resolve(params);
-      const { id } = resolvedParams;
+    let mounted = true;
 
+    async function initAuth() {
       try {
         const supabase = createSupabaseBrowserClient();
-        const { data: { user } } = await supabase.auth.getUser();
 
-        if (user) {
+        // Give the client a moment to initialize
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (!mounted) return;
+
+        if (error) {
+          console.error('Auth initialization error:', error);
+          // Don't block the page load if auth fails
+          setAuthReady(true);
+          return;
+        }
+
+        if (session?.user) {
           setIsAuthenticated(true);
-          setCurrentUserId(user.id);
+          setCurrentUserId(session.user.id);
 
+          // Fetch user engagement data
           const { data: userData } = await supabase
             .from('users')
             .select('liked_videos, disliked_videos, starred_videos')
-            .eq('id', user.id)
+            .eq('id', session.user.id)
             .single();
 
-          if (userData) {
+          if (mounted && userData) {
+            const resolvedParams = await Promise.resolve(params);
+            const { id } = resolvedParams;
+
             setLiked(userData.liked_videos?.includes(id) || false);
             setDisliked(userData.disliked_videos?.includes(id) || false);
             setStarred(userData.starred_videos?.includes(id) || false);
           }
         }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        if (mounted) {
+          setAuthReady(true);
+        }
+      }
+    }
 
-        const videoRes = await fetch(`/api/videos/${id}`);
+    initAuth();
+
+    return () => {
+      mounted = false;
+    };
+  }, [params]);
+
+  // Load video data only after auth is ready
+  useEffect(() => {
+    if (!authReady) return;
+
+    let mounted = true;
+
+    async function loadData() {
+      const resolvedParams = await Promise.resolve(params);
+      const { id } = resolvedParams;
+
+      try {
+        setLoading(true);
+
+        // Fetch video data
+        const videoRes = await fetch(`/api/videos/${id}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+
+        if (!mounted) return;
+
         if (!videoRes.ok) {
+          if (videoRes.status === 404) {
           notFound();
           return;
         }
+          throw new Error(`Failed to fetch video: ${videoRes.status}`);
+        }
+
         const videoData = await videoRes.json();
 
         const videoObj = {
@@ -595,9 +657,12 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           creator_avatar: videoData.channels?.avatar_url ?? null,
         };
 
+        if (!mounted) return;
+
         setVideo(videoObj);
         document.title = `${videoObj.title} - Stellicast`;
 
+        // Handle view counting
         if (shouldCountView(id)) {
           fetch(`/api/videos/${id}/view`, { method: 'POST' })
             .then(async res => {
@@ -606,31 +671,58 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 console.log('View rate limited:', data.message);
                 return;
               }
-              if (data.success && data.view_count) {
+              if (mounted && data.success && data.view_count) {
                 setVideo(prev => prev ? { ...prev, view_count: data.view_count } : null);
               }
             })
             .catch(error => console.error('Error incrementing view:', error));
         }
 
+        // Fetch related videos
         const allRes = await fetch(`/api/videos`);
         if (allRes.ok) {
           const allData = await allRes.json();
           const videos = Array.isArray(allData.videos) ? allData.videos : [];
           const filteredVideos = videos.filter((v: any) => v.id !== id);
+
+          if (mounted) {
           setAllVideos(filteredVideos);
           setUpNext(filteredVideos.slice(0, 6));
         }
+        }
+
+        if (mounted) {
+          setRetryCount(0); // Reset retry count on success
+        }
       } catch (error) {
         console.error('Error loading video:', error);
+
+        if (!mounted) return;
+
+        // Retry logic for transient failures
+        if (retryCount < maxRetries) {
+          console.log(`Retrying... (${retryCount + 1}/${maxRetries})`);
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => {
+            loadData();
+          }, 1000 * (retryCount + 1)); // Exponential backoff
+        } else {
+          // Give up after max retries
         notFound();
+        }
       } finally {
+        if (mounted) {
         setLoading(false);
       }
     }
+    }
 
     loadData();
-  }, [params]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [authReady, params, retryCount]);
 
   useEffect(() => {
     if (!video) return;
@@ -855,10 +947,17 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     setVideosToShow(prev => prev + 6);
   };
 
-  if (loading) {
+  if (loading || !authReady) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-center">
+          <div className="text-gray-400">Loading...</div>
+          {retryCount > 0 && (
+            <div className="text-sm text-gray-500 mt-2">
+              Retry attempt {retryCount}/{maxRetries}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
