@@ -42,6 +42,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
   const inactivityTimerRef = useRef<number | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -158,6 +160,32 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
     videoEl.addEventListener('timeupdate', handleTimeUpdate);
     return () => videoEl.removeEventListener('timeupdate', handleTimeUpdate);
   }, [onWatchedTimeUpdate]);
+
+  // loading/buffering tracking
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const handleWaiting = () => setIsBuffering(true);
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      setIsBuffering(false);
+    };
+    const handleLoadStart = () => setIsLoading(true);
+    const handlePlaying = () => setIsBuffering(false);
+
+    videoEl.addEventListener('waiting', handleWaiting);
+    videoEl.addEventListener('canplay', handleCanPlay);
+    videoEl.addEventListener('loadstart', handleLoadStart);
+    videoEl.addEventListener('playing', handlePlaying);
+
+    return () => {
+      videoEl.removeEventListener('waiting', handleWaiting);
+      videoEl.removeEventListener('canplay', handleCanPlay);
+      videoEl.removeEventListener('loadstart', handleLoadStart);
+      videoEl.removeEventListener('playing', handlePlaying);
+    };
+  }, []);
 
   // time/duration/buffer/ended
   useEffect(() => {
@@ -590,10 +618,12 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
   return (
     <div
       ref={containerRef}
-      className="relative bg-black rounded-lg overflow-hidden"
+      className="relative bg-black rounded-lg overflow-hidden aspect-video"
       onMouseMove={handleActivity}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleActivity}
+      onClick={handleVideoClick}
+      onContextMenu={handleContextMenu}
     >
       <div aria-live="polite" className="sr-only" role="status">
         {announcement}
@@ -601,21 +631,27 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
 
       <video
         ref={videoRef}
-        className="w-full bg-black select-none"
+  className="w-full h-full bg-black select-none object-contain"
         poster={video.thumbnail}
-        onClick={handleVideoClick}
-        onContextMenu={handleContextMenu}
         onTouchStart={onVideoTouchStart}
         tabIndex={0}
         aria-label={`${video.title} video player`}
+  style={{ pointerEvents: 'none' }}
       >
         <source src={video.src} type="video/mp4" />
       </video>
+
+      {(isLoading || isBuffering) && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
 
       {(!isPlaying || hasEnded) && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
           <button
             onClick={(e) => {
+              e.stopPropagation();
               togglePlay();
               handleActivity();
             }}
@@ -947,6 +983,12 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
         }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
       `}</style>
