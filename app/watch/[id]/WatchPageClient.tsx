@@ -12,6 +12,7 @@ import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import { formatTimeAgo } from '@/../lib/utils';
 import { Comment as CommentComponent } from '@/components/Comment';
 import type { Comment, CommentWithChildren, Video } from '@/../types';
+import Card from '@/components/Card';
 
 type ChannelInfo = {
   id?: string;
@@ -737,15 +738,8 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {upNext.map((v: any) => (
-              <Link key={v.id} href={`/watch/${v.id}`} className="bg-gray-900/50 rounded-lg overflow-hidden hover:bg-gray-900 transition">
-                <div className="aspect-video bg-gray-800 relative">
-                  <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" />
-                </div>
-                <div className="p-3">
-                  <p className="text-sm font-medium line-clamp-2">{v.title}</p>
-                  <p className="text-xs text-gray-400 mt-1">{v.channels?.display_name || 'Unknown'} • {v.view_count} view{v.view_count === 1 ? '' : 's'}</p>
-                </div>
-              </Link>
+              <Card key={v.id} id={v.id} title={v.title} creator_name={v.creator} date={v.created_at}
+                    thumbnail_src={v.thumbnail_url} is_ai={v.is_ai} views={v.view_count} duration={v.duration}/>
             ))}
           </div>
           {upNext.length < allVideos.length && (
