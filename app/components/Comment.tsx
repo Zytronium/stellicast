@@ -3,6 +3,7 @@ import { CommentWithChildren } from "@/../types";
 import { formatTimeAgo } from '@/../lib/utils';
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 async function postReply(videoId: string, commentId: string, message: string) {
   const response = await fetch(
@@ -194,15 +195,29 @@ export function Comment({
   return (
     <div className={`${depth > 0 ? 'ml-4' : ''}`}>
       <div className="flex gap-3 py-2">
-        <Link className="w-10 h-10 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white"
+        <Link className="grid w-10 h-10 place-items-center rounded-full bg-zinc-600 text-sm font-bold text-white flex-shrink-0 overflow-hidden"
               href={`/user/${comment.user?.username}`}
         >
-          {displayName[0]?.toUpperCase() ?? '?'}
+          {comment.user?.avatar_url ? (
+            <Image
+              src={comment.user?.avatar_url}
+              alt={comment.user?.display_name ?? ""}
+              className="h-full w-full object-cover"
+              width={128}
+              height={128}
+            />
+          ) : (
+            comment.user?.display_name?.[0]?.toUpperCase() ?? "?"
+          )}
         </Link>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-200">{displayName}</span>
+            <Link className="text-sm font-medium text-gray-200"
+                  href={`/user/${comment.user?.username}`}
+            >
+              {displayName}
+            </Link>
             <span className="text-xs text-gray-500">{formatTimeAgo(comment.created_at)}</span>
           </div>
 

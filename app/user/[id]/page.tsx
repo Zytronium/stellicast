@@ -131,7 +131,7 @@ export default async function UserProfilePage({ params }: PageProps) {
             <Link
               key={channel.id}
               href={`/channel/${channel.handle}`}
-              className="group block p-6 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
+              className="group block p-6 rounded-lg bg-gradient-darker border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
             >
               <div className="flex flex-col items-center text-center">
                   {/* Channel Avatar */}

@@ -41,6 +41,7 @@ export interface Comment {
     id: string;
     username: string;
     display_name?: string;
+    avatar_url?: string;
   };
 }
 
