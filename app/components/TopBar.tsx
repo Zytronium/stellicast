@@ -175,11 +175,11 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
           <Link href="/upload" className="text-sm text-gray-200 hover:text-blue-400">
             Upload
           </Link>
-          <Link href="/more" className="text-sm text-gray-200 hover:text-blue-400">
-            More
-          </Link>
           <Link href="/settings" className="text-sm text-gray-200 hover:text-blue-400">
             Settings
+          </Link>
+          <Link href="/more" className="text-sm text-gray-200 hover:text-blue-400">
+            More
           </Link>
         </nav>
 
