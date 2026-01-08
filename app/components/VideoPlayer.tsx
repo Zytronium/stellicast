@@ -12,23 +12,56 @@ import {
   Gauge,
   RotateCcw,
 } from 'lucide-react';
+import type { Video as CanonicalVideo } from '@/../types';
 
-export type Video = {
+type LegacyVideo = {
   id: string;
   title: string;
-  creator: string;
-  description: string;
-  thumbnail: string;
-  src: string;
+  creator?: string;
+  description?: string;
+  thumbnail?: string;
+  src?: string;
   duration?: number;
+  created_at?: string;
+  view_count?: number;
+  star_count?: number;
+  like_count?: number;
+  dislike_count?: number;
+  creator_handle?: string;
+  creator_avatar?: string | null;
 };
 
+type VideoProp = CanonicalVideo | LegacyVideo;
+
 type VideoPlayerProps = {
-  video: Video;
+  video: VideoProp;
   onWatchedTimeUpdate?: (watchedSeconds: number) => void;
 };
 
-export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerProps) {
+/* Helper accessors — accept either the canonical Video (from @/../types) or the old legacy shape */
+const getSrc = (v: VideoProp) =>
+  // canonical name contentSrc, legacy name src or video_url
+  // @ts-ignore
+  (v as CanonicalVideo).contentSrc ?? (v as LegacyVideo).src ?? (v as any).video_url ?? '';
+
+const getThumbnail = (v: VideoProp) =>
+  // canonical thumbnail, fallback legacy thumbnail_url or thumbnail
+  // @ts-ignore
+  (v as CanonicalVideo).thumbnail ?? (v as any).thumbnail_url ?? (v as LegacyVideo).thumbnail ?? '';
+
+const getTitle = (v: VideoProp) => (v as any).title ?? '';
+
+const getDuration = (v: VideoProp) =>
+  // canonical duration is number, legacy optional
+  // @ts-ignore
+  (v as CanonicalVideo).duration ?? (v as LegacyVideo).duration ?? 0;
+
+const getId = (v: VideoProp) => (v as any).id ?? '';
+
+export default function VideoPlayer({
+  video,
+  onWatchedTimeUpdate
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const progressRef = useRef<HTMLDivElement | null>(null);
@@ -45,7 +78,7 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
   const [isLoading, setIsLoading] = useState(true);
   const [isBuffering, setIsBuffering] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(getDuration(video));
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -58,10 +91,16 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
   const [selectedQuality, setSelectedQuality] = useState('Auto');
-  const [availableQualities, setAvailableQualities] = useState<{ id: number; height: string }[]>([]);
+  const [availableQualities, setAvailableQualities] = useState<{
+    id: number;
+    height: string
+  }[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number
+  } | null>(null);
   const [isLooping, setIsLooping] = useState(false);
   const [totalWatchedSeconds, setTotalWatchedSeconds] = useState(0);
 
@@ -112,35 +151,88 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
     setIsMobile(mobile);
   }, []);
 
+  // compute stable src outside effects
+  const src = getSrc(video);
+
   // HLS setup
   useEffect(() => {
     const videoEl = videoRef.current;
     if (!videoEl) return;
-
-    if (video.src.includes('.m3u8')) {
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hlsRef.current = hls;
-        hls.loadSource(video.src);
-        hls.attachMedia(videoEl);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          const levels = hls.levels
-            .map((level, index) => ({ id: index, height: `${level.height}p` }))
-            .reverse();
-          setAvailableQualities(levels);
-        });
-      } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-        videoEl.src = video.src;
-      }
-    }
-
-    return () => {
+    if (!src) {
+      // clear any previously-set src when src becomes falsy
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
-    };
-  }, [video.src]);
+      videoEl.removeAttribute('src');
+      videoEl.load();
+      return;
+    }
+
+    let isHls;
+    try {
+      const url = new URL(src, window.location.href);
+      isHls = url.pathname.toLowerCase().endsWith('.m3u8');
+    } catch {
+      // fallback for non-URL strings (blobs, relative oddities)
+      isHls = src.toLowerCase().includes('.m3u8');
+    }
+
+    if (isHls) {
+      if (Hls.isSupported()) {
+        // if there's already an Hls instance for this src, keep it
+        if (hlsRef.current) {
+          // if same source, do nothing
+          // (hls.js doesn't expose a trivial .url, so easiest is to recreate if needed)
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+
+        const hls = new Hls();
+        hlsRef.current = hls;
+        hls.loadSource(src);
+        hls.attachMedia(videoEl);
+
+        const onManifest = () => {
+          const levels = hls.levels
+            .map((level, index) => ({ id: index, height: `${level.height}p` }))
+            .reverse();
+          setAvailableQualities(levels);
+        };
+        hls.on(Hls.Events.MANIFEST_PARSED, onManifest);
+
+        // If the player was already playing, attempt to resume
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+          // try to preserve currentTime if the player already had one
+          if (!videoEl.paused) {
+            // no-op; hls will continue playback if attached properly
+          }
+        });
+
+        // cleanup for this hls
+        return () => {
+          hls.off(Hls.Events.MANIFEST_PARSED, onManifest);
+          if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
+          }
+        };
+      } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        // native HLS (Safari)
+        if (videoEl.src !== src) {
+          videoEl.src = src;
+        }
+      }
+    } else {
+      // normal MP4/other source — only set if changed to avoid resets
+      if (videoEl.src !== src) {
+        // preserve a desired playback position when switching sources is not intended
+        videoEl.src = src;
+      }
+    }
+
+    // no explicit cleanup here besides what Hls-based branch returns
+  }, [src]);
 
   // watched-seconds tracker
   useEffect(() => {
@@ -194,7 +286,12 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
 
     const updateTime = () => setCurrentTime(videoEl.currentTime);
     const updateDuration = () => {
-      if (videoEl.duration && isFinite(videoEl.duration)) setDuration(videoEl.duration);
+      if (videoEl.duration && isFinite(videoEl.duration)) {
+        setDuration(videoEl.duration);
+      } else {
+        const maybe = getDuration(video);
+        setDuration(maybe || 0);
+      }
     };
     const updateBuffered = () => {
       const ranges: { start: number; end: number }[] = [];
@@ -225,7 +322,7 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
       videoEl.removeEventListener('progress', updateBuffered);
       videoEl.removeEventListener('ended', handleEnded);
     };
-  }, [announce]);
+  }, [announce, video]);
 
   // fullscreen change & clicks
   useEffect(() => {
@@ -298,11 +395,13 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
     if (!c) return;
     if (!document.fullscreenElement) {
       const p = c.requestFullscreen();
-      if (p && typeof p.catch === 'function') p.catch(() => {/* ignore */});
+      if (p && typeof p.catch === 'function') p.catch(() => {/* ignore */
+      });
       announce('Entered fullscreen');
     } else {
       const p = document.exitFullscreen();
-      if (p && typeof p.catch === 'function') p.catch(() => {/* ignore */});
+      if (p && typeof p.catch === 'function') p.catch(() => {/* ignore */
+      });
       announce('Exited fullscreen');
     }
   }, [announce]);
@@ -480,7 +579,7 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
   };
 
   const copyVideoUrl = async () => {
-    await navigator.clipboard.writeText(video.src);
+    await navigator.clipboard.writeText(getSrc(video));
     setContextMenu(null);
     announce('Video URL copied to clipboard');
     handleActivity();
@@ -615,6 +714,9 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
     } as React.CSSProperties
     : {};
 
+  const poster = getThumbnail(video);
+  const title = getTitle(video);
+
   return (
     <div
       ref={containerRef}
@@ -630,14 +732,14 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
       <video
         ref={videoRef}
         className="w-full h-full bg-black select-none object-contain"
-        poster={video.thumbnail}
+        poster={poster}
         onClick={handleVideoClick}
         onContextMenu={handleContextMenu}
         onTouchStart={onVideoTouchStart}
         tabIndex={0}
-        aria-label={`${video.title} video player`}
+        aria-label={`${title} video player`}
       >
-        <source src={video.src} type="video/mp4" />
+        <source src={getSrc(video)} type="video/mp4" />
       </video>
 
       <div
@@ -648,13 +750,16 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
       />
 
       {(isLoading || isBuffering) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none">
+          <div
+            className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
 
       {(!isPlaying || hasEnded) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -664,7 +769,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
             className="pointer-events-auto w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center hover:bg-blue-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
             aria-label={hasEnded ? 'Replay video' : 'Play video'}
           >
-            {hasEnded ? <RotateCcw className="w-10 h-10 text-white" /> : <Play className="w-10 h-10 text-white ml-1" />}
+            {hasEnded ? <RotateCcw className="w-10 h-10 text-white" /> :
+              <Play className="w-10 h-10 text-white ml-1" />}
           </button>
         </div>
       )}
@@ -687,7 +793,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
               aria-label={isPlaying ? 'Pause' : hasEnded ? 'Replay' : 'Play'}
               className="text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
             >
-              {hasEnded ? <RotateCcw className="w-6 h-6" /> : isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+              {hasEnded ? <RotateCcw className="w-6 h-6" /> : isPlaying ?
+                <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
             </button>
 
             <div className="relative flex items-center gap-2">
@@ -700,7 +807,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                 className="text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
               >
-                {isMuted || volume === 0 ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                {isMuted || volume === 0 ? <VolumeX className="w-6 h-6" /> :
+                  <Volume2 className="w-6 h-6" />}
               </button>
 
               {!isMobile && showVolumeSlider && (
@@ -749,10 +857,15 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
             )}
 
             {showSpeedMenu && (
-              <div role="menu" className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-black/95 rounded-lg p-2 min-w-[100px] z-50">
-                <div className="flex items-center justify-between border-b border-gray-700 pb-2 mb-2 px-2">
-                  <span className="font-semibold text-white text-sm">Playback Speed</span>
-                  <button onClick={() => setShowSpeedMenu(false)} className="text-gray-400 hover:text-white text-sm">✕</button>
+              <div role="menu"
+                   className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-black/95 rounded-lg p-2 min-w-[100px] z-50">
+                <div
+                  className="flex items-center justify-between border-b border-gray-700 pb-2 mb-2 px-2">
+                  <span
+                    className="font-semibold text-white text-sm">Playback Speed</span>
+                  <button onClick={() => setShowSpeedMenu(false)}
+                          className="text-gray-400 hover:text-white text-sm">✕
+                  </button>
                 </div>
                 {speeds.map((s) => (
                   <button
@@ -791,10 +904,14 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
             )}
 
             {showQualityMenu && (
-              <div role="menu" className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-black/95 rounded-lg p-2 min-w-[100px] max-h-80 overflow-y-auto z-50">
-                <div className="flex items-center justify-between border-b border-gray-700 pb-2 mb-2 px-2">
+              <div role="menu"
+                   className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-black/95 rounded-lg p-2 min-w-[100px] max-h-80 overflow-y-auto z-50">
+                <div
+                  className="flex items-center justify-between border-b border-gray-700 pb-2 mb-2 px-2">
                   <span className="font-semibold text-white text-sm">Quality</span>
-                  <button onClick={() => setShowQualityMenu(false)} className="text-gray-400 hover:text-white text-sm">✕</button>
+                  <button onClick={() => setShowQualityMenu(false)}
+                          className="text-gray-400 hover:text-white text-sm">✕
+                  </button>
                 </div>
                 <button
                   role="menuitem"
@@ -830,17 +947,28 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
                 <Settings className="w-6 h-6" />
               </button>
               {showSettingsMenu && (
-                <div role="menu" className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-3 min-w-[200px] max-h-96 overflow-y-auto">
+                <div role="menu"
+                     className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-3 min-w-[200px] max-h-96 overflow-y-auto">
                   <div className="text-white text-sm space-y-2">
-                    <div className="font-semibold border-b border-gray-700 pb-2">Settings</div>
+                    <div
+                      className="font-semibold border-b border-gray-700 pb-2">Settings
+                    </div>
 
                     {isMobile && (
                       <>
-                        <button role="menuitem" onClick={() => { setShowSpeedMenu(true); setShowSettingsMenu(false); }} className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                        <button role="menuitem" onClick={() => {
+                          setShowSpeedMenu(true);
+                          setShowSettingsMenu(false);
+                        }}
+                                className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
                           <span>Speed</span>
                           <span className="text-gray-400">{playbackRate}x</span>
                         </button>
-                        <button role="menuitem" onClick={() => { setShowQualityMenu(true); setShowSettingsMenu(false); }} className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                        <button role="menuitem" onClick={() => {
+                          setShowQualityMenu(true);
+                          setShowSettingsMenu(false);
+                        }}
+                                className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
                           <span>Quality</span>
                           <span className="text-gray-400">{selectedQuality}</span>
                         </button>
@@ -848,9 +976,16 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
                       </>
                     )}
 
-                    <button role="menuitem" className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Subtitles (soon)</button>
-                    <button role="menuitem" className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Annotations (soon)</button>
-                    <button role="menuitem" onClick={toggleLoop} className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                    <button role="menuitem"
+                            className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Subtitles
+                                                                                                   (soon)
+                    </button>
+                    <button role="menuitem"
+                            className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Annotations
+                                                                                                   (soon)
+                    </button>
+                    <button role="menuitem" onClick={toggleLoop}
+                            className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
                       <span>Loop</span>
                       {isLooping && <span className="text-blue-400">✓</span>}
                     </button>
@@ -918,7 +1053,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
 
           {hoverTime !== null && duration > 0 && (
             <>
-              <div className="absolute top-0 bottom-0 w-0.5 bg-white" style={{ left: `${(hoverTime / duration) * 100}%` }} />
+              <div className="absolute top-0 bottom-0 w-0.5 bg-white"
+                   style={{ left: `${(hoverTime / duration) * 100}%` }} />
               <div
                 className="absolute -top-8 transform -translate-x-1/2 bg-black/90 px-2 py-1 rounded text-xs text-white whitespace-nowrap"
                 style={{ left: `${(hoverTime / duration) * 100}%` }}
@@ -929,7 +1065,8 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
             </>
           )}
 
-          <div className="absolute inset-0 h-1 group-hover/progress:h-1.5 transition-all" />
+          <div
+            className="absolute inset-0 h-1 group-hover/progress:h-1.5 transition-all" />
         </div>
       </div>
 
@@ -940,21 +1077,37 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
           onClick={(e) => e.stopPropagation()}
           role="menu"
         >
-          <button onClick={(e) => { togglePlay(); handleActivity(); }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800" role="menuitem">
+          <button onClick={(e) => {
+            togglePlay();
+            handleActivity();
+          }}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  role="menuitem">
             {isPlaying ? 'Pause' : hasEnded ? 'Replay' : 'Play'}
           </button>
-          <button onClick={(e) => { toggleMute(); handleActivity(); }} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800" role="menuitem">
+          <button onClick={(e) => {
+            toggleMute();
+            handleActivity();
+          }}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  role="menuitem">
             {isMuted ? 'Unmute' : 'Mute'}
           </button>
           <div className="border-t border-gray-700 my-1" />
-          <button onClick={copyVideoUrl} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800" role="menuitem">
+          <button onClick={copyVideoUrl}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  role="menuitem">
             Copy video URL
           </button>
-          <button onClick={copyCurrentTime} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800" role="menuitem">
+          <button onClick={copyCurrentTime}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  role="menuitem">
             Copy video URL at current time
           </button>
           <div className="border-t border-gray-700 my-1" />
-          <button onClick={toggleLoop} className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 flex items-center justify-between" role="menuitem">
+          <button onClick={toggleLoop}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 flex items-center justify-between"
+                  role="menuitem">
             <span>Loop</span>
             {isLooping && <span className="text-blue-400">✓</span>}
           </button>
@@ -967,10 +1120,13 @@ export default function VideoPlayer({ video, onWatchedTimeUpdate }: VideoPlayerP
 
       {showKeyboardShortcuts && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="bg-black/90 text-white rounded-lg p-6 max-w-lg w-full mx-4">
+          <div
+            className="bg-black/90 text-white rounded-lg p-6 max-w-lg w-full mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Keyboard shortcuts</h3>
-              <button onClick={() => setShowKeyboardShortcuts(false)} className="text-sm underline">Close</button>
+              <button onClick={() => setShowKeyboardShortcuts(false)}
+                      className="text-sm underline">Close
+              </button>
             </div>
             <ul className="grid grid-cols-2 gap-3 text-sm">
               <li><strong>Space</strong> — Play / Pause</li>
