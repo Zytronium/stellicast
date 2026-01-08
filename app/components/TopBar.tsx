@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
-import type { User } from '@supabase/supabase-js';
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
+
+interface UserProfile {
+  id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
 
 export default function TopBar() {
   const router = useRouter();
@@ -15,22 +22,113 @@ export default function TopBar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+  const initAttemptedRef = useRef(false);
+
+  const fetchUserProfile = useCallback(async (userId: string) => {
+    if (!mountedRef.current) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, display_name, avatar_url')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return;
+      }
+
+      if (mountedRef.current) {
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  }, [supabase]);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     // Get initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setLoading(false);
-    });
+    const initAuth = async () => {
+      // Prevent multiple initialization attempts
+      if (initAttemptedRef.current) return;
+      initAttemptedRef.current = true;
+
+      try {
+        // Add a small delay to ensure Supabase is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (!mountedRef.current) return;
+
+        if (error) {
+          console.error('Session error:', error);
+          setUser(null);
+          setUserProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        if (session?.user) {
+          setUser(session.user);
+          await fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setUserProfile(null);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        // Set null states but don't throw
+        if (mountedRef.current) {
+          setUser(null);
+          setUserProfile(null);
+        }
+      } finally {
+        if (mountedRef.current) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event: AuthChangeEvent, session: Session | null) => {
+        console.log('Auth state changed:', event); // Debug log
 
-    return () => subscription.unsubscribe();
-  }, []);
+        if (!mountedRef.current) return;
+
+        // Handle different auth events
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setUserProfile(null);
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          if (session?.user) {
+            setUser(session.user);
+            await fetchUserProfile(session.user.id);
+          }
+        } else if (event === 'INITIAL_SESSION') {
+          // Handle initial session separately
+          if (session?.user) {
+            setUser(session.user);
+            await fetchUserProfile(session.user.id);
+          }
+        }
+      }
+    );
+
+    return () => {
+      mountedRef.current = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchUserProfile, supabase]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +137,16 @@ export default function TopBar() {
 
   const handleLogout = async () => {
     setProfileMenuOpen(false);
-    await supabase.auth.signOut();
-    router.refresh();
+    try {
+      await supabase.auth.signOut();
+      router.refresh();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
+
+  const displayName = userProfile?.display_name || userProfile?.username || user?.email?.split('@')[0] || 'User';
+  const avatarUrl = userProfile?.avatar_url;
 
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-gray-800 backdrop-blur bg-gradient">
@@ -103,17 +208,17 @@ export default function TopBar() {
                 aria-haspopup="menu"
                 aria-expanded={profileMenuOpen}
               >
-                {user.user_metadata?.avatar_url ? (
+                {avatarUrl ? (
                   <Image
-                    src={user.user_metadata.avatar_url}
-                    alt={user.email || 'User'}
+                    src={avatarUrl}
+                    alt={displayName}
                     width={32}
                     height={32}
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
-                    {(user.email || 'U').charAt(0).toUpperCase()}
+                    {displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <ChevronDownIcon className={`h-4 w-4 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
@@ -123,7 +228,7 @@ export default function TopBar() {
                 <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-lg">
                   <div className="border-b border-gray-800 px-4 py-3">
                     <p className="text-sm font-semibold truncate">
-                      {user.user_metadata?.username || user.email?.split('@')[0] || 'User'}
+                      {displayName}
                     </p>
                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
                   </div>
