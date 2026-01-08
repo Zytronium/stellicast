@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Plus, Edit, Upload, Settings, LogOut } from 'lucide-react';
+import { User, Plus, Edit, Upload, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
 type Channel = {
   id: string;
@@ -22,10 +24,13 @@ type UserProfile = {
   username: string;
   display_name?: string;
   email: string;
+  avatar_url?: string;
+  banner_url?: string;
 };
 
 export default function AccountPage() {
   const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,8 +132,9 @@ export default function AccountPage() {
   };
 
   const handleSignOut = async () => {
-    await fetch('/api/auth/signout', { method: 'POST' });
+    await supabase.auth.signOut();
     router.push('/auth');
+    router.refresh();
   };
 
   if (loading) {
@@ -138,6 +144,8 @@ export default function AccountPage() {
       </div>
     );
   }
+
+  const displayNameText = user?.display_name || user?.username || 'User';
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -155,11 +163,21 @@ export default function AccountPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-2xl font-bold">
-            {user?.display_name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'U'}
-          </div>
+          {user?.avatar_url ? (
+            <Image
+              src={user.avatar_url}
+              alt={displayNameText}
+              width={80}
+              height={80}
+              className="w-20 h-20 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-2xl font-bold">
+              {displayNameText[0].toUpperCase()}
+            </div>
+          )}
           <div>
-            <h2 className="text-xl font-semibold">{user?.display_name || user?.username}</h2>
+            <h2 className="text-xl font-semibold">{displayNameText}</h2>
             <p className="text-sm text-gray-400">@{user?.username}</p>
             <p className="text-sm text-gray-500">{user?.email}</p>
           </div>
@@ -190,9 +208,19 @@ export default function AccountPage() {
                 className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 hover:border-gray-600 transition"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    {channel.display_name[0].toUpperCase()}
-                  </div>
+                  {channel.avatar_url ? (
+                    <Image
+                      src={channel.avatar_url}
+                      alt={channel.display_name}
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                      {channel.display_name[0].toUpperCase()}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold truncate">{channel.display_name}</h3>
@@ -218,11 +246,12 @@ export default function AccountPage() {
                     <Upload className="w-4 h-4" />
                     Upload
                   </button>
-                  <button className="px-3 py-2 border border-gray-700 text-gray-300 text-sm rounded-lg hover:bg-gray-700 transition">
+                  <button
+                    onClick={() => router.push(`/channel/${channel.handle}/manage`)}
+                    className="px-3 py-2 border border-gray-700 text-gray-300 text-sm rounded-lg hover:bg-gray-700 transition"
+                    title="Manage Channel"
+                  >
                     <Edit className="w-4 h-4" />
-                  </button>
-                  <button className="px-3 py-2 border border-gray-700 text-gray-300 text-sm rounded-lg hover:bg-gray-700 transition">
-                    <Settings className="w-4 h-4" />
                   </button>
                 </div>
               </div>

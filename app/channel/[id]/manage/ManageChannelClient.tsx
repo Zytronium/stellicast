@@ -491,7 +491,21 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
   };
 
   return (
-    <div className={`group overflow-hidden rounded-2xl border shadow-sm transition ${isSelected ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-800 hover:border-gray-700'} bg-[#0a0a0a]`}>
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggleSelect();
+        }
+      }}
+      onClick={() => onToggleSelect()}
+      className={`group overflow-hidden rounded-2xl border shadow-sm transition transform focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        isSelected ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-800 hover:border-gray-700'
+      } bg-[#0a0a0a] cursor-pointer`}
+    >
       <div className="relative aspect-video bg-gray-900">
         <Image
           src={imgSrc}
@@ -502,27 +516,39 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
         />
 
         {video.is_ai && (
-          <div className="absolute left-2 top-2 rounded-md bg-blue-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+          <div className="absolute left-2 top-2 rounded-md bg-blue-600 px-2 py-1 text-xs font-semibold text-white shadow-sm z-2">
             AI
           </div>
         )}
 
-        <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white">
+        <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white z-2">
           {formatDuration(video.duration)}
         </div>
 
-        <label
-          className="absolute left-2 bottom-2 cursor-pointer z-10"
-          onClick={(e) => e.stopPropagation()}
+        <div
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-200 pointer-events-none z-1 ${
+            isSelected ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+
+        <div
+          className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-200 z-3 ${
+            isSelected ? 'opacity-100' : 'opacity-0'
+          }`}
         >
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={onToggleSelect}
-            className="w-5 h-5 rounded cursor-pointer accent-blue-600 shadow-lg"
-            aria-label={`Select ${video.title}`}
-          />
-        </label>
+          <div className="flex items-center justify-center w-32 h-32 rounded-full border-4 border-blue-500 bg-transparent shadow-lg">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="w-16 h-16 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={3}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
 
         <div className="absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/5 to-white/5 pointer-events-none" />
       </div>
@@ -539,12 +565,19 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          <span className={`text-xs px-2 py-1 rounded-md font-medium ${video.visibility === 'public' ? 'bg-green-600/20 text-green-400' : 'bg-yellow-600/20 text-yellow-400'}`}>
-            {video.visibility === 'public' ? 'Public' : 'Private'}
+<span className={`text-xs px-2 py-1 rounded-md font-medium ${
+            video.visibility === 'public' 
+              ? 'bg-blue-600/20 text-blue-300' 
+              : video.visibility === 'unlisted'
+              ? 'bg-yellow-600/20 text-yellow-300'
+              : 'bg-slate-600/20 text-slate-300'
+          }`}>
+            {video.visibility.charAt(0).toUpperCase() + video.visibility.slice(1)}
           </span>
           <button
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               onEdit();
             }}
             className="text-xs text-blue-400 hover:text-blue-300 transition font-semibold px-2 py-1 rounded hover:bg-blue-400/10"
@@ -597,7 +630,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-10" onClick={onClose}>
       <div className="bg-zinc-900 rounded-lg max-w-lg w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
         <h2 className="text-xl font-semibold text-white mb-4">Edit Video</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

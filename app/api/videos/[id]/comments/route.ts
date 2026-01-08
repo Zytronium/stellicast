@@ -34,7 +34,8 @@ export async function GET(
         user:users!comments_user_id_fkey (
           id,
           username,
-          display_name
+          display_name,
+          avatar_url
         )
       `, { count: 'exact' })
       .eq('video_id', videoId)
