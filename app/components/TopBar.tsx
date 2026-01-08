@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { MagnifyingGlassIcon, ChevronDownIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import type { User, AuthError, AuthChangeEvent, Session } from '@supabase/supabase-js';
 
@@ -15,18 +15,24 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
-export default function TopBar() {
+interface TopBarProps {
+  onFilterClick?: () => void;
+  showFilters?: boolean;
+}
+
+export default function TopBar({ onFilterClick, showFilters = false }: TopBarProps) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial user - use getUser() like the working version
+    // Get initial user
     supabase.auth.getUser().then((response: { data: { user: User | null }, error: AuthError | null }) => {
       const user = response.data.user;
       setUser(user);
@@ -96,19 +102,33 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-gray-800 backdrop-blur bg-gradient">
-      <div className="flex h-full items-center justify-between px-6">
+      <div className="flex h-full items-center justify-between px-4 md:px-6">
+        {/* Logo */}
         <Link className="flex min-w-fit cursor-pointer items-center gap-2" href="/">
+          {/* Mobile: Square logo */}
+          <div className="md:hidden w-8 h-8 relative">
+            <Image
+              src="/logo.png"
+              alt="Stellicast"
+              width={32}
+              height={32}
+              className="rounded-lg"
+              priority
+            />
+          </div>
+          {/* Desktop: Full logo */}
           <Image
             src="/stellicast_smaller.png"
             alt="Stellicast"
             width={187.4}
             height={32}
-            className="h-8 w-auto"
+            className="hidden md:block h-8 w-auto"
             priority
           />
         </Link>
 
-        <form onSubmit={handleSearch} className="mx-8 hidden flex-1 max-w-xl md:block">
+        {/* Desktop Search - Hidden on mobile */}
+        <form onSubmit={handleSearch} className="mx-8 hidden flex-1 max-w-xl lg:block">
           <div className="flex">
             <input
               type="text"
@@ -127,6 +147,27 @@ export default function TopBar() {
           </div>
         </form>
 
+        {/* Mobile Search & Filters */}
+        <div className="flex items-center gap-2 flex-1 justify-center lg:hidden">
+          {showFilters && (
+            <button
+              onClick={onFilterClick}
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label="Filters"
+            >
+              <FunnelIcon className="h-5 w-5" />
+            </button>
+          )}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            aria-label="Search"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Desktop Navigation - Hidden on mobile */}
         <nav className="hidden min-w-fit items-center gap-6 lg:flex">
           <Link href="/" className="text-sm text-gray-200 hover:text-blue-400">
             Feed
@@ -142,14 +183,15 @@ export default function TopBar() {
           </Link>
         </nav>
 
-        <div className="relative ml-4 min-w-fit">
+        {/* Profile/Login Button */}
+        <div className="relative ml-2 md:ml-4 min-w-fit">
           {loading ? (
-            <div className="h-10 w-20 animate-pulse rounded-xl bg-gray-800"></div>
+            <div className="h-10 w-10 md:w-20 animate-pulse rounded-xl bg-gray-800"></div>
           ) : user ? (
             <>
               <button
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                className="flex items-center gap-2 rounded-xl px-3 py-2 hover:bg-gray-900"
+                className="flex items-center gap-2 rounded-xl px-2 py-2 md:px-3 hover:bg-gray-900"
                 aria-haspopup="menu"
                 aria-expanded={profileMenuOpen}
               >
@@ -166,7 +208,7 @@ export default function TopBar() {
                     {displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <ChevronDownIcon className={`h-4 w-4 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon className={`h-4 w-4 hidden md:block transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {profileMenuOpen && (
@@ -205,13 +247,45 @@ export default function TopBar() {
           ) : (
             <Link
               href="/auth"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-colors"
+              className="px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-colors"
             >
               Login
             </Link>
           )}
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      {searchOpen && (
+        <div className="fixed inset-0 z-50 bg-[#0a0a0a] lg:hidden">
+          <div className="h-16 border-b border-gray-800 flex items-center px-4 gap-2">
+            <button
+              onClick={() => setSearchOpen(false)}
+              className="p-2 hover:bg-gray-800 rounded-lg"
+              aria-label="Close search"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+            <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+              <input
+                type="text"
+                placeholder="Search videos, creators, topics…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="flex-1 rounded-xl border border-gray-700 bg-gray-900 px-4 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10"
+              />
+              <button
+                type="submit"
+                className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+                aria-label="Search"
+              >
+                <MagnifyingGlassIcon className="h-6 w-6" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
