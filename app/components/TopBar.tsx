@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
-import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -24,111 +24,60 @@ export default function TopBar() {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const mountedRef = useRef(true);
-  const initAttemptedRef = useRef(false);
-
-  const fetchUserProfile = useCallback(async (userId: string) => {
-    if (!mountedRef.current) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, username, display_name, avatar_url')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return;
-      }
-
-      if (mountedRef.current) {
-      setUserProfile(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  }, [supabase]);
 
   useEffect(() => {
-    mountedRef.current = true;
-
-    // Get initial user
-    const initAuth = async () => {
-      // Prevent multiple initialization attempts
-      if (initAttemptedRef.current) return;
-      initAttemptedRef.current = true;
-
-      try {
-        // Add a small delay to ensure Supabase is fully initialized
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (!mountedRef.current) return;
-
-      if (error) {
-        console.error('Session error:', error);
-        setUser(null);
-        setUserProfile(null);
-        setLoading(false);
-        return;
-      }
-
-        if (session?.user) {
-      setUser(session.user);
-        await fetchUserProfile(session.user.id);
-      } else {
-        setUser(null);
-        setUserProfile(null);
-      }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        // Set null states but don't throw
-        if (mountedRef.current) {
-          setUser(null);
-          setUserProfile(null);
-        }
-      } finally {
-        if (mountedRef.current) {
+    // Get initial user - use getUser() like the working version
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
       setLoading(false);
-      }
-      }
-    };
 
-    initAuth();
+      // Fetch profile data if user exists (non-blocking)
+      if (user) {
+        supabase
+          .from('users')
+          .select('id, username, display_name, avatar_url')
+          .eq('id', user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error fetching profile:', error);
+              return;
+            }
+            if (data) {
+              setUserProfile(data);
+            }
+          });
+      }
+    });
 
     // Listen for auth changes
-const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event: AuthChangeEvent, session: Session | null) => {
-      console.log('Auth state changed:', event); // Debug log
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const newUser = session?.user ?? null;
+      setUser(newUser);
 
-        if (!mountedRef.current) return;
-
-        // Handle different auth events
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setUserProfile(null);
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-          if (session?.user) {
-            setUser(session.user);
-            await fetchUserProfile(session.user.id);
-          }
-        } else if (event === 'INITIAL_SESSION') {
-          // Handle initial session separately
-      if (session?.user) {
-            setUser(session.user);
-        await fetchUserProfile(session.user.id);
-          }
+      // Fetch profile for new user
+      if (newUser) {
+        supabase
+          .from('users')
+          .select('id, username, display_name, avatar_url')
+          .eq('id', newUser.id)
+          .single()
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error fetching profile:', error);
+              return;
+            }
+            if (data) {
+              setUserProfile(data);
+            }
+          });
+      } else {
+        setUserProfile(null);
       }
-    }
-  );
+    });
 
-    return () => {
-      mountedRef.current = false;
-      subscription.unsubscribe();
-    };
-  }, [fetchUserProfile, supabase]);
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,12 +86,8 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange(
 
   const handleLogout = async () => {
     setProfileMenuOpen(false);
-    try {
     await supabase.auth.signOut();
     router.refresh();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
   };
 
   const displayName = userProfile?.display_name || userProfile?.username || user?.email?.split('@')[0] || 'User';
@@ -196,7 +141,6 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange(
           </Link>
         </nav>
 
-        {/* Auth Section */}
         <div className="relative ml-4 min-w-fit">
           {loading ? (
             <div className="h-10 w-20 animate-pulse rounded-xl bg-gray-800"></div>
