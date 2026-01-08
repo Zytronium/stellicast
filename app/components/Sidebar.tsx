@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FunnelIcon, InformationCircleIcon, BookmarkIcon, RssIcon } from '@heroicons/react/24/solid';
+import { FunnelIcon, InformationCircleIcon, BookmarkIcon, RssIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import FilterAccordion from './FilterAccordion';
 import Tooltip from './Tooltip';
 
@@ -93,11 +93,21 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
   ];
 
   return (
-    <div className={`relative transition-all duration-300 z-1`}>
-      {/* Tab Buttons - Always visible */}
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-30 top-16"
+          onClick={() => setIsOpen(false)}
+          aria-label="Close sidebar overlay"
+        />
+      )}
+
+      <div className={`relative transition-all duration-300`}>
+        {/* Tab Buttons - Always visible on desktop, move with sidebar on mobile */}
       <div className={`fixed top-20 transition-all duration-300 z-50 flex flex-col gap-2 ${
-        isOpen ? 'left-64' : 'left-0'
-      }`}>
+          isOpen ? 'left-64' : 'left-0 md:left-0'
+        } hidden md:flex`}>
         {showFilters && (
           <button
             onClick={() => handleTabClick('filters')}
@@ -131,14 +141,71 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
 
       {/* Sidebar Content */}
       <aside
-        className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-gradient-darker border-r border-gray-800 overflow-y-auto transition-all duration-300 ${
-          isOpen ? 'w-64' : 'w-0'
+          className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-gradient-darker border-r border-gray-800 overflow-y-auto transition-all duration-300 z-40 ${
+            isOpen ? 'w-64 translate-x-0' : 'w-0 md:w-0 -translate-x-full md:translate-x-0'
+          }`}
+        >
+          {/* Mobile Header with Close Button and Tabs */}
+          <div className="md:hidden sticky top-0 bg-gradient-darker border-b border-gray-800 z-10">
+            <div className="flex items-center justify-between p-4">
+              <h2 className="text-lg font-bold">
+                {activeTab === 'filters' && 'Filters'}
+                {activeTab === 'library' && 'Library'}
+                {activeTab === 'following' && 'Following'}
+              </h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="Close sidebar"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Mobile Tab Buttons */}
+            <div className="flex border-t border-gray-800">
+              {showFilters && (
+                <button
+                  onClick={() => setActiveTab('filters')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${
+                    activeTab === 'filters'
+                      ? 'bg-gray-900 text-blue-400 border-b-2 border-b-blue-500'
+                      : 'text-gray-400 hover:text-white'
         }`}
       >
+                  <FunnelIcon className="w-5 h-5" />
+                  <span className="text-sm font-medium">Filters</span>
+                </button>
+              )}
+              <button
+                onClick={() => setActiveTab('library')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${
+                  activeTab === 'library'
+                    ? 'bg-gray-900 text-blue-400 border-b-2 border-b-blue-500'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <BookmarkIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">Library</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('following')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 transition-colors ${
+                  activeTab === 'following'
+                    ? 'bg-gray-900 text-blue-400 border-b-2 border-b-blue-500'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <RssIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">Following</span>
+              </button>
+            </div>
+          </div>
+
         {/* Filters Tab */}
         {activeTab === 'filters' && (
           <div className="p-6 space-y-6">
-            <h2 className="text-lg font-bold mb-4">Filters</h2>
+            <h2 className="text-lg font-bold mb-4 hidden md:block">Filters</h2>
 
             <FilterAccordion title="AI Content">
               <div className="space-y-2">
@@ -369,7 +436,7 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
         {/* Library Tab */}
         {activeTab === 'library' && (
           <div className="p-6">
-            <h2 className="text-lg font-bold mb-4">Library</h2>
+              <h2 className="text-lg font-bold mb-4 hidden md:block">Library</h2>
             <div className="space-y-2">
               {libraryItems.map((item) => (
                 <button
@@ -389,7 +456,7 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
         {/* Following Tab */}
         {activeTab === 'following' && (
           <div className="p-6">
-            <h2 className="text-lg font-bold mb-4">Following</h2>
+              <h2 className="text-lg font-bold mb-4 hidden md:block">Following</h2>
             <div className="space-y-2">
               {following.map((sub) => (
                 <button
@@ -410,5 +477,6 @@ export default function Sidebar({ isOpen, setIsOpen, showFilters = true }: Sideb
         )}
       </aside>
     </div>
+    </>
   );
 }
