@@ -180,3 +180,44 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Safe area support for iOS devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Smooth scrolling for mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Better scrolling on iOS */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Hide scrollbar on mobile but keep functionality */
+@media (max-width: 768px) {
+  .overflow-y-auto::-webkit-scrollbar {
+    display: none;
+  }
+
+  .overflow-y-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Ensure content doesn't go under the bottom nav on mobile */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+}
