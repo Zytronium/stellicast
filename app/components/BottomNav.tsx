@@ -32,16 +32,16 @@ export default function BottomNav() {
       activeIcon: UserIconSolid
     },
     {
-      name: 'More',
-      href: '/more',
-      icon: EllipsisHorizontalIcon,
-      activeIcon: EllipsisHorizontalIconSolid
-    },
-    {
       name: 'Settings',
       href: '/settings',
       icon: Cog6ToothIcon,
       activeIcon: Cog6ToothIconSolid
+    },
+    {
+      name: 'More',
+      href: '/more',
+      icon: EllipsisHorizontalIcon,
+      activeIcon: EllipsisHorizontalIconSolid
     },
   ];
 

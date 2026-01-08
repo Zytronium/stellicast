@@ -20,6 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const noPadding = pathsWithoutPadding.some(path => pathname.startsWith(path));
   const showBottomNav = !pathsWithoutBottomNav.some(path => pathname.startsWith(path));
 
+  const isWatchPage = pathname.startsWith('/watch');
+
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
@@ -61,7 +63,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             ].join(' ')}
           >
             <div className="min-h-full bg-gradient-darker flex flex-col">
-          <div className={`w-full ${noPadding ? 'pb-6' : 'px-4 md:px-6 lg:pl-10 py-6'} flex-1 flex flex-col`}>
+              <div
+                className={[
+                  'w-full flex-1 flex flex-col',
+                  noPadding
+                    ? 'pb-6'
+                    : isWatchPage
+                      ? 'px-0 pt-0 pb-6 md:px-6 lg:pl-10 md:py-6'
+                      : 'px-4 md:px-6 lg:pl-10 py-6',
+                ].join(' ')}
+              >
                 {children}
               </div>
             </div>

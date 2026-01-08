@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Plus, X, Share2 } from 'lucide-react';
+import { Plus, X, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
 import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
@@ -113,6 +113,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [commentCount, setCommentCount] = useState(0);
   const [userLikedComments, setUserLikedComments] = useState<string[]>([]);
   const [userDislikedComments, setUserDislikedComments] = useState<string[]>([]);
+  const [mobileCommentsExpanded, setMobileCommentsExpanded] = useState(false);
 
   const [authReady, setAuthReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -223,9 +224,9 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
         if (!videoRes.ok) {
           if (videoRes.status === 404) {
-          notFound();
-          return;
-        }
+            notFound();
+            return;
+          }
           throw new Error(`Failed to fetch video: ${videoRes.status}`);
         }
 
@@ -292,13 +293,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           const filteredVideos = videos.filter((v: any) => v.id !== id);
 
           if (mounted) {
-          setAllVideos(filteredVideos);
-          setUpNext(filteredVideos.slice(0, 6));
-        }
+            setAllVideos(filteredVideos);
+            setUpNext(filteredVideos.slice(0, 6));
+          }
         }
 
         if (mounted) {
-          setRetryCount(0); // Reset retry count on success
+          setRetryCount(0);
         }
       } catch (error) {
         console.error('Error loading video:', error);
@@ -314,13 +315,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           }, 1000 * (retryCount + 1)); // Exponential backoff
         } else {
           // Give up after max retries
-        notFound();
+          notFound();
         }
       } finally {
         if (mounted) {
-        setLoading(false);
+          setLoading(false);
+        }
       }
-    }
     }
 
     loadData();
@@ -596,18 +597,24 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 max-w-[1800px] mx-auto px-4">
+      {/* Main Content - Video and Info */}
       <div className="flex-1 min-w-0">
+        {/* Video Player */}
         <VideoPlayer video={playerVideo} onWatchedTimeUpdate={handleWatchedTimeUpdate} />
 
+        {/* Video Info */}
         <div className="mt-4 space-y-3">
-          <h1 className="text-xl sm:text-2xl font-semibold">{video.title}</h1>
+          {/* Title */}
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold px-0">{video.title}</h1>
 
-          <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between">
-            <div className="flex items-center justify-between sm:justify-start gap-4 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-3">
-              <div className="flex items-center gap-3">
-                <a
-                  className="grid h-10 w-10 place-items-center rounded-full bg-zinc-600 text-sm font-bold text-white flex-shrink-0 overflow-hidden"
+          {/* Channel Info & Actions - Mobile Optimized */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
+            {/* Channel Info */}
+            <div className="flex items-center justify-between sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial">
+                <Link
                   href={`/channel/${channelInfo.handle ?? ''}`}
+                  className="grid h-10 w-10 place-items-center rounded-full bg-zinc-600 text-sm font-bold text-white flex-shrink-0 overflow-hidden"
                 >
                   {channelInfo.avatar_url ? (
                     <img
@@ -618,14 +625,14 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   ) : (
                     channelInfo.display_name?.[0]?.toUpperCase() ?? "C"
                   )}
-                </a>
-                <div>
-                  <a
-                    className="text-sm font-semibold text-gray-100"
+                </Link>
+                <div className="min-w-0 sm:min-w-0">
+                  <Link
                     href={`/channel/${channelInfo.handle ?? ''}`}
+                    className="text-sm font-semibold text-gray-100 block truncate sm:inline"
                   >
                     {channelInfo.display_name ?? 'Unknown Creator'}
-                  </a>
+                  </Link>
                   <div className="text-xs text-gray-400">
                     {channelInfo.video_count ?? 0} video
                     {channelInfo.video_count === 1 ? "" : "s"} •{" "}
@@ -637,42 +644,73 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
               <button
                 type="button"
-                className="rounded-full bg-blue-600 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-500 transition"
+                className="rounded-full bg-blue-600 px-4 sm:px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-500 transition flex-shrink-0"
               >
                 Follow
               </button>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="flex flex-col rounded-lg overflow-hidden border border-gray-800">
-                  <button
-                    onClick={handleLikeClick}
-                    disabled={likeLoading}
-                    className={`flex items-center justify-center px-3 py-2 text-sm transition ${
-                      liked ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
-                    } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <ThumbsUpIcon ref={likeIconRef} className="w-4 h-4" />
-                  </button>
-                  <div className="h-px bg-gray-800"></div>
-                  <button
-                    onClick={handleDislikeClick}
-                    disabled={dislikeLoading}
-                    className={`flex items-center justify-center px-3 py-2 text-sm transition ${
-                      disliked ? 'bg-red-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
-                    } ${dislikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <ThumbsDownIcon ref={dislikeIconRef} className="w-4 h-4" />
-                  </button>
+            {/* Action Buttons - Mobile Optimized */}
+            <div className="flex flex-col sm:flex-row lg:flex lg:items-center gap-3 lg:gap-3">
+              {/* Like/Dislike - Mobile takes full width */}
+              <div className="flex items-center justify-between sm:justify-start gap-3 rounded-xl border border-gray-800 bg-gray-900/50 p-3 lg:p-0 lg:bg-transparent lg:border-0">
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col lg:flex-col rounded-lg overflow-hidden border border-gray-800">
+                    <button
+                      onClick={handleLikeClick}
+                      disabled={likeLoading}
+                      className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
+                        liked ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
+                      } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <ThumbsUpIcon ref={likeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
+                    </button>
+                    <div className="h-px bg-gray-800"></div>
+                    <button
+                      onClick={handleDislikeClick}
+                      disabled={dislikeLoading}
+                      className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
+                        disliked ? 'bg-red-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
+                      } ${dislikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <ThumbsDownIcon ref={dislikeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col text-sm lg:text-xs text-gray-400 gap-3">
+                    <span className="whitespace-nowrap lg:hidden font-medium">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
+                    <span className="hidden lg:inline whitespace-nowrap">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
+                    <span className="whitespace-nowrap lg:hidden font-medium">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
+                    <span className="hidden lg:inline whitespace-nowrap">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col text-xs text-gray-400 gap-3">
-                  <span>{video.likes} like{video.likes === 1 ? '' : 's'}</span>
-                  <span>{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
+
+                {/* Star - Mobile inline with like/dislike */}
+                <div className="flex items-center gap-2.5 lg:hidden">
+                  <button
+                    onClick={handleStarClick}
+                    disabled={!canStar || starLoading}
+                    className={`transition ${
+                      canStar && !starLoading ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
+                    } ${starLoading ? 'opacity-50' : ''}`}
+                    title={!canStar ? `Watch ${Math.ceil((video.duration || 0) * 0.20)}s (20%) to star` : ''}
+                  >
+                    <StarIcon
+                      className={`w-9 h-9 transition ${
+                        starred ? 'text-yellow-500' : canStar ? 'text-gray-400' : 'text-gray-600'
+                      }`}
+                      fill={starred ? 'currentColor' : '#1c263a'}
+                    />
+                  </button>
+                  <div>
+                    <span className={`text-sm font-semibold ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {video.stars} star{video.stars === 1 ? '' : 's'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Star - Desktop only (separate from like/dislike) */}
+              <div className="hidden lg:flex items-center gap-2">
                 <button
                   onClick={handleStarClick}
                   disabled={!canStar || starLoading}
@@ -688,21 +726,22 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                     fill={starred ? 'currentColor' : '#1c263a'}
                   />
                 </button>
-                <span className={`text-sm font-medium ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
+                <span className={`text-sm font-medium whitespace-nowrap ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
                   {video.stars} star{video.stars === 1 ? '' : 's'}
                 </span>
               </div>
 
+              {/* Share */}
               <div className="relative">
                 <button
                   onClick={handleShare}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 lg:py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl lg:rounded-lg transition"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Share2 className="w-5 h-5 lg:w-4 lg:h-4" />
                   <span className="text-sm font-medium">Share</span>
                 </button>
                 {showShareCopied && (
-                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
+                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
                     Link copied!
                   </div>
                 )}
@@ -710,6 +749,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             </div>
           </div>
 
+          {/* Description */}
           <div className="rounded-2xl border border-gray-800 bg-[#0a0a0a] p-4">
             <details open className="group">
               <summary className="cursor-pointer list-none text-sm font-semibold text-gray-100">
@@ -734,6 +774,80 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           </div>
         </div>
 
+        {/* Mobile Comments Section - Between Description and More Videos */}
+        <div className="lg:hidden mt-6">
+          <div className="rounded-2xl border border-gray-800 bg-[#0a0a0a] overflow-hidden">
+            {/* Comments Header - Clickable to expand */}
+            <button
+              onClick={() => setMobileCommentsExpanded(!mobileCommentsExpanded)}
+              className="w-full p-4 flex items-center justify-between hover:bg-gray-900/30 transition"
+            >
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
+              </div>
+              {mobileCommentsExpanded ? (
+                <ChevronUp className="w-5 h-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              )}
+            </button>
+
+            {/* First Comment Preview - Always visible when collapsed */}
+            {!mobileCommentsExpanded && comments.length > 0 && (
+              <div className="px-4 pb-4 border-t border-gray-800">
+                <div className="pt-3">
+                  <CommentComponent
+                    comment={comments[0]}
+                    videoId={video.id}
+                    currentUserId={currentUserId}
+                    userLikedComments={userLikedComments}
+                    userDislikedComments={userDislikedComments}
+                    onReplySubmit={refreshComments}
+                    onCommentUpdate={refreshComments}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Expanded Comments */}
+            {mobileCommentsExpanded && (
+              <div className="border-t border-gray-800">
+                <div className="p-4">
+                  <button
+                    onClick={() => setShowCommentModal(true)}
+                    className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-blue-500 transition mb-4"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Comment
+                  </button>
+
+                  <div className="space-y-1 max-h-[600px] overflow-y-auto">
+                    {isLoadingComments ? (
+                      <p className="text-sm text-gray-400 text-center py-8">Loading comments...</p>
+                    ) : comments.length > 0 ? (
+                      comments.map((comment) => (
+                        <CommentComponent
+                          key={comment.id}
+                          comment={comment}
+                          videoId={video.id}
+                          currentUserId={currentUserId}
+                          userLikedComments={userLikedComments}
+                          userDislikedComments={userDislikedComments}
+                          onReplySubmit={refreshComments}
+                          onCommentUpdate={refreshComments}
+                        />
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-400 text-center py-8">No comments yet. Be the first to comment!</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* More Videos */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -755,12 +869,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         </div>
       </div>
 
-      <div className="w-full lg:w-96 bg-gray-900/50 rounded-lg p-4 flex flex-col lg:h-[calc(100vh-8rem)] lg:sticky lg:top-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+      {/* Comments Sidebar - Desktop Only */}
+      <div className="hidden lg:flex w-96 bg-gray-900/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
         </div>
 
-        <div className="hidden lg:block mb-4">
+        <div className="mb-4">
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
@@ -784,14 +899,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             </button>
           </div>
         </div>
-
-        <button
-          onClick={() => setShowCommentModal(true)}
-          className="lg:hidden flex items-center justify-center gap-2 w-full bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-blue-500 transition mb-4"
-        >
-          <Plus className="w-4 h-4" />
-          Add Comment
-        </button>
 
         <div className="flex-1 overflow-y-auto">
           {isLoadingComments ? (
@@ -817,6 +924,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         </div>
       </div>
 
+      {/* Mobile Comment Modal */}
       {showCommentModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-end lg:hidden">
           <div className="bg-gray-900 rounded-t-2xl w-full p-6 animate-slide-up">
