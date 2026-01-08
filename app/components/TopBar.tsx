@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
-import type { User } from '@supabase/supabase-js';
+import type { User, AuthError, AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -27,7 +27,8 @@ export default function TopBar() {
 
   useEffect(() => {
     // Get initial user - use getUser() like the working version
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then((response: { data: { user: User | null }, error: AuthError | null }) => {
+      const user = response.data.user;
       setUser(user);
       setLoading(false);
 
@@ -38,20 +39,20 @@ export default function TopBar() {
           .select('id, username, display_name, avatar_url')
           .eq('id', user.id)
           .single()
-          .then(({ data, error }) => {
-            if (error) {
-              console.error('Error fetching profile:', error);
+          .then((result: { data: UserProfile | null, error: any }) => {
+            if (result.error) {
+              console.error('Error fetching profile:', result.error);
               return;
             }
-            if (data) {
-              setUserProfile(data);
+            if (result.data) {
+              setUserProfile(result.data);
             }
           });
       }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       const newUser = session?.user ?? null;
       setUser(newUser);
 
@@ -62,13 +63,13 @@ export default function TopBar() {
           .select('id, username, display_name, avatar_url')
           .eq('id', newUser.id)
           .single()
-          .then(({ data, error }) => {
-            if (error) {
-              console.error('Error fetching profile:', error);
+          .then((result: { data: UserProfile | null, error: any }) => {
+            if (result.error) {
+              console.error('Error fetching profile:', result.error);
               return;
             }
-            if (data) {
-              setUserProfile(data);
+            if (result.data) {
+              setUserProfile(result.data);
             }
           });
       } else {
