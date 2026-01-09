@@ -75,7 +75,7 @@ export default function ProfilePageClient({ user, channels }: ProfilePageClientP
     <div className="relative min-h-full">
       <div className="container mx-auto">
         <Header user={currentUser} setUser={setCurrentUser} supabase={supabase} />
-        <Tabs defaultTab="profile" className="mt-8 px-12">
+        <Tabs defaultTab="profile" className="mt-4 sm:mt-8 px-4 sm:px-12">
           <TabPanel id="profile">
             <ProfileEditor user={currentUser} setUser={setCurrentUser} supabase={supabase} />
           </TabPanel>
@@ -159,7 +159,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
   return (
     <div className="relative">
       {/* Banner */}
-      <div className="w-full h-64 relative rounded-b-lg overflow-hidden">
+      <div className="w-full h-40 sm:h-64 relative rounded-b-lg overflow-hidden">
         {bannerPreview || user.banner_url ? (
           <Image
             src={bannerPreview || user.banner_url || ''}
@@ -172,7 +172,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
         )}
         <label
           htmlFor="bannerUpload"
-          className={`absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-xs text-white px-3 py-2 rounded cursor-pointer hover:bg-black/80 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-black/60 backdrop-blur-sm text-xs text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded cursor-pointer hover:bg-black/80 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {uploading ? 'Uploading...' : 'Change banner'}
           <input
@@ -187,10 +187,10 @@ function Header({ user, setUser, supabase }: HeaderProps) {
       </div>
 
       {/* Profile section */}
-      <div className="relative mt-4 px-12">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+      <div className="relative mt-4 px-4 sm:px-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
           {/* Avatar */}
-          <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
+          <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full overflow-hidden relative shrink-0">
             {avatarPreview || user.avatar_url ? (
               <Image
                 src={avatarPreview || user.avatar_url || ''}
@@ -199,7 +199,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
                 className="object-cover"
               />
             ) : (
-              <div className="grid h-full w-full place-items-center bg-zinc-600 text-6xl font-bold text-white">
+              <div className="grid h-full w-full place-items-center bg-zinc-600 text-4xl sm:text-6xl font-bold text-white">
                 {user.display_name?.[0]?.toUpperCase() ?? user.username?.[0]?.toUpperCase() ?? "U"}
               </div>
             )}
@@ -222,7 +222,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
 
           {/* Name + metadata */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
               {user.display_name || user.username}
             </h1>
             <p className="text-sm text-gray-400">
@@ -237,7 +237,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
           <div className="w-full sm:w-auto flex-shrink-0 flex gap-2">
             <Link
               href={`/user/${user.username}`}
-              className="inline-flex items-center h-10 px-4 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+              className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
             >
               View Profile
             </Link>
@@ -245,7 +245,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
         </div>
 
         {user.description && (
-          <p className="mt-4 max-w-2xl text-gray-300">
+          <p className="mt-4 max-w-2xl text-sm sm:text-base text-gray-300">
             {user.description}
           </p>
         )}
@@ -264,14 +264,14 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
 
   return (
     <div className={className}>
-      <div className="flex flex-row gap-8 mt-6">
+      <div className="flex flex-row gap-4 sm:gap-8 mt-6">
         {tabs.map(id => (
           <p
             key={id}
             onClick={() => setActive(id)}
             role="tab"
             aria-selected={active === id}
-            className={`relative cursor-pointer transition-all ${
+            className={`relative cursor-pointer transition-all text-sm sm:text-base ${
               active === id
                 ? 'font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110'
                 : 'font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100'
@@ -283,7 +283,7 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
       </div>
       <hr className="border-zinc-600 mt-2"/>
 
-      <div className="pt-8">
+      <div className="pt-6 sm:pt-8">
         {['profile', 'channels'].map(id => (
           <div key={id} className={active === id ? 'block' : 'hidden'}>
             {children[tabs.indexOf(id)]}
@@ -433,7 +433,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-4 sm:space-y-6">
       <div>
         <label htmlFor="username" className="block text-sm font-medium text-gray-200 mb-1">
           Username
@@ -446,7 +446,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           onChange={handleChange}
           className={`block w-full rounded-md bg-zinc-800 border ${
             usernameError ? 'border-red-500' : 'border-zinc-600'
-          } text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          } text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
           placeholder="Your username"
         />
         {!loadingChangeInfo && usernameChangeInfo && (
@@ -490,7 +490,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           type="text"
           value={form.display_name}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Your display name"
         />
       </div>
@@ -505,7 +505,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           rows={4}
           value={form.description}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
           placeholder="Tell us about yourself..."
         />
       </div>
@@ -515,7 +515,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           type="button"
           onClick={handleSubmit}
           disabled={saving}
-          className="h-10 px-6 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
+          className="h-9 sm:h-10 px-6 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
         >
           {saving ? 'Updating...' : 'Update profile'}
         </button>
@@ -529,25 +529,25 @@ function ChannelsList({ channels }: ChannelsListProps) {
     <div>
       {channels.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">You don&apos;t have any channels yet</p>
+          <p className="text-gray-400 mb-4 text-sm sm:text-base">You don&apos;t have any channels yet</p>
           <Link
             href="/account"
-            className="inline-flex items-center h-10 px-6 rounded-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30"
+            className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30"
           >
             Create a channel
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {channels.map((channel) => (
             <Link
               key={channel.id}
               href={`/channel/${channel.handle}`}
-              className="group block p-6 rounded-lg bg-gradient-darker border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
+              className="group block p-4 sm:p-6 rounded-lg bg-gradient-darker border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
             >
               <div className="flex flex-col items-center text-center">
                 {/* Channel Avatar */}
-                <div className="w-24 h-24 rounded-full overflow-hidden relative mb-4">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden relative mb-3 sm:mb-4">
                   {channel.avatar_url ? (
                     <Image
                       src={channel.avatar_url}
@@ -556,22 +556,22 @@ function ChannelsList({ channels }: ChannelsListProps) {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center bg-zinc-600 text-3xl font-bold text-white">
+                    <div className="grid h-full w-full place-items-center bg-zinc-600 text-2xl sm:text-3xl font-bold text-white">
                       {channel.display_name?.[0]?.toUpperCase() ?? "C"}
                     </div>
                   )}
                 </div>
 
                 {/* Channel Info */}
-                <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+                <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
                   {channel.display_name}
                 </h3>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-xs sm:text-sm text-gray-400 mt-1">
                   @{channel.handle}
                 </p>
 
                 {/* Stats */}
-                <div className="flex gap-3 mt-3 text-sm text-gray-400">
+                <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400">
                   <span>{channel.follower_count ?? 0} followers</span>
                   <span>•</span>
                   <span>{channel.video_count ?? 0} videos</span>
@@ -579,7 +579,7 @@ function ChannelsList({ channels }: ChannelsListProps) {
 
                 {/* Description */}
                 {channel.description && (
-                  <p className="text-sm text-gray-400 mt-3 line-clamp-2 w-full">
+                  <p className="text-xs sm:text-sm text-gray-400 mt-2 sm:mt-3 line-clamp-2 w-full">
                     {channel.description}
                   </p>
                 )}
