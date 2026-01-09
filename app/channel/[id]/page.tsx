@@ -40,7 +40,7 @@ export default async function ChannelPage({ params }: PageProps) {
 
   return (
     <div className="relative">
-      <div className="w-full h-64 relative">
+      <div className="w-full h-40 sm:h-64 relative">
         {channel.banner_url ? (
           <Image
             src={channel.banner_url}
@@ -53,30 +53,30 @@ export default async function ChannelPage({ params }: PageProps) {
         )}
       </div>
 
-      <div className="container mx-auto pl-12 px-10">
+      <div className="container mx-auto px-4 sm:pl-12 sm:px-10">
         <div className="relative mt-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pr-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 pr-4">
             {/* Avatar */}
-            <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
-            {channel.avatar_url ? (
-              <Image
-                src={channel.avatar_url}
-                alt={`${channel.display_name}'s profile picture`}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div
-                  className="grid h-full w-full place-items-center bg-zinc-600 text-6xl font-bold text-white"
-              >
-                {channel.display_name?.[0]?.toUpperCase() ?? "C"}
-              </div>
-            )}
-          </div>
+            <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full overflow-hidden relative shrink-0">
+              {channel.avatar_url ? (
+                <Image
+                  src={channel.avatar_url}
+                  alt={`${channel.display_name}'s profile picture`}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div
+                  className="grid h-full w-full place-items-center bg-zinc-600 text-4xl sm:text-6xl font-bold text-white"
+                >
+                  {channel.display_name?.[0]?.toUpperCase() ?? "C"}
+                </div>
+              )}
+            </div>
 
             {/* Name + metadata */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
                 {channel.display_name}
               </h1>
               <p className="text-sm text-gray-400">
@@ -94,16 +94,16 @@ export default async function ChannelPage({ params }: PageProps) {
             <div className="w-full sm:w-auto flex-shrink-0">
               {isOwner ? (
                 <Link href={`/channel/${channel.handle}/manage`}
-                      className="inline-flex items-center h-10 px-6 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+                      className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
                       aria-label="Manage"
                       title="Manage"
-                      >Manage</Link>
+                >Manage</Link>
               ) : (
 
                 <button
                   type="button"
                   className="
-                  h-10
+                  h-9 sm:h-10
                   px-6
                   w-full sm:w-auto
                   rounded-full
@@ -116,33 +116,33 @@ export default async function ChannelPage({ params }: PageProps) {
                 "
                 >Follow</button>
               )}
-          </div>
+            </div>
           </div>
 
           {channel.description && (
-            <p className="mt-4 max-w-2xl text-gray-300">
+            <p className="mt-4 max-w-2xl text-sm sm:text-base text-gray-300">
               {channel.description}
             </p>
           )}
         </div>
 
-        <div className="flex flex-row gap-18 mt-6">
+        <div className="flex flex-row gap-4 sm:gap-8 mt-6">
           <p
-            className="relative cursor-pointer font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110">
+            className="relative cursor-pointer text-sm sm:text-base font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110">
             Videos
           </p>
           <p
-            className="relative cursor-pointer font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100">
+            className="relative cursor-pointer text-sm sm:text-base font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100">
             Playlists
           </p>
           <p
-            className="relative cursor-pointer font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100">
+            className="relative cursor-pointer text-sm sm:text-base font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100">
             About
           </p>
         </div>
         <hr className="border-zinc-600 mt-2"/>
         <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
           {videos?.map((video) => (
             <Card key={video.id} id={video.id} duration={video.duration} title={video.title} creator_name={channel.display_name}
                   views={video.view_count} date={video.created_at} thumbnail_src={video.thumbnail_url} is_ai={video.is_ai} />
