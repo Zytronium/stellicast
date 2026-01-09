@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     ? 'pb-6'
                     : isWatchPage
                       ? 'px-0 pt-0 pb-6 md:px-6 lg:pl-10 md:py-6'
-                      : 'px-4 md:px-6 lg:pl-10 py-6',
+                      : 'px-2 md:px-6 lg:pl-10 py-6',
                 ].join(' ')}
               >
                 {children}
