@@ -99,7 +99,7 @@ export default function ManageChannelClient({ channel, videos: initialVideos }: 
     <div className="relative min-h-full">
       <div className="container mx-auto">
         <Header channel={currentChannel} setChannel={setCurrentChannel} supabase={supabase} />
-        <Tabs defaultTab="videos" className="mt-8 px-12 ">
+        <Tabs defaultTab="videos" className="mt-4 sm:mt-8 px-4 sm:px-12">
           <TabPanel id="videos">
             <VideoManager videos={videos} setVideos={setVideos} channelId={channel.id} supabase={supabase} />
           </TabPanel>
@@ -124,9 +124,9 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
-    const fileName = `${type}-${Date.now()}.${fileExt}`;
-    // Changed: Use channel.id as folder name
-    const filePath = `${channel.id}/${fileName}`;
+      const fileName = `${type}-${Date.now()}.${fileExt}`;
+      // Changed: Use channel.id as folder name
+      const filePath = `${channel.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('channel-images')
@@ -187,7 +187,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
   return (
     <div className="relative">
       {/* Banner */}
-      <div className="w-full h-64 relative rounded-b-lg overflow-hidden">
+      <div className="w-full h-40 sm:h-64 relative rounded-b-lg overflow-hidden">
         {bannerPreview || channel.banner_url ? (
           <Image
             src={bannerPreview || channel.banner_url || ''}
@@ -200,7 +200,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
         )}
         <label
           htmlFor="bannerUpload"
-          className={`absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-xs text-white px-3 py-2 rounded cursor-pointer hover:bg-black/80 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-black/60 backdrop-blur-sm text-xs text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded cursor-pointer hover:bg-black/80 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {uploading ? 'Uploading...' : 'Change banner'}
           <input
@@ -215,10 +215,10 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
       </div>
 
       {/* Profile section */}
-      <div className="relative mt-4 px-12">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+      <div className="relative mt-4 px-4 sm:px-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
           {/* Avatar */}
-          <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
+          <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full overflow-hidden relative shrink-0">
             {avatarPreview || channel.avatar_url ? (
               <Image
                 src={avatarPreview || channel.avatar_url || ''}
@@ -227,7 +227,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
                 className="object-cover"
               />
             ) : (
-              <div className="grid h-full w-full place-items-center bg-zinc-600 text-6xl font-bold text-white">
+              <div className="grid h-full w-full place-items-center bg-zinc-600 text-4xl sm:text-6xl font-bold text-white">
                 {channel.display_name?.[0]?.toUpperCase() ?? "C"}
               </div>
             )}
@@ -250,7 +250,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
 
           {/* Name + metadata */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
               {channel.display_name}
             </h1>
             <p className="text-sm text-gray-400">
@@ -266,7 +266,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
           <div className="w-full sm:w-auto flex-shrink-0 flex gap-2">
             <Link
               href={`/channel/${channel.handle}`}
-              className="inline-flex items-center h-10 px-4 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+              className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
             >
               View Channel
             </Link>
@@ -274,7 +274,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
         </div>
 
         {channel.description && (
-          <p className="mt-4 max-w-2xl text-gray-300">
+          <p className="mt-4 max-w-2xl text-sm sm:text-base text-gray-300">
             {channel.description}
           </p>
         )}
@@ -293,14 +293,14 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
 
   return (
     <div className={className}>
-      <div className="flex flex-row gap-8 mt-6">
+      <div className="flex flex-row gap-4 sm:gap-8 mt-6">
         {tabs.map(id => (
           <p
             key={id}
             onClick={() => setActive(id)}
             role="tab"
             aria-selected={active === id}
-            className={`relative cursor-pointer transition-all ${
+            className={`relative cursor-pointer text-sm sm:text-base transition-all ${
               active === id
                 ? 'font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110'
                 : 'font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100'
@@ -312,7 +312,7 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
       </div>
       <hr className="border-zinc-600 mt-2"/>
 
-      <div className="pt-8">
+      <div className="pt-6 sm:pt-8">
         {['videos', 'profile', 'settings'].map(id => (
           <div key={id} className={active === id ? 'block' : 'hidden'}>
             {children[tabs.indexOf(id)]}
@@ -357,7 +357,7 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
     }
   };
 
-const bulkDelete = async () => {
+  const bulkDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedVideos.length} video(s)? This cannot be undone.`)) {
       return;
     }
@@ -416,9 +416,9 @@ const bulkDelete = async () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {selectedVideos.length > 0 && (
-        <div className="bg-zinc-800/50 backdrop-blur-sm rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="bg-zinc-800/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <span className="text-sm text-gray-300">
             {selectedVideos.length} video{selectedVideos.length !== 1 ? 's' : ''} selected
           </span>
@@ -426,21 +426,21 @@ const bulkDelete = async () => {
             <button
               onClick={() => bulkUpdateVisibility('public')}
               disabled={loading}
-              className="px-3 py-1.5 text-sm bg-zinc-700 text-white rounded hover:bg-zinc-600 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-xs sm:text-sm bg-zinc-700 text-white rounded hover:bg-zinc-600 transition disabled:opacity-50"
             >
               Make Public
             </button>
             <button
               onClick={() => bulkUpdateVisibility('private')}
               disabled={loading}
-              className="px-3 py-1.5 text-sm bg-zinc-700 text-white rounded hover:bg-zinc-600 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-xs sm:text-sm bg-zinc-700 text-white rounded hover:bg-zinc-600 transition disabled:opacity-50"
             >
               Make Private
             </button>
             <button
               onClick={bulkDelete}
               disabled={loading}
-              className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-500 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-xs sm:text-sm bg-red-600 text-white rounded hover:bg-red-500 transition disabled:opacity-50"
             >
               Delete
             </button>
@@ -448,7 +448,7 @@ const bulkDelete = async () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         {videos.map(v => (
           <VideoCard
             key={v.id}
@@ -476,7 +476,7 @@ const bulkDelete = async () => {
 }
 
 function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps) {
-  const [imgSrc, setImgSrc] = useState<string>(video.thumbnail_url || '/StellicastPlaceholderThumbnail.png');
+  const [imgSrc, setImgSrc] = useState<string>(video.thumbnail_url || '/Stellicast404Thumbnail.png');
 
   const formatDuration = (duration: number) => {
     if (!duration || duration <= 0) return '0:00';
@@ -512,7 +512,7 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
           alt={video.title}
           fill
           className="object-cover"
-          onError={() => setImgSrc('/StellicastPlaceholderThumbnail.png')}
+          onError={() => setImgSrc('/Stellicast404Thumbnail.png')}
         />
 
         {video.is_ai && (
@@ -521,7 +521,7 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
           </div>
         )}
 
-        <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white z-2">
+        <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-xs sm:text-sm font-semibold text-white z-2">
           {formatDuration(video.duration)}
         </div>
 
@@ -536,11 +536,11 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
             isSelected ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <div className="flex items-center justify-center w-32 h-32 rounded-full border-4 border-blue-500 bg-transparent shadow-lg">
+          <div className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-blue-500 bg-transparent shadow-lg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="w-16 h-16 text-blue-500"
+              className="w-12 h-12 sm:w-16 sm:h-16 text-blue-500"
               fill="none"
               stroke="currentColor"
               strokeWidth={3}
@@ -553,7 +553,7 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
         <div className="absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/5 to-white/5 pointer-events-none" />
       </div>
 
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 p-3 sm:p-4">
         <div className="line-clamp-2 text-sm font-semibold leading-snug">
           {video.title}
         </div>
@@ -566,12 +566,12 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
 
         <div className="flex items-center justify-between pt-1">
 <span className={`text-xs px-2 py-1 rounded-md font-medium ${
-            video.visibility === 'public' 
-              ? 'bg-blue-600/20 text-blue-300' 
-              : video.visibility === 'unlisted'
-              ? 'bg-yellow-600/20 text-yellow-300'
-              : 'bg-slate-600/20 text-slate-300'
-          }`}>
+  video.visibility === 'public'
+    ? 'bg-blue-600/20 text-blue-300'
+    : video.visibility === 'unlisted'
+      ? 'bg-yellow-600/20 text-yellow-300'
+      : 'bg-slate-600/20 text-slate-300'
+}`}>
             {video.visibility.charAt(0).toUpperCase() + video.visibility.slice(1)}
           </span>
           <button
@@ -600,8 +600,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
   });
   const [saving, setSaving] = useState<boolean>(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     try {
       setSaving(true);
       const { data, error } = await supabase
@@ -631,9 +630,9 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-10" onClick={onClose}>
-      <div className="bg-zinc-900 rounded-lg max-w-lg w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-        <h2 className="text-xl font-semibold text-white mb-4">Edit Video</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="bg-zinc-900 rounded-lg max-w-lg w-full p-4 sm:p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Edit Video</h2>
+        <div className="space-y-4">
           <div>
             <label htmlFor="video-title" className="block text-sm font-medium text-gray-200 mb-1">Title</label>
             <input
@@ -641,7 +640,8 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               type="text"
               value={form.title}
               onChange={e => setForm({ ...form, title: e.target.value })}
-              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               required
             />
           </div>
@@ -653,7 +653,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
               rows={4}
-              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
               placeholder="Add a description for your video..."
             />
           </div>
@@ -664,7 +664,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               id="visibility"
               value={form.visibility}
               onChange={e => setForm({ ...form, visibility: e.target.value as 'public' | 'private' | 'unlisted' })}
-              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="public">Public</option>
               <option value="unlisted">Unlisted</option>
@@ -693,14 +693,15 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={saving}
               className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -743,7 +744,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-4 sm:space-y-6">
       <div>
         <label htmlFor="display_name" className="block text-sm font-medium text-gray-200 mb-1">
           Display name
@@ -754,7 +755,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
           type="text"
           value={form.display_name}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
@@ -768,7 +769,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
           rows={4}
           value={form.description}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
         />
       </div>
 
@@ -777,7 +778,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
           type="button"
           onClick={handleSubmit}
           disabled={saving}
-          className="h-10 px-6 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
+          className="h-9 sm:h-10 px-6 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
         >
           {saving ? 'Updating...' : 'Update profile'}
         </button>
@@ -857,7 +858,7 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-4 sm:space-y-6">
       {/* Export analytics */}
       <div className="p-4 bg-zinc-900/50 rounded-lg">
         <h3 className="text-sm font-medium text-white mb-2">Analytics Export</h3>
@@ -889,8 +890,8 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
 
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowDeleteConfirm(false)}>
-            <div className="bg-zinc-900 rounded-lg max-w-md w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h2 className="text-xl font-semibold text-white mb-2">Delete Channel?</h2>
+            <div className="bg-zinc-900 rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-2">Delete Channel?</h2>
               <p className="text-sm text-gray-400 mb-6">
                 This will permanently delete your channel, all videos, and data. This action cannot be undone.
               </p>
