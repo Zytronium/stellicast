@@ -138,7 +138,7 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
           return (
             <div
               key={setting.settingName}
-              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 rounded-lg bg-gradient-darker border ${
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 rounded-lg bg-blue-950/30 border ${
                 hasChanged ? 'border-blue-600/50' : 'border-zinc-800'
               } ${isDisabled ? 'opacity-50' : ''}`}
             >
