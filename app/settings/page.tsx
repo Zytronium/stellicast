@@ -78,7 +78,7 @@ export default async function SettingsPage() {
               "options": ["true", "false"],
               "type": "boolean",
               "settingName": "algorithm",
-              "info": "Disabling this completely disregards all expressed and learned interests, watch history, likes and starred videos, etc. when choosing what videos to recommend, and instead shows a feed of mostly channels you follow."
+              "info": "Disabling this completely disregards all expressed and learned interests, watch history, liked/disliked/starred videos, etc. when choosing what videos to recommend, and instead shows a feed of mostly channels you follow and trending content."
             },
             "Enable Advanced Algorithm": {
               "options": ["true", "false"],

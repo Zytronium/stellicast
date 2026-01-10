@@ -605,7 +605,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
         {/* Video Info */}
         <div className="mt-4 space-y-3">
           {/* Title */}
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold px-0">{video.title}</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold px-0 wrap-break-word max-w-[90vw]">{video.title}</h1>
 
           {/* Channel Info & Actions - Mobile Optimized */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
@@ -764,7 +764,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </p>
                 <div className="text-sm leading-relaxed text-gray-300">
                   {(video.description ?? '').split('\n').map((line, i) => (
-                    <p key={i} className={i === 0 ? '' : 'mt-3'}>
+                    <p key={i} className={`${i === 0 ? '' : 'mt-3'} wrap-break-word max-w-[80vw]`}>
                       {line}
                     </p>
                   ))}
