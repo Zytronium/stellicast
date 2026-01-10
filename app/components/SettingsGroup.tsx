@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Info } from 'lucide-react';
 
 // Set to true to ignore disabled settings for testing
@@ -41,31 +41,48 @@ function formatHistoryRetention(value: string): string {
 }
 
 export default function SettingsGroup({ title, settings, initialPreferences }: SettingsGroupProps) {
-  const [preferences, setPreferences] = useState<Record<string, any>>(initialPreferences);
+  const [savedPreferences, setSavedPreferences] = useState<Record<string, any>>(initialPreferences);
+  const [currentPreferences, setCurrentPreferences] = useState<Record<string, any>>(initialPreferences);
   const [saving, setSaving] = useState(false);
 
-  const updatePreference = async (settingName: string, value: any) => {
-    const newPreferences = { ...preferences, [settingName]: value };
-    setPreferences(newPreferences);
+  const hasChanges = JSON.stringify(savedPreferences) !== JSON.stringify(currentPreferences);
 
+  const updatePreference = (settingName: string, value: any) => {
+    setCurrentPreferences({ ...currentPreferences, [settingName]: value });
+  };
+
+  const applyChanges = async () => {
     setSaving(true);
     try {
+      const changes = Object.keys(currentPreferences).reduce((acc, key) => {
+        if (currentPreferences[key] !== savedPreferences[key]) {
+          acc[key] = currentPreferences[key];
+        }
+        return acc;
+      }, {} as Record<string, any>);
+
       const response = await fetch('/api/user/preferences', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [settingName]: value }),
+        body: JSON.stringify(changes),
       });
 
       if (!response.ok) {
-        console.error('Failed to save preference');
-        setPreferences(preferences); // Revert on error
+        console.error('Failed to save preferences');
+        setCurrentPreferences(savedPreferences); // Revert on error
+      } else {
+        setSavedPreferences(currentPreferences);
       }
     } catch (error) {
-      console.error('Error saving preference:', error);
-      setPreferences(preferences); // Revert on error
+      console.error('Error saving preferences:', error);
+      setCurrentPreferences(savedPreferences); // Revert on error
     } finally {
       setSaving(false);
     }
+  };
+
+  const discardChanges = () => {
+    setCurrentPreferences(savedPreferences);
   };
 
   const checkDependency = (dependsOn?: Record<string, boolean | string>): boolean => {
@@ -76,7 +93,7 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
       if (!setting) return false;
 
       const [, settingConfig] = setting;
-      const currentValue = preferences[settingConfig.settingName];
+      const currentValue = currentPreferences[settingConfig.settingName];
 
       // Convert to comparable format
       const current = settingConfig.type === 'boolean' ? currentValue === true : currentValue;
@@ -90,21 +107,46 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
 
   return (
     <div className="space-y-6 py-6">
+      <div className="flex items-center justify-between">
       <h2 className="text-xl font-semibold text-white">{title}</h2>
+        {hasChanges && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={discardChanges}
+              disabled={saving}
+              className="px-4 py-1.5 text-sm font-medium text-gray-300 bg-zinc-800 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Discard
+            </button>
+            <button
+              onClick={applyChanges}
+              disabled={saving}
+              className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              {saving ? 'Applying...' : 'Apply Changes'}
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="space-y-4">
         {Object.entries(settings).map(([label, setting]) => {
           const isDisabled = IGNORE_DISABLED ? false : (setting.disabled || !checkDependency(setting.dependsOn));
-          const currentValue = preferences[setting.settingName];
+          const currentValue = currentPreferences[setting.settingName];
+          const hasChanged = savedPreferences[setting.settingName] !== currentValue;
 
           return (
             <div
               key={setting.settingName}
-              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 rounded-lg bg-blue-950/30 border border-zinc-800 ${
-                isDisabled ? 'opacity-50' : ''
-              }`}
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 rounded-lg bg-gradient-darker border ${
+                hasChanged ? 'border-blue-600/50' : 'border-zinc-800'
+              } ${isDisabled ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-sm font-medium text-white">{label}</span>
+                {hasChanged && (
+                  <span className="text-xs text-blue-400 font-medium">•</span>
+                )}
                 {setting.info && (
                   <div className="group relative">
                     <Info className="w-4 h-4 text-gray-400 cursor-help" />
@@ -177,9 +219,6 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
           );
         })}
       </div>
-      {saving && (
-        <p className="text-xs text-gray-400 text-right">Saving...</p>
-      )}
     </div>
   );
 }
