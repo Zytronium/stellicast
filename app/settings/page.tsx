@@ -13,11 +13,12 @@ export default async function SettingsPage() {
 
   const { data: userData } = await supabase
     .from('users')
-    .select('preferences')
+    .select('preferences, notification_preferences')
     .eq('id', user.id)
     .single();
 
   const preferences = userData?.preferences || {};
+  const notificationPreferences = userData?.notification_preferences || {};
 
   return (
     <div className="space-y-6">
@@ -105,6 +106,72 @@ export default async function SettingsPage() {
               "type": "boolean",
               "settingName": "learnInterests",
               "info": "Learn Interests Based on Activity without using AI. (Enhances Recommendation Algorithm)"
+            }
+          }}
+        />
+
+        <hr className="border-zinc-600"/>
+
+        <SettingsGroup
+          title="Notifactions"
+          initialPreferences={notificationPreferences}
+          showUnsubscribeButtons={true}
+          settings={{
+            "Security Emails": {
+              "options": ["true"],
+              "type": "boolean",
+              "settingName": "security",
+              "disabled": true,
+              "forceValue": true,
+              "info": "Get notifications when your password is changed; password reset requested; account disabled, deleted, or moderated; data breach announcements, etc. This cannot be disabled."
+            },
+            "Followed Channel Uploads": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "followedUploads",
+              "info": "Get notified when a channel you follow uploads a video"
+            },
+            "Occasional Video Recommendation": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "recommendations",
+              "info": "Get notified occasionally when we find a video we think you might be interested in. These notifications would be once a week on average."
+            },
+            "Trending Videos": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "trending",
+              "info": "Get notified of one some of the top trending videos on the platform. These notifications would be once a week on average."
+            },
+            "Weekly Recaps": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "recaps",
+              "info": "Get notified each weekend about the top 10 most popular videos from your followed channels and interests. If you run a channel, you'll also see the performance on your videos uploaded in the last week."
+            },
+            "New Followers": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "followers",
+              "info": "Get notified when someone follows your channel(s) (emails limited to 1 per day for this category)"
+            },
+            "Development Updates": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "devUpdates",
+              "info": "Receive in-depth updates on what's changed after major updates or read about upcoming features."
+            },
+            "Site-wide Announcements": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "announcements",
+              "info": "Receive announcements such as huge feature changes, milestone celebrations, and various miscellaneous announcements."
+            },
+            "Promotional Offers and Deals": {
+              "options": ["email", "in-app"],
+              "type": "multi-select",
+              "settingName": "promotional",
+              "info": "Get notified of promotional offers and deals such as a limited time sale for a paid feature or the occasional giveaway."
             }
           }}
         />

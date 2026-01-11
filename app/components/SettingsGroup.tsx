@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Info } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Info, ChevronDown, X } from 'lucide-react';
 
 // Set to true to ignore disabled settings for testing
 const IGNORE_DISABLED = false;
@@ -15,13 +15,107 @@ type Setting = {
   disabled?: boolean;
   info?: string;
   dependsOn?: Record<string, boolean | string>;
+  forceValue?: any;
 };
 
 type SettingsGroupProps = {
   title: string;
   settings: Record<string, Setting>;
   initialPreferences: Record<string, any>;
+  showUnsubscribeButtons?: boolean;
 };
+
+type MultiSelectProps = {
+  options: string[];
+  value: string[];
+  onChange: (value: string[]) => void;
+  disabled?: boolean;
+};
+
+function MultiSelect({ options, value, onChange, disabled }: MultiSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleOption = (option: string) => {
+    if (disabled) return;
+    if (value.includes(option)) {
+      onChange(value.filter(v => v !== option));
+    } else {
+      onChange([...value, option]);
+    }
+  };
+
+  const removeOption = (option: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (disabled) return;
+    onChange(value.filter(v => v !== option));
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className="px-3 py-2 text-sm bg-zinc-800 text-white border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-600 flex items-center justify-between gap-2 min-w-[200px]"
+      >
+        <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+          {value.length === 0 ? (
+            <span className="text-gray-400">Select options...</span>
+          ) : (
+            value.map(option => (
+              <span
+                key={option}
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600/20 text-blue-400 rounded text-xs"
+              >
+                {option}
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-blue-300"
+                  onClick={(e) => removeOption(option, e)}
+                />
+              </span>
+            ))
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute z-20 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto min-w-[200px]">
+            {options.map(option => {
+              const isSelected = value.includes(option);
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => toggleOption(option)}
+                  className={`w-full px-3 py-2 text-sm text-left hover:bg-zinc-700 flex items-center gap-2 ${
+                    isSelected ? 'text-blue-400' : 'text-white'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
+                    isSelected ? 'bg-blue-600 border-blue-600' : 'border-zinc-600'
+                  }`}>
+                    {isSelected && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <span>{option}</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function formatHistoryRetention(value: string): string {
   const num = parseInt(value);
@@ -40,15 +134,62 @@ function formatHistoryRetention(value: string): string {
   return value;
 }
 
-export default function SettingsGroup({ title, settings, initialPreferences }: SettingsGroupProps) {
+/* -------------------------------
+   Helpers for normalization + equality
+   - ensures arrays are compared independent of order
+   - coerces booleans to true/false
+   - treats missing multi-select as []
+---------------------------------*/
+function normalizeValue(raw: any, setting: Setting) {
+  if (setting.type === 'boolean') {
+    return raw === true;
+  }
+  if (setting.type === 'multi-select') {
+    if (!Array.isArray(raw)) return [];
+    // create a deterministic representation (sorted)
+    return [...raw].slice().sort();
+  }
+  // dropdown or others
+  return raw === undefined || raw === null ? '' : raw;
+}
+
+function deepEqual(a: any, b: any) {
+  // JSON stringify is fine because we normalize arrays to sorted and primitives are stable
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return a === b;
+  }
+}
+
+export default function SettingsGroup({ title, settings, initialPreferences, showUnsubscribeButtons = false }: SettingsGroupProps) {
   const [savedPreferences, setSavedPreferences] = useState<Record<string, any>>(initialPreferences);
   const [currentPreferences, setCurrentPreferences] = useState<Record<string, any>>(initialPreferences);
   const [saving, setSaving] = useState(false);
 
-  const hasChanges = JSON.stringify(savedPreferences) !== JSON.stringify(currentPreferences);
+  // Keep savedPreferences in sync when parent/DB provides new initialPreferences.
+  // Do NOT overwrite currentPreferences so in-progress edits are not clobbered.
+  useEffect(() => {
+    setSavedPreferences(initialPreferences);
+  }, [JSON.stringify(initialPreferences)]);
 
   const updatePreference = (settingName: string, value: any) => {
     setCurrentPreferences({ ...currentPreferences, [settingName]: value });
+  };
+
+  const unsubscribeFromAll = (type: 'email' | 'in-app') => {
+    const updates: Record<string, any> = {};
+
+    Object.entries(settings).forEach(([, setting]) => {
+      if (setting.type === 'multi-select' && !setting.disabled && setting.forceValue === undefined) {
+        const currentValue = currentPreferences[setting.settingName];
+        if (Array.isArray(currentValue)) {
+          updates[setting.settingName] = currentValue.filter((v: string) => v !== type);
+        }
+      }
+    });
+
+    setCurrentPreferences({ ...currentPreferences, ...updates });
   };
 
   const applyChanges = async () => {
@@ -93,7 +234,10 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
       if (!setting) return false;
 
       const [, settingConfig] = setting;
-      const currentValue = currentPreferences[settingConfig.settingName];
+      // Respect forced values when checking dependencies
+      const currentValue = settingConfig.forceValue !== undefined
+        ? settingConfig.forceValue
+        : currentPreferences[settingConfig.settingName];
 
       // Convert to comparable format
       const current = settingConfig.type === 'boolean' ? currentValue === true : currentValue;
@@ -105,10 +249,23 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
     return true;
   };
 
+  // Compute hasChanges by iterating settings and comparing normalized saved vs current,
+  // ignoring disabled/forced settings.
+  const hasChanges = Object.entries(settings).some(([label, setting]) => {
+    const isForced = setting.forceValue !== undefined;
+    const isDisabled = IGNORE_DISABLED ? false : (setting.disabled || isForced || !checkDependency(setting.dependsOn));
+    if (isDisabled) return false;
+
+    const savedVal = normalizeValue(savedPreferences[setting.settingName], setting);
+    const currentVal = normalizeValue(currentPreferences[setting.settingName], setting);
+
+    return !deepEqual(savedVal, currentVal);
+  });
+
   return (
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
-      <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
         {hasChanges && (
           <div className="flex items-center gap-2">
             <button
@@ -129,11 +286,37 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
         )}
       </div>
 
+      {showUnsubscribeButtons && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => unsubscribeFromAll('email')}
+            className="flex-1 px-4 py-3 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            Unsubscribe from All Emails
+          </button>
+          <button
+            onClick={() => unsubscribeFromAll('in-app')}
+            className="flex-1 px-4 py-3 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            Unsubscribe from All In-App Notifications
+          </button>
+        </div>
+      )}
+
       <div className="space-y-4">
         {Object.entries(settings).map(([label, setting]) => {
-          const isDisabled = IGNORE_DISABLED ? false : (setting.disabled || !checkDependency(setting.dependsOn));
-          const currentValue = currentPreferences[setting.settingName];
-          const hasChanged = savedPreferences[setting.settingName] !== currentValue;
+          // If setting.forceValue is set, treat it as the effective value; also force disabled so user cannot change it.
+          const isForced = setting.forceValue !== undefined;
+          const isDisabled = IGNORE_DISABLED ? false : (setting.disabled || isForced || !checkDependency(setting.dependsOn));
+          const currentValueFromState = currentPreferences[setting.settingName];
+          const displayValue = isForced ? setting.forceValue : currentValueFromState;
+
+          // Use normalized deep equality for per-setting indicator (and exclude disabled)
+          const savedVal = normalizeValue(savedPreferences[setting.settingName], setting);
+          const displayVal = normalizeValue(displayValue, setting);
+          const hasChanged = !isDisabled && !deepEqual(savedVal, displayVal);
 
           return (
             <div
@@ -160,15 +343,20 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
               <div className="flex-shrink-0">
                 {setting.type === 'boolean' && (
                   <button
-                    onClick={() => !isDisabled && updatePreference(setting.settingName, !currentValue)}
+                    onClick={() => {
+                      if (isDisabled) return;
+                      // guard to ensure forced settings can't be toggled
+                      if (isForced) return;
+                      updatePreference(setting.settingName, !currentValueFromState);
+                    }}
                     disabled={isDisabled}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      currentValue ? 'bg-blue-600' : 'bg-zinc-700'
+                      displayValue ? 'bg-blue-600' : 'bg-zinc-700'
                     } ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        currentValue ? 'translate-x-6' : 'translate-x-1'
+                        displayValue ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -176,8 +364,9 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
 
                 {setting.type === 'dropdown' && (
                   <select
-                    value={currentValue}
+                    value={displayValue}
                     onChange={(e) => {
+                      if (isDisabled) return;
                       const value = setting.settingName === 'historyRetention'
                         ? parseInt(e.target.value)
                         : e.target.value;
@@ -197,22 +386,15 @@ export default function SettingsGroup({ title, settings, initialPreferences }: S
                 )}
 
                 {setting.type === 'multi-select' && (
-                  <select
-                    multiple
-                    value={Array.isArray(currentValue) ? currentValue : []}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                  <MultiSelect
+                    options={setting.options}
+                    value={Array.isArray(displayValue) ? displayValue : []}
+                    onChange={(selected) => {
+                      if (isDisabled) return;
                       updatePreference(setting.settingName, selected);
                     }}
                     disabled={isDisabled}
-                    className="px-3 py-2 text-sm bg-zinc-800 text-white border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-600 min-h-[80px]"
-                  >
-                    {setting.options.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 )}
               </div>
             </div>

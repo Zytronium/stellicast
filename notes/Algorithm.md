@@ -46,10 +46,11 @@ Builds on the Basic Algorithm with:
 - Content from channels most commonly watched, even if not followed
 - Videos with tags matching videos you've watched longer portions of
 - Videos with tags matching videos you've most often liked or starred
-- Less likely to include videos with tags or channels matching videos or channels you've disliked or watched for small durations
 - Videos with comments containing keywords that match expressed and learned interests
 - Videos with comments containing keywords that match videos you often like, star, or watch for long portions.
 - Videos that mention channels you've followed in the title or description (small effect on algorithm to prevent abuse of this property)
+- Time decay in watch history affects the determined relevancy of videos being considdered for recommendation (the longer ago you watched it, the less likely it is for the algorithm to think you still like that genre unless you watch that genre more recently too)
+- Less likely to include videos with tags or channels matching videos or channels you've disliked or watched for small durations
 - Still no AI
 
 By default, users have advanced mode enabled.
