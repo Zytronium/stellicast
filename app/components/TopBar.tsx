@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import type { User, AuthError, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 interface UserProfile {
   id: string;
@@ -182,6 +183,8 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
             More
           </Link>
         </nav>
+
+        <ThemeSwitcher />
 
         {/* Profile/Login Button */}
         <div className="relative ml-2 md:ml-4 min-w-fit">

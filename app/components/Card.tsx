@@ -49,9 +49,9 @@ export default function Card({
   return (
     <Link
       href={`/watch/${id}`}
-      className="group block overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md border-gray-800 bg-[#0a0a0a]"
+      className="group block overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md border-border-default bg-surface-card"
     >
-      <div className="relative aspect-video bg-gray-900">
+      <div className="relative aspect-video bg-surface-elevated">
         <Image
           src={imgSrc}
           alt={title}
@@ -63,7 +63,7 @@ export default function Card({
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/10 to-white/5" />
 
         {is_ai && (
-          <div className="absolute left-2 top-2 rounded-md bg-blue-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+          <div className="absolute left-2 top-2 rounded-md bg-accent-primary px-2 py-1 text-xs font-semibold text-white shadow-sm">
             AI
           </div>
         )}
@@ -76,20 +76,20 @@ export default function Card({
           className="pointer-events-none absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
           aria-hidden="true"
         >
-          <PlayIcon className="h-6 w-6 text-blue-200/90" />
+          <PlayIcon className="h-6 w-6 text-accent-light/90" />
         </div>
       </div>
 
       <div className="space-y-2 p-4">
-        <div className="line-clamp-2 text-sm font-semibold leading-snug">
+        <div className="line-clamp-2 text-sm font-semibold leading-snug text-text-primary">
           {title}
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <span className="truncate text-xs text-gray-400">
+          <span className="truncate text-xs text-text-muted">
             {creator_name}
           </span>
-          <span className="shrink-0 text-xs text-gray-500">
+          <span className="shrink-0 text-xs text-text-muted">
             {formatViews(views)} • {formatDate(date)}
           </span>
         </div>
