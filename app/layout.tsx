@@ -11,9 +11,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const pathsWithFilters = ['/explore']; // and `/`
-  const pathsWithoutSidebar = ['/about', '/auth'];
-  const pathsWithoutPadding = ['/channel/', '/user/', '/profile'];
-  const pathsWithoutBottomNav: string[] = [];
+  const pathsWithoutSidebar = ['/about', '/auth', '/unsubscribe'];
+  const pathsWithoutPadding = ['/channel/', '/user/', '/profile', '/unsubscribe'];
+  const pathsWithoutBottomNav: string[] = ['/unsubscribe'];
 
   const showFilters = pathsWithFilters.some(path => pathname.startsWith(path)) || pathname === '/';
   const showSidebar = !pathsWithoutSidebar.some(path => pathname.startsWith(path));
@@ -21,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const showBottomNav = !pathsWithoutBottomNav.some(path => pathname.startsWith(path));
 
   const isWatchPage = pathname.startsWith('/watch');
+  const isUnsubscribePage = pathname.startsWith('/unsubscribe');
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -32,6 +33,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
+
+  // Minimal layout for unsubscribe page
+  if (isUnsubscribePage) {
+    return (
+      <html lang="en" className="scroll-smooth">
+      <head>
+        <title>Unsubscribe – Stellicast</title>
+        <meta name="description" content="Manage your email preferences" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
+      <body className="bg-[#0a0a0a] text-white">
+        {children}
+      </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en" className="scroll-smooth">
