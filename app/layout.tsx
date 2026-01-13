@@ -6,9 +6,11 @@ import TopBar from '@/components/TopBar';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import { usePathname } from "next/navigation";
+import { createSupabaseBrowserClient } from "../lib/supabase-client";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [themeClass, setThemeClass] = useState<string>('');
   const pathname = usePathname();
   const pathsWithFilters = ['/explore']; // and `/`
   const pathsWithoutSidebar = ['/about', '/auth'];
@@ -21,6 +23,54 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const showBottomNav = !pathsWithoutBottomNav.some(path => pathname.startsWith(path));
 
   const isWatchPage = pathname.startsWith('/watch');
+
+  // Fetch user theme preference asynchronously
+  useEffect(() => {
+    const fetchTheme = async () => {
+      try {
+        const supabase = createSupabaseBrowserClient();
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          // Not signed in, use default (no theme class)
+          setThemeClass('');
+          return;
+        }
+
+        // Get user's preferences
+        const { data, error } = await supabase
+          .from('users')
+          .select('preferences')
+          .eq('id', user.id)
+          .single();
+
+        if (error || !data) {
+          // Error or no data, use default
+          setThemeClass('');
+          return;
+        }
+
+        const theme = data.preferences?.theme;
+
+        // Map theme names to CSS classes
+        // "spaceblue (dark)" is the default, so no class needed
+        const themeMap: Record<string, string> = {
+          'palewhite (light)': 'theme-palewhite',
+          'volcanic (dark)': 'theme-volcanic',
+          'alien (dark)': 'theme-alien',
+        };
+
+        setThemeClass(themeMap[theme] || '');
+      } catch (error) {
+        console.error('Error fetching theme:', error);
+        setThemeClass('');
+      }
+    };
+
+    fetchTheme();
+  }, []);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -42,7 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
       <link rel="icon" href="/favicon.ico" />
     </head>
-    <body className="bg-background text-foreground">
+    <body className={`bg-background text-foreground ${themeClass}`.trim()}>
     <TopBar
       onFilterClick={() => setSidebarOpen(true)}
       showFilters={showFilters}
