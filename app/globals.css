@@ -19,6 +19,11 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -31,6 +36,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-accent: var(--card-accent);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -117,6 +123,7 @@ body {
   /* Cards & popovers (surfaces slightly above background) */
   --card: #0f1113;              /* card / panel background (was bg-gray-900 / bg-[#0a0a0a]) */
   --card-foreground: #f3f4f6;   /* text inside cards (text-gray-100 / text-white alternative) */
+  --card-accent: #0a1f47;
   --popover: #0f1113;
   --popover-foreground: #f3f4f6;
 
@@ -144,7 +151,16 @@ body {
   --gradient-darker-to: #020203;
 
   /* Destructive actions */
-  --destructive: #dc2626;       /* red-600 */
+  --destructive: #d52525;       /* red-600 */
+  --destructive-foreground: #ff7878;
+
+  /* Warnings */
+  --warning: #ec9829;
+  --warning-foreground: #f7bb6d;
+
+  /* Success */
+  --success: #33820e;
+  --success-foreground: #afff8c;
 
   /* Borders / inputs / rings */
   --border: #1f2937;            /* border-gray-800 */
@@ -180,6 +196,7 @@ body {
   /* Cards & popovers */
   --card: #ffffff;
   --card-foreground: #262626;
+  --card-accent: #b4c5ff;
   --popover: #ffffff;
   --popover-foreground: #262626;
 
@@ -207,7 +224,16 @@ body {
   --gradient-darker-to: #fafafa;
 
   /* Destructive */
-  --destructive: #dc2626;
+  --destructive: #e12a2a;
+  --destructive-foreground: #7d1313;
+
+  /* Warnings */
+  --warning: #f7a539;
+  --warning-foreground: #7f5318;
+
+  /* Success */
+  --success: #3e9217;
+  --success-foreground: #234b0f;
 
   /* Borders / inputs / rings */
   --border: #e5e5e5;
@@ -243,11 +269,12 @@ body {
   /* Cards & popovers */
   --card: #1a0f0a;
   --card-foreground: #fef2f2;
+  --card-accent: #521207;
   --popover: #1a0f0a;
   --popover-foreground: #fef2f2;
 
   /* Primary / brand */
-  --primary: #f97316;           /* orange-500 */
+  --primary: #f94b16;           /* orange-500 */
   --primary-foreground: #ffffff;
 
   /* Secondary / subtle accents */
@@ -270,12 +297,21 @@ body {
   --gradient-darker-to: #0d0806;
 
   /* Destructive */
-  --destructive: #ef4444;
+  --destructive: #ef4455;
+  --destructive-foreground: #ff828c;
+
+  /* Warnings */
+  --warning: #ec7a29;
+  --warning-foreground: #f7a76d;
+
+  /* Success */
+  --success: #5b820e;
+  --success-foreground: #d9ff8c;
 
   /* Borders / inputs / rings */
   --border: #2d1410;
   --input: #1a0f0a;
-  --ring: #fb923c;
+  --ring: #fb753c;
 
   /* Sidebar */
   --sidebar: #0d0806;
@@ -285,7 +321,7 @@ body {
   --sidebar-accent: #2d1410;
   --sidebar-accent-foreground: #fca5a5;
   --sidebar-border: #2d1410;
-  --sidebar-ring: #fb923c;
+  --sidebar-ring: #fb753c;
 }
 
 .theme-volcanic ::selection {
@@ -294,7 +330,7 @@ body {
 
 .theme-volcanic * {
   scrollbar-width: thin;
-  scrollbar-color: #fb923c #1a0f0a;
+  scrollbar-color: #fb693c #1a0f0a;
 }
 
 /* Alien (Dark) Theme */
@@ -306,6 +342,7 @@ body {
   /* Cards & popovers */
   --card: #0a1514;
   --card-foreground: #d1fae5;
+  --card-accent: #094f3a;
   --popover: #0a1514;
   --popover-foreground: #d1fae5;
 
