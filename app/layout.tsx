@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
       <link rel="icon" href="/favicon.ico" />
     </head>
-    <body className="bg-[#0a0a0a] text-white">
+    <body className="bg-background text-foreground">
     <TopBar
       onFilterClick={() => setSidebarOpen(true)}
       showFilters={showFilters}
