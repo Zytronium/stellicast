@@ -195,7 +195,7 @@ export function Comment({
   return (
     <div className={`${depth > 0 ? 'ml-4' : ''}`}>
       <div className="flex gap-3 py-2">
-        <Link className="grid w-10 h-10 place-items-center rounded-full bg-zinc-600 text-sm font-bold text-white flex-shrink-0 overflow-hidden"
+        <Link className="grid w-10 h-10 place-items-center rounded-full bg-muted text-sm font-bold text-foreground flex-shrink-0 overflow-hidden"
               href={`/user/${comment.user?.username}`}
         >
           {comment.user?.avatar_url ? (
@@ -213,12 +213,12 @@ export function Comment({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Link className="text-sm font-medium text-gray-200"
+            <Link className="text-sm font-medium text-foreground"
                   href={`/user/${comment.user?.username}`}
             >
               {displayName}
             </Link>
-            <span className="text-xs text-gray-500">{formatTimeAgo(comment.created_at)}</span>
+            <span className="text-xs text-muted-foreground">{formatTimeAgo(comment.created_at)}</span>
           </div>
 
           {!collapsed && (
@@ -228,7 +228,7 @@ export function Comment({
                   <textarea
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none"
+                    className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring resize-none"
                     rows={3}
                     autoFocus
                   />
@@ -238,14 +238,14 @@ export function Comment({
                         setIsEditing(false);
                         setEditText(comment.message);
                       }}
-                      className="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition"
+                      className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleEdit}
                       disabled={!editText.trim() || isSubmitting}
-                      className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+                      className="px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-full hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition"
                     >
                       {isSubmitting ? 'Saving...' : 'Save'}
                     </button>
@@ -253,7 +253,7 @@ export function Comment({
                 </div>
               ) : (
                 <>
-                  <div className="mt-1 text-sm text-gray-300 break-words leading-relaxed">
+                  <div className="mt-1 text-sm text-card-foreground break-words leading-relaxed">
                     {comment.message}
                   </div>
 
@@ -261,7 +261,7 @@ export function Comment({
                     <button
                       onClick={handleLike}
                       className={`flex items-center gap-1 text-xs font-medium transition ${
-                        isLiked ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+                        isLiked ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <ThumbsUp className="w-3.5 h-3.5" />
@@ -271,7 +271,7 @@ export function Comment({
                     <button
                       onClick={handleDislike}
                       className={`flex items-center gap-1 text-xs font-medium transition ${
-                        isDisliked ? 'text-red-400' : 'text-gray-400 hover:text-gray-200'
+                        isDisliked ? 'text-red-500' : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <ThumbsDown className="w-3.5 h-3.5" />
@@ -280,7 +280,7 @@ export function Comment({
 
                     <button
                       onClick={() => setShowReplyBox(!showReplyBox)}
-                      className="text-xs font-medium text-gray-400 hover:text-white transition"
+                      className="text-xs font-medium text-muted-foreground hover:text-foreground transition"
                     >
                       Reply
                     </button>
@@ -289,14 +289,14 @@ export function Comment({
                       <>
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-white transition"
+                          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition"
                         >
                           <Edit2 className="w-3 h-3" />
                           Edit
                         </button>
                         <button
                           onClick={handleDelete}
-                          className="flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-red-400 transition"
+                          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition"
                         >
                           <Trash2 className="w-3 h-3" />
                           Delete
@@ -307,7 +307,7 @@ export function Comment({
                     {hasReplies && (
                       <button
                         onClick={() => setCollapsed(true)}
-                        className="text-xs font-medium text-blue-400 hover:text-blue-300 transition flex items-center gap-1 ml-1"
+                        className="text-xs font-medium text-accent hover:text-accent/80 transition flex items-center gap-1 ml-1"
                       >
                         <ChevronDown className="w-3 h-3" />
                         {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
@@ -321,7 +321,7 @@ export function Comment({
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="Add a reply..."
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none"
+                        className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring resize-none"
                         rows={2}
                         autoFocus
                       />
@@ -331,14 +331,14 @@ export function Comment({
                             setShowReplyBox(false);
                             setReplyText('');
                           }}
-                          className="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition"
+                          className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleReplySubmit}
                           disabled={!replyText.trim() || isSubmitting}
-                          className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+                          className="px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-full hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition"
                         >
                           {isSubmitting ? 'Posting...' : 'Reply'}
                         </button>
@@ -353,7 +353,7 @@ export function Comment({
           {collapsed && (
             <button
               onClick={() => setCollapsed(false)}
-              className="mt-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition flex items-center gap-1"
+              className="mt-1 text-xs font-medium text-accent hover:text-accent/80 transition flex items-center gap-1"
             >
               <ChevronRight className="w-3 h-3" />
               Show {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
@@ -363,7 +363,7 @@ export function Comment({
       </div>
 
       {!collapsed && hasReplies && (
-        <div className="mt-2 border-l-2 border-gray-800 pl-2">
+        <div className="mt-2 border-l-2 border-border pl-2">
           {comment.children!.map((child) => (
             <Comment
               key={child.id}

@@ -159,7 +159,7 @@ body {
   --warning-foreground: #f7bb6d;
 
   /* Success */
-  --success: #33820e;
+  --success: #4cc016;
   --success-foreground: #afff8c;
 
   /* Logo hue rotation */
@@ -235,7 +235,7 @@ body {
   --warning-foreground: #7f5318;
 
   /* Success */
-  --success: #3e9217;
+  --success: #44a119;
   --success-foreground: #234b0f;
 
   /* Logo hue rotation */
@@ -311,7 +311,7 @@ body {
   --warning-foreground: #f7a76d;
 
   /* Success */
-  --success: #5b820e;
+  --success: #84bb16;
   --success-foreground: #d9ff8c;
 
   /* Logo hue rotation */
@@ -387,7 +387,7 @@ body {
   --warning-foreground: #f7d06d;
 
   /* Success */
-  --success: #0e822b;
+  --success: #15ba3f;
   --success-foreground: #8cffa5;
 
   /* Logo hue rotation */
