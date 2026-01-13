@@ -101,7 +101,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
   const avatarUrl = userProfile?.avatar_url;
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b border-gray-800 backdrop-blur bg-gradient">
+    <header className="sticky top-0 z-50 h-16 border-b border-border backdrop-blur bg-gradient">
       <div className="flex h-full items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link className="flex min-w-fit cursor-pointer items-center gap-2" href="/">
@@ -135,11 +135,11 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
               placeholder="Search videos, creators, topics…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 rounded-l-xl border border-gray-700 bg-gray-900 px-4 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10"
+              className="flex-1 rounded-l-xl border border-border bg-input px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-4 focus:ring-ring/10"
             />
             <button
               type="submit"
-              className="rounded-r-xl border border-l-0 border-gray-700 bg-gray-800 px-4 py-2 hover:bg-gray-700"
+              className="rounded-r-xl border border-l-0 border-border bg-secondary px-4 py-2 text-secondary-foreground hover:bg-secondary/80"
               aria-label="Search"
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
@@ -152,7 +152,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
           {showFilters && (
             <button
               onClick={onFilterClick}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
               aria-label="Filters"
             >
               <FunnelIcon className="h-5 w-5" />
@@ -160,7 +160,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
           )}
           <button
             onClick={() => setSearchOpen(true)}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
             aria-label="Search"
           >
             <MagnifyingGlassIcon className="h-5 w-5" />
@@ -169,16 +169,16 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
 
         {/* Desktop Navigation - Hidden on mobile */}
         <nav className="hidden min-w-fit items-center gap-6 lg:flex">
-          <Link href="/" className="text-sm text-gray-200 hover:text-blue-400">
+          <Link href="/" className="text-sm text-foreground/80 hover:text-accent">
             Feed
           </Link>
-          <Link href="/upload" className="text-sm text-gray-200 hover:text-blue-400">
+          <Link href="/upload" className="text-sm text-foreground/80 hover:text-accent">
             Upload
           </Link>
-          <Link href="/settings" className="text-sm text-gray-200 hover:text-blue-400">
+          <Link href="/settings" className="text-sm text-foreground/80 hover:text-accent">
             Settings
           </Link>
-          <Link href="/more" className="text-sm text-gray-200 hover:text-blue-400">
+          <Link href="/more" className="text-sm text-foreground/80 hover:text-accent">
             More
           </Link>
         </nav>
@@ -186,12 +186,12 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
         {/* Profile/Login Button */}
         <div className="relative ml-2 md:ml-4 min-w-fit">
           {loading ? (
-            <div className="h-10 w-10 md:w-20 animate-pulse rounded-xl bg-gray-800"></div>
+            <div className="h-10 w-10 md:w-20 animate-pulse rounded-xl bg-muted"></div>
           ) : user ? (
             <>
               <button
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                className="flex items-center gap-2 rounded-xl px-2 py-2 md:px-3 hover:bg-gray-900"
+                className="flex items-center gap-2 rounded-xl px-2 py-2 md:px-3 hover:bg-muted"
                 aria-haspopup="menu"
                 aria-expanded={profileMenuOpen}
               >
@@ -204,7 +204,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                     {displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -212,30 +212,30 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
               </button>
 
               {profileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-800 bg-gray-900 shadow-lg">
-                  <div className="border-b border-gray-800 px-4 py-3">
-                    <p className="text-sm font-semibold truncate">
+                <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
+                  <div className="border-b border-border px-4 py-3">
+                    <p className="text-sm font-semibold truncate text-popover-foreground">
                       {displayName}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <div className="py-2">
                     <Link
                       href="/account"
-                      className="block px-4 py-2 text-sm hover:bg-gray-800"
+                      className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       Account
                     </Link>
                     <Link
                       href="/profile"
-                      className="block px-4 py-2 text-sm hover:bg-gray-800"
+                      className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       Profile
                     </Link>
                     <button
-                      className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-800"
+                      className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-muted"
                       onClick={handleLogout}
                     >
                       Logout
@@ -247,7 +247,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
           ) : (
             <Link
               href="/auth"
-              className="px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-colors"
+              className="px-3 md:px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-sm font-medium transition-colors"
             >
               Login
             </Link>
@@ -257,11 +257,11 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
 
       {/* Mobile Search Overlay */}
       {searchOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0a0a0a] lg:hidden">
-          <div className="h-16 border-b border-gray-800 flex items-center px-4 gap-2">
+        <div className="fixed inset-0 z-50 bg-background lg:hidden">
+          <div className="h-16 border-b border-border flex items-center px-4 gap-2">
             <button
               onClick={() => setSearchOpen(false)}
-              className="p-2 hover:bg-gray-800 rounded-lg"
+              className="p-2 hover:bg-muted rounded-lg text-foreground"
               aria-label="Close search"
             >
               <XMarkIcon className="h-6 w-6" />
@@ -273,11 +273,11 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
-                className="flex-1 rounded-xl border border-gray-700 bg-gray-900 px-4 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-400/10"
+                className="flex-1 rounded-xl border border-border bg-input px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-4 focus:ring-ring/10"
               />
               <button
                 type="submit"
-                className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+                className="p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                 aria-label="Search"
               >
                 <MagnifyingGlassIcon className="h-6 w-6" />
