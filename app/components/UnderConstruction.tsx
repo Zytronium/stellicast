@@ -7,7 +7,7 @@ export default function UnderConstruction() {
           <img
             src="/logo.png"
             alt="Stellicast"
-            className="h-20 w-20 object-contain"
+            className="h-20 w-20 object-contain hue-rotate-(--logo-hue-rotate)"
             style={{ animation: 'var(--animate-float)' }}
           />
         </div>
@@ -15,16 +15,16 @@ export default function UnderConstruction() {
         {/* Heading */}
         <div className="space-y-3">
           <h1
-            className="text-3xl font-semibold tracking-tight"
+            className="text-3xl font-semibold tracking-tight text-foreground"
             style={{ animation: 'var(--animate-fade-in-up)' }}
           >
             Under Construction
           </h1>
           <p
-            className="text-gray-400 text-base"
+            className="text-muted-foreground text-base"
             style={{ animation: 'var(--animate-fade-in-up)', animationDelay: '0.1s', opacity: 0, animationFillMode: 'forwards' }}
           >
-            We're working on something great. Check back soon!
+            We&apos;re working on something great. Check back soon!
           </p>
         </div>
 
@@ -33,10 +33,10 @@ export default function UnderConstruction() {
           className="w-full space-y-2"
           style={{ animation: 'var(--animate-fade-in-up)', animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards' }}
         >
-          <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-            <div className="h-full w-2/3 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full" />
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div className="h-full w-2/3 bg-gradient-to-r from-primary to-primary/90 rounded-full" />
           </div>
-          <p className="text-xs text-gray-500">Building in progress...</p>
+          <p className="text-xs text-muted-foreground">Building in progress...</p>
         </div>
 
         {/* Back button */}
@@ -45,7 +45,7 @@ export default function UnderConstruction() {
         >
           <a
             href="/"
-            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             ← Back to Home
           </a>
