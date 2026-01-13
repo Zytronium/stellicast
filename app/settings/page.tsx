@@ -51,8 +51,7 @@ export default async function SettingsPage() {
             "Theme": {
               "options": ["spaceblue (dark)", "palewhite (light)"],
               "type": "dropdown",
-              "settingName": "theme",
-              "disabled": true
+              "settingName": "theme"
             },
             "Layout": {
               "options": ["default"],
