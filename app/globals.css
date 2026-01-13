@@ -162,6 +162,9 @@ body {
   --success: #33820e;
   --success-foreground: #afff8c;
 
+  /* Logo hue rotation */
+  --logo-hue-rotate: 0;
+
   /* Borders / inputs / rings */
   --border: #1f2937;            /* border-gray-800 */
   --input: #0f1113;             /* input background (matches card) */
@@ -235,6 +238,9 @@ body {
   --success: #3e9217;
   --success-foreground: #234b0f;
 
+  /* Logo hue rotation */
+  --logo-hue-rotate: 30deg;
+
   /* Borders / inputs / rings */
   --border: #e5e5e5;
   --input: #ffffff;
@@ -291,7 +297,7 @@ body {
 
   /* Gradient Colors */
   --gradient-from: rgba(69, 10, 10, 0.8);    /* dark red */
-  --gradient-to: rgba(13, 8, 6, 0.95);
+  --gradient-to: rgba(15, 9, 7, 0.95);
 
   --gradient-darker-from: #1a0808;
   --gradient-darker-to: #0d0806;
@@ -307,6 +313,9 @@ body {
   /* Success */
   --success: #5b820e;
   --success-foreground: #d9ff8c;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 150deg;
 
   /* Borders / inputs / rings */
   --border: #2d1410;
@@ -364,13 +373,25 @@ body {
 
   /* Gradient Colors */
   --gradient-from: rgba(4, 47, 46, 0.8);     /* dark teal */
-  --gradient-to: rgba(3, 8, 10, 0.95);
+  --gradient-to: rgba(4, 13, 9, 0.95);
 
   --gradient-darker-from: #021716;
   --gradient-darker-to: #03080a;
 
   /* Destructive */
   --destructive: #ef4444;
+  --destructive-foreground: #ff8282;
+
+  /* Warnings */
+  --warning: #edb528;
+  --warning-foreground: #f7d06d;
+
+  /* Success */
+  --success: #0e822b;
+  --success-foreground: #8cffa5;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 295deg;
 
   /* Borders / inputs / rings */
   --border: #0f2420;

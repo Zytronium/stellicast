@@ -112,7 +112,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
               alt="Stellicast"
               width={32}
               height={32}
-              className="rounded-lg"
+              className="rounded-lg hue-rotate-(--logo-hue-rotate)"
               priority
             />
           </div>
@@ -122,7 +122,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
             alt="Stellicast"
             width={187.4}
             height={32}
-            className="hidden md:block h-8 w-auto"
+            className="hidden md:block h-8 w-auto hue-rotate-(--logo-hue-rotate)"
             priority
           />
         </Link>
