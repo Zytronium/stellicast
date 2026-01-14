@@ -558,9 +558,9 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-gray-400">Loading...</div>
+          <div className="text-muted-foreground">Loading...</div>
           {retryCount > 0 && (
-            <div className="text-sm text-gray-500 mt-2">
+            <div className="text-sm text-muted-foreground/70 mt-2">
               Retry attempt {retryCount}/{maxRetries}
             </div>
           )}
@@ -610,11 +610,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           {/* Channel Info & Actions - Mobile Optimized */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
             {/* Channel Info */}
-            <div className="flex items-center justify-between sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-3">
+            <div className="flex items-center justify-between sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-border bg-card p-3">
               <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial">
                 <Link
                   href={`/channel/${channelInfo.handle ?? ''}`}
-                  className="grid h-10 w-10 place-items-center rounded-full bg-zinc-600 text-sm font-bold text-white flex-shrink-0 overflow-hidden"
+                  className="grid h-10 w-10 place-items-center rounded-full bg-muted text-sm font-bold text-muted-foreground flex-shrink-0 overflow-hidden"
                 >
                   {channelInfo.avatar_url ? (
                     <img
@@ -629,11 +629,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 <div className="min-w-0 sm:min-w-0">
                   <Link
                     href={`/channel/${channelInfo.handle ?? ''}`}
-                    className="text-sm font-semibold text-gray-100 block truncate sm:inline"
+                    className="text-sm font-semibold text-card-foreground block truncate sm:inline"
                   >
                     {channelInfo.display_name ?? 'Unknown Creator'}
                   </Link>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-muted-foreground">
                     {channelInfo.video_count ?? 0} video
                     {channelInfo.video_count === 1 ? "" : "s"} •{" "}
                     {channelInfo.follower_count ?? 0} follower
@@ -644,7 +644,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
               <button
                 type="button"
-                className="rounded-full bg-blue-600 px-4 sm:px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-500 transition flex-shrink-0"
+                className="rounded-full bg-primary px-4 sm:px-5 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition flex-shrink-0"
               >
                 Follow
               </button>
@@ -653,30 +653,30 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             {/* Action Buttons - Mobile Optimized */}
             <div className="flex flex-col sm:flex-row lg:flex lg:items-center gap-3 lg:gap-3">
               {/* Like/Dislike - Mobile takes full width */}
-              <div className="flex items-center justify-between sm:justify-start gap-3 rounded-xl border border-gray-800 bg-gray-900/50 p-3 lg:p-0 lg:bg-transparent lg:border-0">
+              <div className="flex items-center justify-between sm:justify-start gap-3 rounded-xl border border-border bg-card/50 p-3 lg:p-0 lg:bg-transparent lg:border-0">
                 <div className="flex items-center gap-2">
-                  <div className="flex flex-col lg:flex-col rounded-lg overflow-hidden border border-gray-800">
+                  <div className="flex flex-col lg:flex-col rounded-lg overflow-hidden border border-border">
                     <button
                       onClick={handleLikeClick}
                       disabled={likeLoading}
                       className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
-                        liked ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
+                        liked ? 'bg-blue-600 text-white' : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
                       } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <ThumbsUpIcon ref={likeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
                     </button>
-                    <div className="h-px bg-gray-800"></div>
+                    <div className="h-px bg-border"></div>
                     <button
                       onClick={handleDislikeClick}
                       disabled={dislikeLoading}
                       className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
-                        disliked ? 'bg-red-600 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-800'
+                        disliked ? 'bg-red-600 text-white' : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
                       } ${dislikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <ThumbsDownIcon ref={dislikeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
                     </button>
                   </div>
-                  <div className="flex flex-col text-sm lg:text-xs text-gray-400 gap-3">
+                  <div className="flex flex-col text-sm lg:text-xs text-muted-foreground gap-3">
                     <span className="whitespace-nowrap lg:hidden font-medium">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
                     <span className="hidden lg:inline whitespace-nowrap">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
                     <span className="whitespace-nowrap lg:hidden font-medium">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
@@ -696,13 +696,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   >
                     <StarIcon
                       className={`w-9 h-9 transition ${
-                        starred ? 'text-yellow-500' : canStar ? 'text-gray-400' : 'text-gray-600'
+                        starred ? 'text-warning' : canStar ? 'text-muted-foreground' : 'text-muted-foreground/50'
                       }`}
                       fill={starred ? 'currentColor' : '#1c263a'}
                     />
                   </button>
                   <div>
-                    <span className={`text-sm font-semibold ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <span className={`text-sm font-semibold ${starred ? 'text-warning' : canStar ? 'text-card-foreground' : 'text-muted-foreground'}`}>
                       {video.stars} star{video.stars === 1 ? '' : 's'}
                     </span>
                   </div>
@@ -721,12 +721,12 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 >
                   <StarIcon
                     className={`w-8 h-8 transition ${
-                      starred ? 'text-yellow-500' : canStar ? 'text-gray-400' : 'text-gray-600'
+                      starred ? 'text-warning' : canStar ? 'text-muted-foreground' : 'text-muted-foreground/50'
                     }`}
                     fill={starred ? 'currentColor' : '#1c263a'}
                   />
                 </button>
-                <span className={`text-sm font-medium whitespace-nowrap ${starred ? 'text-yellow-500' : canStar ? 'text-gray-300' : 'text-gray-600'}`}>
+                <span className={`text-sm font-medium whitespace-nowrap ${starred ? 'text-warning' : canStar ? 'text-card-foreground' : 'text-muted-foreground'}`}>
                   {video.stars} star{video.stars === 1 ? '' : 's'}
                 </span>
               </div>
@@ -735,13 +735,13 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               <div className="relative">
                 <button
                   onClick={handleShare}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 lg:py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl lg:rounded-lg transition"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 lg:py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-xl lg:rounded-lg transition"
                 >
                   <Share2 className="w-5 h-5 lg:w-4 lg:h-4" />
                   <span className="text-sm font-medium">Share</span>
                 </button>
                 {showShareCopied && (
-                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
+                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
                     Link copied!
                   </div>
                 )}
@@ -750,19 +750,19 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           </div>
 
           {/* Description */}
-          <div className="rounded-2xl border border-gray-800 bg-[#0a0a0a] p-4">
+          <div className="rounded-2xl border border-border bg-card p-4">
             <details open className="group">
-              <summary className="cursor-pointer list-none text-sm font-semibold text-gray-100">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-card-foreground">
                 Description
-                <span className="ml-2 text-xs font-normal text-gray-400 group-open:hidden">
+                <span className="ml-2 text-xs font-normal text-muted-foreground group-open:hidden">
                   (click to expand)
                 </span>
               </summary>
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {video.views} view{video.views === 1 ? '' : 's'} • Published {video.uploadedAt ? formatTimeAgo(video.uploadedAt.toISOString()) : 'recently'}
                 </p>
-                <div className="text-sm leading-relaxed text-gray-300">
+                <div className="text-sm leading-relaxed text-card-foreground">
                   {(video.description ?? '').split('\n').map((line, i) => (
                     <p key={i} className={`${i === 0 ? '' : 'mt-3'} wrap-break-word max-w-[80vw]`}>
                       {line}
@@ -776,25 +776,25 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
         {/* Mobile Comments Section - Between Description and More Videos */}
         <div className="lg:hidden mt-6">
-          <div className="rounded-2xl border border-gray-800 bg-[#0a0a0a] overflow-hidden">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
             {/* Comments Header - Clickable to expand */}
             <button
               onClick={() => setMobileCommentsExpanded(!mobileCommentsExpanded)}
-              className="w-full p-4 flex items-center justify-between hover:bg-gray-900/30 transition"
+              className="w-full p-4 flex items-center justify-between hover:bg-accent/30 transition"
             >
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
               </div>
               {mobileCommentsExpanded ? (
-                <ChevronUp className="w-5 h-5 text-gray-400" />
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
               )}
             </button>
 
             {/* First Comment Preview - Always visible when collapsed */}
             {!mobileCommentsExpanded && comments.length > 0 && (
-              <div className="px-4 pb-4 border-t border-gray-800">
+              <div className="px-4 pb-4 border-t border-border">
                 <div className="pt-3">
                   <CommentComponent
                     comment={comments[0]}
@@ -811,11 +811,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
             {/* Expanded Comments */}
             {mobileCommentsExpanded && (
-              <div className="border-t border-gray-800">
+              <div className="border-t border-border">
                 <div className="p-4">
                   <button
                     onClick={() => setShowCommentModal(true)}
-                    className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-blue-500 transition mb-4"
+                    className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-semibold hover:bg-primary/90 transition mb-4"
                   >
                     <Plus className="w-4 h-4" />
                     Add Comment
@@ -823,7 +823,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
                   <div className="space-y-1 max-h-[600px] overflow-y-auto">
                     {isLoadingComments ? (
-                      <p className="text-sm text-gray-400 text-center py-8">Loading comments...</p>
+                      <p className="text-sm text-muted-foreground text-center py-8">Loading comments...</p>
                     ) : comments.length > 0 ? (
                       comments.map((comment) => (
                         <CommentComponent
@@ -838,7 +838,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                         />
                       ))
                     ) : (
-                      <p className="text-sm text-gray-400 text-center py-8">No comments yet. Be the first to comment!</p>
+                      <p className="text-sm text-muted-foreground text-center py-8">No comments yet. Be the first to comment!</p>
                     )}
                   </div>
                 </div>
@@ -860,7 +860,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             <div className="flex justify-center mt-6">
               <button
                 onClick={handleLoadMore}
-                className="px-6 py-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition"
+                className="px-6 py-2 text-sm font-medium text-accent hover:text-accent-foreground transition"
               >
                 Load More
               </button>
@@ -870,7 +870,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       </div>
 
       {/* Comments Sidebar - Desktop Only */}
-      <div className="hidden lg:flex w-96 bg-gray-900/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
+      <div className="hidden lg:flex w-96 bg-card/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
         </div>
@@ -880,20 +880,20 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none"
+            className="w-full bg-input border border-border rounded-lg px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             rows={3}
           />
           <div className="flex justify-end gap-2 mt-2">
             <button
               onClick={() => setNewComment('')}
-              className="px-4 py-1.5 text-sm text-gray-400 hover:text-white transition"
+              className="px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground transition"
             >
               Cancel
             </button>
             <button
               onClick={handleCommentSubmit}
               disabled={!newComment.trim()}
-              className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+              className="px-4 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition"
             >
               Comment
             </button>
@@ -902,7 +902,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
         <div className="flex-1 overflow-y-auto">
           {isLoadingComments ? (
-            <p className="text-sm text-gray-400 text-center py-8">Loading comments...</p>
+            <p className="text-sm text-muted-foreground text-center py-8">Loading comments...</p>
           ) : comments.length > 0 ? (
             <div className="space-y-1">
               {comments.map((comment) => (
@@ -919,15 +919,15 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-8">No comments yet. Be the first to comment!</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No comments yet. Be the first to comment!</p>
           )}
         </div>
       </div>
 
       {/* Mobile Comment Modal */}
       {showCommentModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-end lg:hidden">
-          <div className="bg-gray-900 rounded-t-2xl w-full p-6 animate-slide-up">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end lg:hidden">
+          <div className="bg-card rounded-t-2xl w-full p-6 animate-slide-up border-t border-border">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Add Comment</h3>
               <button
@@ -935,7 +935,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   setShowCommentModal(false);
                   setNewComment('');
                 }}
-                className="text-gray-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -944,7 +944,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Write your comment..."
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-600 resize-none mb-4"
+              className="w-full bg-input border border-border rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none mb-4"
               rows={5}
               autoFocus
             />
@@ -954,14 +954,14 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   setShowCommentModal(false);
                   setNewComment('');
                 }}
-                className="flex-1 px-4 py-2 text-sm border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-800 transition"
+                className="flex-1 px-4 py-2 text-sm border border-border text-card-foreground rounded-lg hover:bg-accent transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCommentSubmit}
                 disabled={!newComment.trim()}
-                className="flex-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+                className="flex-1 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition"
               >
                 Post Comment
               </button>

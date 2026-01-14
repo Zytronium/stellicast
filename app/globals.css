@@ -239,7 +239,7 @@ body {
   --success-foreground: #234b0f;
 
   /* Logo hue rotation */
-  --logo-hue-rotate: 30deg;
+  --logo-hue-rotate: 20deg;
 
   /* Borders / inputs / rings */
   --border: #e5e5e5;
