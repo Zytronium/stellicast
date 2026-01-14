@@ -76,7 +76,7 @@ export default function Card({
           className="pointer-events-none absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
           aria-hidden="true"
         >
-          <PlayIcon className="h-6 w-6 text-accent-foreground/90" />
+          <PlayIcon className="h-6 w-6 text-accent-alt" />
         </div>
       </div>
 

@@ -168,12 +168,13 @@ function applyThemeToBody(theme: string) {
     'palewhite (light)': 'theme-palewhite',
     'volcanic (dark)': 'theme-volcanic',
     'alien (dark)': 'theme-alien',
+    'royalty (dark)': 'theme-royalty',
   };
 
   const themeClass = themeMap[theme] || '';
 
   // Remove all theme classes
-  document.body.classList.remove('theme-palewhite', 'theme-volcanic', 'theme-alien');
+  document.body.classList.remove('theme-palewhite', 'theme-volcanic', 'theme-alien', 'theme-royalty');
 
   // Add new theme class if it exists
   if (themeClass) {

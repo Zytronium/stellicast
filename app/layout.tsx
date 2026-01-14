@@ -60,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'palewhite (light)': 'theme-palewhite',
           'volcanic (dark)': 'theme-volcanic',
           'alien (dark)': 'theme-alien',
+          'royalty (dark)': 'theme-royalty',
         };
 
         setThemeClass(themeMap[theme] || '');

@@ -26,6 +26,7 @@
   --color-success-foreground: var(--success-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-accent-alt: var(--accent-alt);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -142,6 +143,7 @@ body {
   /* Accent (hover/interactive highlights — can be same-family as primary) */
   --accent: #3b82f6;            /* tailwind blue-500 — hover/secondary highlight */
   --accent-foreground: #ffffff;
+  --accent-alt: #bfdbfe;        /* pastel blue-200 */
 
   /* Gradient Colors */
   --gradient-from: rgba(23, 36, 87, 0.8);   /* blue-950/80 */
@@ -218,6 +220,7 @@ body {
   /* Accent */
   --accent: #6366f1;            /* indigo-500 */
   --accent-foreground: #ffffff;
+  --accent-alt: #c7d2fe;        /* pastel indigo-200 */
 
   /* Gradient Colors */
   --gradient-from: rgba(238, 242, 255, 0.9);  /* indigo-50 */
@@ -294,6 +297,7 @@ body {
   /* Accent */
   --accent: #fb923c;            /* orange-400 */
   --accent-foreground: #ffffff;
+  --accent-alt: #fed7aa;        /* pastel orange-200 */
 
   /* Gradient Colors */
   --gradient-from: rgba(69, 10, 10, 0.8);    /* dark red */
@@ -370,6 +374,7 @@ body {
   /* Accent */
   --accent: #34d399;            /* emerald-400 */
   --accent-foreground: #022c22;
+  --accent-alt: #a7f3d0;        /* pastel emerald-200 */
 
   /* Gradient Colors */
   --gradient-from: rgba(4, 47, 46, 0.8);     /* dark teal */
@@ -416,6 +421,83 @@ body {
 .theme-alien * {
   scrollbar-width: thin;
   scrollbar-color: #34d399 #0a1514;
+}
+
+/* Royalty (Dark) Theme - Golden with Red Accent */
+.theme-royalty {
+  /* Core surface / text */
+  --background: #0a0604;        /* very dark brown-black */
+  --foreground: #fef3c7;        /* warm cream/gold */
+
+  /* Cards & popovers */
+  --card: #1a1108;              /* dark warm brown */
+  --card-foreground: #fef3c7;
+  --card-accent: #4a2c0a;       /* deep golden brown */
+  --popover: #1a1108;
+  --popover-foreground: #fef3c7;
+
+  /* Primary / brand - Golden */
+  --primary: #d4af37;           /* rich gold */
+  --primary-foreground: #1a0f00;
+
+  /* Secondary / subtle accents */
+  --secondary: #2d1f10;         /* dark brown */
+  --secondary-foreground: #f3d99e;
+
+  /* Muted */
+  --muted: #3d2815;
+  --muted-foreground: #c4a572;
+
+  /* Accent - Golden */
+  --accent: #e2b14f;
+  --accent-foreground: #1a1000;
+  --accent-alt: #ffdba3;        /* pastel gold */
+
+  /* Gradient Colors */
+  --gradient-from: rgba(172, 132, 52, 0.85);   /* dark gold-brown */
+  --gradient-to: rgba(56, 39, 24, 0.95);
+
+  --gradient-darker-from: #2b1f0f;
+  --gradient-darker-to: #0a0604;
+
+  /* Destructive - Deep red */
+  --destructive: #dc2626;
+  --destructive-foreground: #fecaca;
+
+  /* Warnings - Already golden */
+  --warning: #eab308;
+  --warning-foreground: #f9c291;
+
+  /* Success - Rich green with gold tint */
+  --success: #84cc16;
+  --success-foreground: #c5f393;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 180deg;
+
+  /* Borders / inputs / rings */
+  --border: #50310f;            /* deep golden brown */
+  --input: #1a1108;
+  --ring: #d4af37;              /* gold ring */
+
+  /* Sidebar */
+  --sidebar: #0a0604;
+  --sidebar-foreground: #fef3c7;
+  --sidebar-primary: #2d1f10;
+  --sidebar-primary-foreground: #fef3c7;
+  --sidebar-accent: #3d2815;
+  --sidebar-accent-foreground: #f3d99e;
+  --sidebar-border: #4a2c0a;
+  --sidebar-ring: #d4af37;
+}
+
+.theme-royalty ::selection {
+  background: rgba(212, 175, 55, 0.3);
+}
+
+.theme-royalty * {
+  scrollbar-width: thin;
+  scrollbar-color: #d4af37 #1a1108;
 }
 
 @layer base {
