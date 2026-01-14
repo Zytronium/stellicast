@@ -753,7 +753,7 @@ export default function VideoPlayer({
         <div
           className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none">
           <div
-            className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
 
@@ -766,11 +766,11 @@ export default function VideoPlayer({
               togglePlay();
               handleActivity();
             }}
-            className="pointer-events-auto w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center hover:bg-blue-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="pointer-events-auto w-20 h-20 rounded-full bg-primary flex items-center justify-center hover:bg-primary/90 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring"
             aria-label={hasEnded ? 'Replay video' : 'Play video'}
           >
-            {hasEnded ? <RotateCcw className="w-10 h-10 text-white" /> :
-              <Play className="w-10 h-10 text-white ml-1" />}
+            {hasEnded ? <RotateCcw className="w-10 h-10 text-primary-foreground" /> :
+              <Play className="w-10 h-10 text-primary-foreground ml-1" />}
           </button>
         </div>
       )}
@@ -791,7 +791,7 @@ export default function VideoPlayer({
               }}
               aria-pressed={isPlaying}
               aria-label={isPlaying ? 'Pause' : hasEnded ? 'Replay' : 'Play'}
-              className="text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+              className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
             >
               {hasEnded ? <RotateCcw className="w-6 h-6" /> : isPlaying ?
                 <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
@@ -805,7 +805,7 @@ export default function VideoPlayer({
                 }}
                 aria-pressed={isMuted}
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
-                className="text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
               >
                 {isMuted || volume === 0 ? <VolumeX className="w-6 h-6" /> :
                   <Volume2 className="w-6 h-6" />}
@@ -829,7 +829,7 @@ export default function VideoPlayer({
                   setShowVolumeSlider((s) => !s);
                   handleActivity();
                 }}
-                className="text-xs text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring rounded"
                 aria-haspopup="true"
                 aria-expanded={showVolumeSlider}
                 aria-label="Show volume"
@@ -845,7 +845,7 @@ export default function VideoPlayer({
                     setShowSpeedMenu((s) => !s);
                     handleActivity();
                   }}
-                  className="text-white hover:text-blue-400 transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                  className="text-foreground hover:text-accent transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-ring rounded"
                   aria-haspopup="true"
                   aria-expanded={showSpeedMenu}
                   aria-label="Playback speed"
@@ -858,13 +858,13 @@ export default function VideoPlayer({
 
             {showSpeedMenu && (
               <div role="menu"
-                   className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-black/95 rounded-lg p-2 min-w-[100px] z-50">
+                   className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-popover rounded-lg p-2 min-w-[100px] z-50">
                 <div
-                  className="flex items-center justify-between border-b border-gray-700 pb-2 mb-2 px-2">
+                  className="flex items-center justify-between border-b border-border pb-2 mb-2 px-2">
                   <span
-                    className="font-semibold text-white text-sm">Playback Speed</span>
+                    className="font-semibold text-popover-foreground text-sm">Playback Speed</span>
                   <button onClick={() => setShowSpeedMenu(false)}
-                          className="text-gray-400 hover:text-white text-sm">✕
+                          className="text-muted-foreground hover:text-foreground text-sm">✕
                   </button>
                 </div>
                 {speeds.map((s) => (
@@ -872,7 +872,7 @@ export default function VideoPlayer({
                     role="menuitem"
                     key={s}
                     onClick={() => changeSpeed(s)}
-                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${s === playbackRate ? 'text-blue-400' : 'text-white'}`}
+                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted rounded ${s === playbackRate ? 'text-accent' : 'text-popover-foreground'}`}
                   >
                     {s}x
                   </button>
@@ -880,7 +880,7 @@ export default function VideoPlayer({
               </div>
             )}
 
-            <span className="text-sm text-gray-300">
+            <span className="text-sm text-foreground/80">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
@@ -893,7 +893,7 @@ export default function VideoPlayer({
                     setShowQualityMenu((s) => !s);
                     handleActivity();
                   }}
-                  className="text-white hover:text-blue-400 transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                  className="text-foreground hover:text-accent transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring rounded"
                   aria-haspopup="true"
                   aria-expanded={showQualityMenu}
                   aria-label="Quality"
@@ -905,18 +905,18 @@ export default function VideoPlayer({
 
             {showQualityMenu && (
               <div role="menu"
-                   className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-black/95 rounded-lg p-2 min-w-[100px] max-h-80 overflow-y-auto z-50">
+                   className="absolute bottom-20 left-4 right-4 md:left-auto md:right-auto md:bottom-16 bg-popover rounded-lg p-2 min-w-[100px] max-h-80 overflow-y-auto z-50 border border-border">
                 <div
-                  className="flex items-center justify-between border-b border-gray-700 pb-2 mb-2 px-2">
-                  <span className="font-semibold text-white text-sm">Quality</span>
+                  className="flex items-center justify-between border-b border-border pb-2 mb-2 px-2">
+                  <span className="font-semibold text-popover-foreground text-sm">Quality</span>
                   <button onClick={() => setShowQualityMenu(false)}
-                          className="text-gray-400 hover:text-white text-sm">✕
+                          className="text-muted-foreground hover:text-foreground text-sm">✕
                   </button>
                 </div>
                 <button
                   role="menuitem"
                   onClick={() => changeQuality(-1, 'Auto')}
-                  className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${selectedQuality === 'Auto' ? 'text-blue-400' : 'text-white'}`}
+                  className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted rounded ${selectedQuality === 'Auto' ? 'text-accent' : 'text-popover-foreground'}`}
                 >
                   Auto
                 </button>
@@ -925,7 +925,7 @@ export default function VideoPlayer({
                     role="menuitem"
                     key={q.id}
                     onClick={() => changeQuality(q.id, q.height)}
-                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-800 rounded ${q.height === selectedQuality ? 'text-blue-400' : 'text-white'}`}
+                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-muted rounded ${q.height === selectedQuality ? 'text-accent' : 'text-popover-foreground'}`}
                   >
                     {q.height}
                   </button>
@@ -939,7 +939,7 @@ export default function VideoPlayer({
                   setShowSettingsMenu((s) => !s);
                   handleActivity();
                 }}
-                className="text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+                className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
                 aria-haspopup="true"
                 aria-expanded={showSettingsMenu}
                 aria-label="Settings"
@@ -948,10 +948,10 @@ export default function VideoPlayer({
               </button>
               {showSettingsMenu && (
                 <div role="menu"
-                     className="absolute bottom-full mb-2 right-0 bg-black/95 rounded-lg p-3 min-w-[200px] max-h-96 overflow-y-auto">
-                  <div className="text-white text-sm space-y-2">
+                     className="absolute bottom-full mb-2 right-0 bg-popover rounded-lg p-3 min-w-[200px] max-h-96 overflow-y-auto border border-border">
+                  <div className="text-popover-foreground text-sm space-y-2">
                     <div
-                      className="font-semibold border-b border-gray-700 pb-2">Settings
+                      className="font-semibold border-b border-border pb-2">Settings
                     </div>
 
                     {isMobile && (
@@ -960,34 +960,34 @@ export default function VideoPlayer({
                           setShowSpeedMenu(true);
                           setShowSettingsMenu(false);
                         }}
-                                className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                                className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-muted rounded">
                           <span>Speed</span>
-                          <span className="text-gray-400">{playbackRate}x</span>
+                          <span className="text-muted-foreground">{playbackRate}x</span>
                         </button>
                         <button role="menuitem" onClick={() => {
                           setShowQualityMenu(true);
                           setShowSettingsMenu(false);
                         }}
-                                className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                                className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-muted rounded">
                           <span>Quality</span>
-                          <span className="text-gray-400">{selectedQuality}</span>
+                          <span className="text-muted-foreground">{selectedQuality}</span>
                         </button>
-                        <div className="border-t border-gray-700 my-1" />
+                        <div className="border-t border-border my-1" />
                       </>
                     )}
 
                     <button role="menuitem"
-                            className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Subtitles
+                            className="block w-full text-left px-2 py-1 hover:bg-muted rounded">Subtitles
                                                                                                    (soon)
                     </button>
                     <button role="menuitem"
-                            className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded">Annotations
+                            className="block w-full text-left px-2 py-1 hover:bg-muted rounded">Annotations
                                                                                                    (soon)
                     </button>
                     <button role="menuitem" onClick={toggleLoop}
-                            className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-gray-800 rounded">
+                            className="flex items-center justify-between w-full text-left px-2 py-1 hover:bg-muted rounded">
                       <span>Loop</span>
-                      {isLooping && <span className="text-blue-400">✓</span>}
+                      {isLooping && <span className="text-accent">✓</span>}
                     </button>
                   </div>
                 </div>
@@ -1000,14 +1000,14 @@ export default function VideoPlayer({
                 handleActivity();
               }}
               aria-label="Toggle fullscreen"
-              className="text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 rounded"
+              className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
             >
               <Maximize className="w-6 h-6" />
             </button>
           </div>
         </div>
 
-        {/* Progress bar: reverted to thin track and visible filled color */}
+        {/* Progress bar */}
         <div
           ref={progressRef}
           role="slider"
@@ -1016,7 +1016,7 @@ export default function VideoPlayer({
           aria-valuenow={Math.round(currentTime)}
           tabIndex={0}
           onKeyDown={onProgressKeyDown}
-          className="relative h-1 bg-gray-900 cursor-pointer group/progress"
+          className="relative h-1 bg-muted cursor-pointer group/progress"
           onMouseMove={(e) => {
             handleActivity();
             if (progressRef.current && duration) {
@@ -1035,7 +1035,7 @@ export default function VideoPlayer({
           {buffered.map((range, i) => (
             <div
               key={i}
-              className="absolute h-full bg-gray-700"
+              className="absolute h-full bg-muted/50"
               style={{
                 left: `${(range.start / (duration || 1)) * 100}%`,
                 width: `${((range.end - range.start) / (duration || 1)) * 100}%`,
@@ -1044,7 +1044,7 @@ export default function VideoPlayer({
           ))}
 
           <div
-            className={`absolute h-full transition-all ${partyMode ? '' : 'bg-blue-600'}`}
+            className={`absolute h-full transition-all ${partyMode ? '' : 'bg-primary'}`}
             style={{
               width: `${getWatchedPercent()}%`,
               ...(partyMode ? rainbowStyle : {}),
@@ -1053,10 +1053,10 @@ export default function VideoPlayer({
 
           {hoverTime !== null && duration > 0 && (
             <>
-              <div className="absolute top-0 bottom-0 w-0.5 bg-white"
+              <div className="absolute top-0 bottom-0 w-0.5 bg-foreground"
                    style={{ left: `${(hoverTime / duration) * 100}%` }} />
               <div
-                className="absolute -top-8 transform -translate-x-1/2 bg-black/90 px-2 py-1 rounded text-xs text-white whitespace-nowrap"
+                className="absolute -top-8 transform -translate-x-1/2 bg-popover border border-border px-2 py-1 rounded text-xs text-popover-foreground whitespace-nowrap"
                 style={{ left: `${(hoverTime / duration) * 100}%` }}
                 aria-hidden
               >
@@ -1072,7 +1072,7 @@ export default function VideoPlayer({
 
       {contextMenu && (
         <div
-          className="fixed bg-black/95 rounded-lg shadow-lg py-2 z-50 min-w-[200px]"
+          className="fixed bg-popover border border-border rounded-lg shadow-lg py-2 z-50 min-w-[200px]"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
           role="menu"
@@ -1081,7 +1081,7 @@ export default function VideoPlayer({
             togglePlay();
             handleActivity();
           }}
-                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
                   role="menuitem">
             {isPlaying ? 'Pause' : hasEnded ? 'Replay' : 'Play'}
           </button>
@@ -1089,31 +1089,31 @@ export default function VideoPlayer({
             toggleMute();
             handleActivity();
           }}
-                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
                   role="menuitem">
             {isMuted ? 'Unmute' : 'Mute'}
           </button>
-          <div className="border-t border-gray-700 my-1" />
+          <div className="border-t border-border my-1" />
           <button onClick={copyVideoUrl}
-                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
                   role="menuitem">
             Copy video URL
           </button>
           <button onClick={copyCurrentTime}
-                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800"
+                  className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
                   role="menuitem">
             Copy video URL at current time
           </button>
-          <div className="border-t border-gray-700 my-1" />
+          <div className="border-t border-border my-1" />
           <button onClick={toggleLoop}
-                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 flex items-center justify-between"
+                  className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted flex items-center justify-between"
                   role="menuitem">
             <span>Loop</span>
-            {isLooping && <span className="text-blue-400">✓</span>}
+            {isLooping && <span className="text-accent">✓</span>}
           </button>
-          <div className="border-t border-gray-700 my-1" />
-          <div className="px-4 py-2 text-xs text-gray-500">
-            Stellicast Video Player v1.0
+          <div className="border-t border-border my-1" />
+          <div className="px-4 py-2 text-xs text-muted-foreground">
+            Stellicast Video Player v1.0.1
           </div>
         </div>
       )}
@@ -1121,11 +1121,11 @@ export default function VideoPlayer({
       {showKeyboardShortcuts && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
-            className="bg-black/90 text-white rounded-lg p-6 max-w-lg w-full mx-4">
+            className="bg-popover border border-border text-popover-foreground rounded-lg p-6 max-w-lg w-full mx-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Keyboard shortcuts</h3>
               <button onClick={() => setShowKeyboardShortcuts(false)}
-                      className="text-sm underline">Close
+                      className="text-sm underline text-accent">Close
               </button>
             </div>
             <ul className="grid grid-cols-2 gap-3 text-sm">
