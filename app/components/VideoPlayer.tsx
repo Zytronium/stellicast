@@ -781,6 +781,7 @@ export default function VideoPlayer({
         }`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
+        style={{ color: 'white' }}
       >
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
@@ -791,7 +792,7 @@ export default function VideoPlayer({
               }}
               aria-pressed={isPlaying}
               aria-label={isPlaying ? 'Pause' : hasEnded ? 'Replay' : 'Play'}
-              className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
+              className="text-white hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
             >
               {hasEnded ? <RotateCcw className="w-6 h-6" /> : isPlaying ?
                 <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
@@ -805,7 +806,7 @@ export default function VideoPlayer({
                 }}
                 aria-pressed={isMuted}
                 aria-label={isMuted ? 'Unmute' : 'Mute'}
-                className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
+                className="text-white hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
               >
                 {isMuted || volume === 0 ? <VolumeX className="w-6 h-6" /> :
                   <Volume2 className="w-6 h-6" />}
@@ -829,7 +830,7 @@ export default function VideoPlayer({
                   setShowVolumeSlider((s) => !s);
                   handleActivity();
                 }}
-                className="text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring rounded"
+                className="text-xs text-white/70 hover:text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring rounded"
                 aria-haspopup="true"
                 aria-expanded={showVolumeSlider}
                 aria-label="Show volume"
@@ -845,7 +846,7 @@ export default function VideoPlayer({
                     setShowSpeedMenu((s) => !s);
                     handleActivity();
                   }}
-                  className="text-foreground hover:text-accent transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-ring rounded"
+                  className="text-white hover:text-accent transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-ring rounded"
                   aria-haspopup="true"
                   aria-expanded={showSpeedMenu}
                   aria-label="Playback speed"
@@ -880,7 +881,7 @@ export default function VideoPlayer({
               </div>
             )}
 
-            <span className="text-sm text-foreground/80">
+            <span className="text-sm text-white/80">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
@@ -893,7 +894,7 @@ export default function VideoPlayer({
                     setShowQualityMenu((s) => !s);
                     handleActivity();
                   }}
-                  className="text-foreground hover:text-accent transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring rounded"
+                  className="text-white hover:text-accent transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring rounded"
                   aria-haspopup="true"
                   aria-expanded={showQualityMenu}
                   aria-label="Quality"
@@ -939,7 +940,7 @@ export default function VideoPlayer({
                   setShowSettingsMenu((s) => !s);
                   handleActivity();
                 }}
-                className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
+                className="text-white hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
                 aria-haspopup="true"
                 aria-expanded={showSettingsMenu}
                 aria-label="Settings"
@@ -1000,7 +1001,7 @@ export default function VideoPlayer({
                 handleActivity();
               }}
               aria-label="Toggle fullscreen"
-              className="text-foreground hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
+              className="text-white hover:text-accent transition focus:outline-none focus:ring-2 focus:ring-ring rounded"
             >
               <Maximize className="w-6 h-6" />
             </button>
@@ -1016,7 +1017,7 @@ export default function VideoPlayer({
           aria-valuenow={Math.round(currentTime)}
           tabIndex={0}
           onKeyDown={onProgressKeyDown}
-          className="relative h-1 bg-muted cursor-pointer group/progress"
+          className="relative h-1 bg-gray-900 cursor-pointer group/progress"
           onMouseMove={(e) => {
             handleActivity();
             if (progressRef.current && duration) {
@@ -1035,7 +1036,7 @@ export default function VideoPlayer({
           {buffered.map((range, i) => (
             <div
               key={i}
-              className="absolute h-full bg-muted/50"
+              className="absolute h-full bg-gray-700"
               style={{
                 left: `${(range.start / (duration || 1)) * 100}%`,
                 width: `${((range.end - range.start) / (duration || 1)) * 100}%`,
@@ -1053,7 +1054,7 @@ export default function VideoPlayer({
 
           {hoverTime !== null && duration > 0 && (
             <>
-              <div className="absolute top-0 bottom-0 w-0.5 bg-foreground"
+              <div className="absolute top-0 bottom-0 w-0.5 bg-white"
                    style={{ left: `${(hoverTime / duration) * 100}%` }} />
               <div
                 className="absolute -top-8 transform -translate-x-1/2 bg-popover border border-border px-2 py-1 rounded text-xs text-popover-foreground whitespace-nowrap"
