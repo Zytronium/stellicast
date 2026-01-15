@@ -261,7 +261,7 @@ body {
 }
 
 .theme-palewhite ::selection {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.25);
 }
 
 .theme-palewhite * {
@@ -338,7 +338,7 @@ body {
 }
 
 .theme-volcanic ::selection {
-  background: rgba(251, 146, 60, 0.3);
+  background: rgba(251, 146, 60, 0.4);
 }
 
 .theme-volcanic * {
@@ -415,7 +415,7 @@ body {
 }
 
 .theme-alien ::selection {
-  background: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.4);
 }
 
 .theme-alien * {
@@ -492,12 +492,89 @@ body {
 }
 
 .theme-royalty ::selection {
-  background: rgba(212, 175, 55, 0.3);
+  background: rgba(212, 175, 55, 0.4);
 }
 
 .theme-royalty * {
   scrollbar-width: thin;
   scrollbar-color: #d4af37 #1a1108;
+}
+
+/* Rose (Dark) Theme - Hot Pink with Rose Red Accent */
+.theme-rose {
+  /* Core surface / text */
+  --background: #0a0406;
+  --foreground: #fec7d9;
+
+  /* Cards & popovers */
+  --card: #1a080d;              /* dark magenta */
+  --card-foreground: #fec7d8;
+  --card-accent: #4a0a1f;       /* dark hot pink */
+  --popover: #1a0809;
+  --popover-foreground: #fec7ca;
+
+  /* Primary / brand - Rose-red/hot pink */
+  --primary: #d43766;           /* hot pink */
+  --primary-foreground: #ffe9ef;
+
+  /* Secondary / subtle accents */
+  --secondary: #2d1012;         /* dark rose-quartz */
+  --secondary-foreground: #f39ea7;
+
+  /* Muted */
+  --muted: #3a1c27;
+  --muted-foreground: #bb7f94;
+
+  /* Accent - Red */
+  --accent: #e24f4f;
+  --accent-foreground: #1a0000;
+  --accent-alt: #ffa3a6;        /* pastel red */
+
+  /* Gradient Colors */
+  --gradient-from: rgba(105, 25, 40, 0.85);
+  --gradient-to: rgba(24, 8, 15, 0.95);
+
+  --gradient-darker-from: #17080d;
+  --gradient-darker-to: #0a0406;
+
+  /* Destructive - Red-Orange */
+  --destructive: #dc3826;
+  --destructive-foreground: #fecfca;
+
+  /* Warnings - Yellow-Orange */
+  --warning: #eab308;
+  --warning-foreground: #f9c291;
+
+  /* Success - Rich green */
+  --success: #16cc28;
+  --success-foreground: #93f39d;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 115deg;
+
+  /* Borders / inputs / rings */
+  --border: #341823;            /* deep magenta */
+  --input: #1a080e;
+  --ring: #d43747;              /* rose-red ring */
+
+  /* Sidebar */
+  --sidebar: #0a0406;
+  --sidebar-foreground: #fec7d8;
+  --sidebar-primary: #2d1019;
+  --sidebar-primary-foreground: #fec7d8;
+  --sidebar-accent: #3d151d;
+  --sidebar-accent-foreground: #f39eae;
+  --sidebar-border: #4a0a1f;
+  --sidebar-ring: #d43744;
+}
+
+.theme-rose ::selection {
+  background: rgba(233, 60, 95, 0.4);
+}
+
+.theme-rose * {
+  scrollbar-width: thin;
+  scrollbar-color: #d43744 #1a080a;
 }
 
 @layer base {

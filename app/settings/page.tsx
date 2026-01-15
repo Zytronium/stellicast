@@ -50,7 +50,7 @@ export default async function SettingsPage() {
           initialPreferences={preferences}
           settings={{
             "Theme": {
-              "options": ["spaceblue (dark)", "palewhite (light)", "volcanic (dark)", "alien (dark)", "royalty (dark)"],
+              "options": ["spaceblue (dark)", "volcanic (dark)", "alien (dark)", "royalty (dark)", "rose (dark)", "palewhite (light)"],
               "type": "dropdown",
               "settingName": "theme"
             },

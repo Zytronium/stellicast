@@ -57,10 +57,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         // Map theme names to CSS classes
         // "spaceblue (dark)" is the default, so no class needed
         const themeMap: Record<string, string> = {
-          'palewhite (light)': 'theme-palewhite',
           'volcanic (dark)': 'theme-volcanic',
           'alien (dark)': 'theme-alien',
           'royalty (dark)': 'theme-royalty',
+          'rose (dark)': 'theme-rose',
+          'palewhite (light)': 'theme-palewhite',
         };
 
         setThemeClass(themeMap[theme] || '');

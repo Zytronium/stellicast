@@ -165,16 +165,17 @@ function deepEqual(a: any, b: any) {
 
 function applyThemeToBody(theme: string) {
   const themeMap: Record<string, string> = {
-    'palewhite (light)': 'theme-palewhite',
     'volcanic (dark)': 'theme-volcanic',
     'alien (dark)': 'theme-alien',
     'royalty (dark)': 'theme-royalty',
+    'rose (dark)': 'theme-rose',
+    'palewhite (light)': 'theme-palewhite',
   };
 
   const themeClass = themeMap[theme] || '';
 
   // Remove all theme classes
-  document.body.classList.remove('theme-palewhite', 'theme-volcanic', 'theme-alien', 'theme-royalty');
+  document.body.classList.remove('theme-palewhite', 'theme-rose', 'theme-volcanic', 'theme-alien', 'theme-royalty');
 
   // Add new theme class if it exists
   if (themeClass) {
