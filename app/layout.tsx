@@ -61,9 +61,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'alien (dark)': 'theme-alien',
           'royalty (dark)': 'theme-royalty',
           'rose (dark)': 'theme-rose',
+          'colormatic (dark)': 'theme-colormatic',
           'simple dark': 'theme-simple-dark',
           'simple light': 'theme-simple-light',
           'palewhite (light)': 'theme-palewhite',
+          'rose quartz (light)': 'theme-rose-quartz',
         };
 
         setThemeClass(themeMap[theme] || '');

@@ -577,6 +577,81 @@ body {
   scrollbar-color: #d43744 #1a080a;
 }
 
+/* Rose Quartz (Light) Theme - Bright Pink with Rose Red Accent */
+.theme-rose-quartz {
+  /* Core surface / text */
+  --background: #fff8fb;        /* very pale rose */
+  --foreground: #2b0b14;        /* deep warm text for readability */
+
+  /* Cards & popovers */
+  --card: #ffffff;
+  --card-foreground: #2b0b14;
+  --card-accent: #ffd7e0;       /* soft rose accent for cards */
+  --popover: #ffffff;
+  --popover-foreground: #2b0b14;
+
+  /* Primary / brand - Rose-red/hot pink */
+  --primary: #d43766;           /* hot pink */
+  --primary-foreground: #ffffff;
+
+  /* Secondary / subtle accents */
+  --secondary: #fff1f6;         /* light rose surface */
+  --secondary-foreground: #6b2130;
+
+  /* Muted */
+  --muted: #f3dbe3;             /* desaturated rose for borders/labels */
+  --muted-foreground: #9b6474;
+
+  /* Accent - Red */
+  --accent: #e24f4f;
+  --accent-foreground: #ffffff;
+  --accent-alt: #ffd1d6;        /* pastel red */
+
+  /* Gradient Colors */
+  --gradient-from: rgba(255, 224, 236, 0.95);
+  --gradient-to: rgba(255, 248, 250, 1);
+
+  --gradient-darker-from: #ffebf1;
+  --gradient-darker-to: #fff8fb;
+
+  /* Destructive - Red */
+  --destructive: #dc2626;
+  --destructive-foreground: #7f1d1d;
+
+  --warning: #c29707;
+  --warning-foreground: #784f19;
+
+  --success: #119b44;
+  --success-foreground: #14532d;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 115deg;
+
+  /* Borders / inputs / rings */
+  --border: #f3d7df;            /* subtle rose border */
+  --input: #ffffff;
+  --ring: #d43747;              /* rose ring for focus */
+
+  /* Sidebar */
+  --sidebar: #fff6f9;
+  --sidebar-foreground: #2b0b14;
+  --sidebar-primary: #fff1f4;
+  --sidebar-primary-foreground: #2b0b14;
+  --sidebar-accent: #ffe7ec;
+  --sidebar-accent-foreground: #6b2130;
+  --sidebar-border: #ffdfe7;
+  --sidebar-ring: #d43744;
+}
+
+.theme-rose-quartz ::selection {
+  background: rgba(233, 60, 95, 0.25);
+}
+
+.theme-rose-quartz * {
+  scrollbar-width: thin;
+  scrollbar-color: #ff8aa7 #fff6f8;
+}
+
 /* Simple Dark Theme */
 .theme-simple-dark {
   /* Core surface / text */
@@ -726,6 +801,198 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #a3a3a3 #f5f5f5;
 }
+
+/* Colormatic (Spectrum) Theme */
+.theme-colormatic {
+  /* Core surface / text */
+  --background: #071018;           /* deep neutral to let colors pop */
+  --foreground: #eef8ff;           /* cool light text */
+
+  /* Cards & popovers */
+  --card: #0b1620;
+  --card-foreground: #f7fbff;
+  --card-accent: #6b5bff;          /* indigo anchor for accents */
+  --popover: #0b1620;
+  --popover-foreground: #f7fbff;
+
+  /* Primary / brand (cyan) */
+  --primary: #00c2ff;
+  --primary-foreground: #04121a;
+
+  /* Secondary (indigo) */
+  --secondary: #6b5bff;
+  --secondary-foreground: #eef0ff;
+
+  /* Muted */
+  --muted: #16303a;
+  --muted-foreground: #95a6b3;
+
+  /* Accent & alternate (picked from the spectrum) */
+  --accent: #ff3b3b;               /* red */
+  --accent-foreground: #0a0606;
+  --accent-alt: #ffd700;           /* yellow */
+
+  /* Spectrum stops (expanded) */
+  --spectrum-rose: #ff4da6;
+  --spectrum-pink: #ff79c6;
+  --spectrum-cerise: #ff2d6f;
+  --spectrum-red: #ff3b3b;
+  --spectrum-orange: #ff8a00;
+  --spectrum-amber: #ffb400;
+  --spectrum-yellow: #ffd700;
+  --spectrum-lime: #c7ff3b;
+  --spectrum-green: #2bd34a;
+  --spectrum-emerald: #00c57a;
+  --spectrum-teal: #00c2b8;
+  --spectrum-cyan: #00c2ff;
+  --spectrum-sky: #47bfff;
+  --spectrum-blue: #3b82f6;
+  --spectrum-indigo: #6b5bff;
+  --spectrum-violet: #8b5cf6;
+  --spectrum-magenta: #ff3bd9;
+
+  /* Gradient Colors (tokens kept for backward compatibility) */
+  --gradient-from: linear-gradient(180deg,
+    var(--spectrum-red) 0%,
+    var(--spectrum-orange) 10%,
+    var(--spectrum-amber) 18%,
+    var(--spectrum-yellow) 26%,
+    var(--spectrum-lime) 36%,
+    var(--spectrum-green) 46%,
+    var(--spectrum-teal) 56%,
+    var(--spectrum-cyan) 64%,
+    var(--spectrum-sky) 72%,
+    var(--spectrum-blue) 80%,
+    var(--spectrum-indigo) 86%,
+    var(--spectrum-violet) 92%,
+    var(--spectrum-magenta) 100%);
+  /* fallback simple stops for code that expects two colors */
+  --gradient-from-color: var(--spectrum-red);
+  --gradient-to-color: var(--spectrum-magenta);
+
+  /* darker variants (used by .bg-gradient-darker override) */
+  --gradient-darker-from: rgba(7,16,24,0.75);
+  --gradient-darker-to: rgba(2,6,10,0.9);
+
+  /* Status */
+  --destructive: #ff4d4d;
+  --destructive-foreground: #fff2f2;
+
+  --warning: #ffb020;
+  --warning-foreground: #fff7e6;
+
+  --success: #2bd34a;
+  --success-foreground: #002b08;
+
+  /* Logo hue rotation (optional subtle vibrance) */
+  --logo-hue-rotate: 300deg;
+
+  /* Borders / inputs / rings */
+  --border: #17313b;
+  --input: #0b1620;
+  --ring: #00c2ff;
+
+  /* Sidebar */
+  --sidebar: #071018;
+  --sidebar-foreground: #eef7ff;
+  --sidebar-primary: #071824;
+  --sidebar-primary-foreground: #eef7ff;
+  --sidebar-accent: #16303a;
+  --sidebar-accent-foreground: #eaf6ff;
+  --sidebar-border: #12323a;
+  --sidebar-ring: #00c2ff;
+
+  /* convenience horizontal spectrum gradient var */
+  --spectrum-gradient: linear-gradient(90deg,
+  var(--spectrum-red),
+  var(--spectrum-orange),
+    var(--spectrum-amber),
+  var(--spectrum-yellow),
+    var(--spectrum-lime),
+  var(--spectrum-green),
+    var(--spectrum-emerald),
+    var(--spectrum-teal),
+  var(--spectrum-cyan),
+    var(--spectrum-sky),
+    var(--spectrum-blue),
+  var(--spectrum-indigo),
+    var(--spectrum-violet),
+  var(--spectrum-magenta));
+}
+
+/* selection: subtle rainbow smear (keeps selection readable on colormatic backgrounds) */
+.theme-colormatic ::selection {
+  background: linear-gradient(90deg,
+    rgba(255,77,166,0.22),
+    rgba(255,138,0,0.18),
+    rgba(255,215,0,0.14),
+    rgba(43,211,74,0.12),
+    rgba(0,194,255,0.12),
+    rgba(107,91,255,0.12));
+}
+
+/* scrollbar: colorful thumb on dark track */
+.theme-colormatic * {
+  scrollbar-width: thin;
+  scrollbar-color: #6b5bff #071018;
+}
+
+/* Override .bg-gradient to a full rainbow when the theme is active */
+.theme-colormatic .bg-gradient {
+  background: linear-gradient(180deg,
+    var(--spectrum-rose) 0%,
+    var(--spectrum-pink) 6%,
+    var(--spectrum-cerise) 12%,
+    var(--spectrum-red) 18%,
+    var(--spectrum-orange) 26%,
+    var(--spectrum-amber) 34%,
+    var(--spectrum-yellow) 42%,
+    var(--spectrum-lime) 50%,
+    var(--spectrum-green) 58%,
+    var(--spectrum-emerald) 64%,
+    var(--spectrum-teal) 70%,
+    var(--spectrum-cyan) 76%,
+    var(--spectrum-sky) 80%,
+    var(--spectrum-blue) 84%,
+    var(--spectrum-indigo) 88%,
+    var(--spectrum-violet) 92%,
+    var(--spectrum-magenta) 100%);
+  background-size: 200% 200%;
+  animation: colormatic-flow 18s linear infinite;
+}
+
+/* darker layered rainbow (useful for overlays / headers where contrast is needed) */
+.theme-colormatic .bg-gradient-darker {
+  background-image:
+    linear-gradient(180deg,
+      rgba(2,6,10,0.45) 0%,
+      rgba(2,6,10,0.55) 100%),
+    linear-gradient(180deg,
+      var(--spectrum-red) 0%,
+      var(--spectrum-orange) 14%,
+      var(--spectrum-yellow) 28%,
+      var(--spectrum-green) 44%,
+      var(--spectrum-cyan) 58%,
+      var(--spectrum-indigo) 74%,
+      var(--spectrum-magenta) 100%);
+  background-blend-mode: multiply;
+  background-size: 200% 200%;
+  animation: colormatic-flow 22s linear infinite;
+}
+
+/* animated background pan — subtle movement */
+@keyframes colormatic-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* --- keep default .bg-gradient/.bg-gradient-darker behavior for non-colormatic themes --- */
+/* (these are already defined up above using --gradient-from and --gradient-to) */
+
+/* Base utilities and tokens already expect --gradient-from and --gradient-to.
+   For colormatic we've provided --gradient-from (as a linear-gradient value)
+   and fallback --gradient-from-color / --gradient-to-color for two-stop consumers. */
 
 @layer base {
   * {

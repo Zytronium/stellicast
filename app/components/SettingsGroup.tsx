@@ -172,12 +172,14 @@ function applyThemeToBody(theme: string) {
     'simple dark': 'theme-simple-dark',
     'simple light': 'theme-simple-light',
     'palewhite (light)': 'theme-palewhite',
+    'rose quartz (light)': 'theme-rose-quartz',
+    'colormatic': 'theme-colormatic',
   };
 
   const themeClass = themeMap[theme] || '';
 
   // Remove all theme classes
-  document.body.classList.remove('theme-rose', 'theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-simple-dark', 'theme-simple-light', 'theme-palewhite');
+  document.body.classList.remove('theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-rose', 'theme-simple-dark', 'theme-simple-light', 'theme-palewhite', 'theme-rose-quartz', 'theme-colormatic');
 
   // Add new theme class if it exists
   if (themeClass) {
