@@ -577,6 +577,156 @@ body {
   scrollbar-color: #d43744 #1a080a;
 }
 
+/* Simple Dark Theme */
+.theme-simple-dark {
+  /* Core surface / text */
+  --background: #000000;
+  --foreground: #e5e5e5;
+
+  /* Cards & popovers */
+  --card: #0d0d0d;
+  --card-foreground: #e5e5e5;
+  --card-accent: #1a1a1a;
+  --popover: #0d0d0d;
+  --popover-foreground: #e5e5e5;
+
+  /* Primary / brand (pure white) */
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+
+  /* Secondary */
+  --secondary: #141414;
+  --secondary-foreground: #d4d4d4;
+
+  /* Muted */
+  --muted: #1f1f1f;
+  --muted-foreground: #9ca3af;
+
+  /* Accent (neutral gray) */
+  --accent: #404040;
+  --accent-foreground: #ffffff;
+  --accent-alt: #737373;
+
+  /* Gradients */
+  --gradient-from: rgba(24, 24, 24, 0.9);
+  --gradient-to: rgba(0, 0, 0, 0.95);
+
+  --gradient-darker-from: #0a0a0a;
+  --gradient-darker-to: #000000;
+
+  /* Status */
+  --destructive: #b91c1c;
+  --destructive-foreground: #fecaca;
+
+  --warning: #a16207;
+  --warning-foreground: #fde68a;
+
+  --success: #15803d;
+  --success-foreground: #bbf7d0;
+
+  /* Logo */
+  --logo-hue-rotate: 0deg;
+
+  /* Borders / inputs / rings */
+  --border: #1f1f1f;
+  --input: #0d0d0d;
+  --ring: #ffffff;
+
+  /* Sidebar */
+  --sidebar: #000000;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #0d0d0d;
+  --sidebar-primary-foreground: #e5e5e5;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #e5e5e5;
+  --sidebar-border: #1f1f1f;
+  --sidebar-ring: #ffffff;
+}
+
+.theme-simple-dark ::selection {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.theme-simple-dark * {
+  scrollbar-width: thin;
+  scrollbar-color: #404040 #000000;
+}
+
+/* Simple Light Theme */
+.theme-simple-light {
+  /* Core surface / text */
+  --background: #ffffff;
+  --foreground: #111111;
+
+  /* Cards & popovers */
+  --card: #fafafa;
+  --card-foreground: #111111;
+  --card-accent: #e5e5e5;
+  --popover: #fafafa;
+  --popover-foreground: #111111;
+
+  /* Primary / brand (pure black) */
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+
+  /* Secondary */
+  --secondary: #f5f5f5;
+  --secondary-foreground: #262626;
+
+  /* Muted */
+  --muted: #e5e5e5;
+  --muted-foreground: #737373;
+
+  /* Accent */
+  --accent: #404040;
+  --accent-foreground: #ffffff;
+  --accent-alt: #a3a3a3;
+
+  /* Gradients */
+  --gradient-from: rgba(245, 245, 245, 0.95);
+  --gradient-to: rgba(255, 255, 255, 1);
+
+  --gradient-darker-from: #e5e5e5;
+  --gradient-darker-to: #ffffff;
+
+  /* Status */
+  --destructive: #dc2626;
+  --destructive-foreground: #7f1d1d;
+
+  --warning: #ca8a04;
+  --warning-foreground: #78350f;
+
+  --success: #16a34a;
+  --success-foreground: #14532d;
+
+  /* Logo */
+  --logo-hue-rotate: 0deg;
+
+  /* Borders / inputs / rings */
+  --border: #e5e5e5;
+  --input: #ffffff;
+  --ring: #000000;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #f5f5f5;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #e5e5e5;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #000000;
+}
+
+.theme-simple-light ::selection {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.theme-simple-light * {
+  scrollbar-width: thin;
+  scrollbar-color: #a3a3a3 #f5f5f5;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

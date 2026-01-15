@@ -169,13 +169,15 @@ function applyThemeToBody(theme: string) {
     'alien (dark)': 'theme-alien',
     'royalty (dark)': 'theme-royalty',
     'rose (dark)': 'theme-rose',
+    'simple dark': 'theme-simple-dark',
+    'simple light': 'theme-simple-light',
     'palewhite (light)': 'theme-palewhite',
   };
 
   const themeClass = themeMap[theme] || '';
 
   // Remove all theme classes
-  document.body.classList.remove('theme-palewhite', 'theme-rose', 'theme-volcanic', 'theme-alien', 'theme-royalty');
+  document.body.classList.remove('theme-rose', 'theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-simple-dark', 'theme-simple-light', 'theme-palewhite');
 
   // Add new theme class if it exists
   if (themeClass) {
