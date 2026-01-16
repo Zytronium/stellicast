@@ -66,9 +66,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'simple light': 'theme-simple-light',
           'palewhite (light)': 'theme-palewhite',
           'rose quartz (light)': 'theme-rose-quartz',
+          'colormatic': 'theme-colormatic',
         };
 
-        setThemeClass(themeMap[theme] || '');
+        const lightThemes = new Set([
+          'simple light',
+          'palewhite (light)',
+          'rose quartz (light)'
+        ]);
+
+        const baseTheme = themeMap[theme] || '';
+        const isLight = lightThemes.has(theme);
+
+        setThemeClass(isLight ? `${baseTheme} light` : baseTheme);
       } catch (error) {
         console.error('Error fetching theme:', error);
         setThemeClass('');

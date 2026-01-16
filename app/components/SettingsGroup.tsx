@@ -176,14 +176,26 @@ function applyThemeToBody(theme: string) {
     'colormatic': 'theme-colormatic',
   };
 
+  // Map of which themes are light
+  const lightThemes = new Set([
+    'simple light',
+    'palewhite (light)',
+    'rose quartz (light)'
+  ]);
+
   const themeClass = themeMap[theme] || '';
 
   // Remove all theme classes
-  document.body.classList.remove('theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-rose', 'theme-simple-dark', 'theme-simple-light', 'theme-palewhite', 'theme-rose-quartz', 'theme-colormatic');
+  document.body.classList.remove('theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-rose', 'theme-simple-dark', 'theme-simple-light', 'theme-palewhite', 'theme-rose-quartz', 'theme-colormatic', 'light');
 
   // Add new theme class if it exists
   if (themeClass) {
     document.body.classList.add(themeClass);
+  }
+
+  // Add 'light' class if it's a light theme
+  if (lightThemes.has(theme)) {
+    document.body.classList.add('light');
   }
 }
 
