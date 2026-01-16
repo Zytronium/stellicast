@@ -373,7 +373,7 @@ body {
 
   /* Accent */
   --accent: #34d399;            /* emerald-400 */
-  --accent-foreground: #022c22;
+  --accent-foreground: #ffffff; /* FIXED: was #022c22 (dark), now light for visibility */
   --accent-alt: #a7f3d0;        /* pastel emerald-200 */
 
   /* Gradient Colors */
@@ -450,7 +450,7 @@ body {
 
   /* Accent - Golden */
   --accent: #e2b14f;
-  --accent-foreground: #1a1000;
+  --accent-foreground: #1a0f00;
   --accent-alt: #ffdba3;        /* pastel gold */
 
   /* Gradient Colors */
@@ -527,7 +527,7 @@ body {
 
   /* Accent - Red */
   --accent: #e24f4f;
-  --accent-foreground: #1a0000;
+  --accent-foreground: #ffffff; /* FIXED: was #1a0000 (dark), now light for visibility */
   --accent-alt: #ffa3a6;        /* pastel red */
 
   /* Gradient Colors */
@@ -829,7 +829,7 @@ body {
 
   /* Accent & alternate (picked from the spectrum) */
   --accent: #ff3b3b;               /* red */
-  --accent-foreground: #0a0606;
+  --accent-foreground: #ffffff;
   --accent-alt: #ffd700;           /* yellow */
 
   /* Spectrum stops (expanded) */

@@ -77,20 +77,20 @@ function UploadContent() {
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
   if (channels.length === 0) {
     return (
-      <div className="max-w-md mx-auto mt-20 p-8 bg-[#0a0a0a] border border-gray-800 rounded-2xl text-center">
-        <CloudArrowUpIcon className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold mb-2">No Channels Found</h2>
-        <p className="text-gray-400 mb-6">You need to create a channel before you can upload videos.</p>
+      <div className="max-w-md mx-auto mt-20 p-8 bg-card border border-border rounded-2xl text-center">
+        <CloudArrowUpIcon className="w-12 h-12 text-muted mx-auto mb-4" />
+        <h2 className="text-xl font-bold mb-2 text-foreground">No Channels Found</h2>
+        <p className="text-muted-foreground mb-6">You need to create a channel before you can upload videos.</p>
         <Link
           href="/account"
-          className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition-colors"
+          className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold transition-colors"
         >
           <PlusIcon className="w-5 h-5" />
           Create a Channel
@@ -102,7 +102,7 @@ function UploadContent() {
   if (!selectedChannel) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
@@ -110,19 +110,19 @@ function UploadContent() {
   return (
     <div className="max-w-4xl mx-auto w-full py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4 flex items-center gap-3">
-          <CloudArrowUpIcon className="w-8 h-8 text-blue-500" />
+        <h1 className="text-3xl font-bold mb-4 flex items-center gap-3 text-foreground">
+          <CloudArrowUpIcon className="w-8 h-8 text-accent" />
           Upload Video
         </h1>
 
         {/* Channel Selector */}
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+          <label className="block text-sm font-medium text-muted-foreground mb-2">
             Upload to channel
           </label>
           <button
             onClick={() => setShowChannelDropdown(!showChannelDropdown)}
-            className="w-full md:w-auto min-w-[300px] flex items-center justify-between gap-3 px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl hover:border-gray-600 transition"
+            className="w-full md:w-auto min-w-[300px] flex items-center justify-between gap-3 px-4 py-3 bg-card border border-border rounded-xl hover:border-muted transition text-foreground"
           >
             <div className="flex items-center gap-3">
               {selectedChannel.avatar_url ? (
@@ -134,16 +134,16 @@ function UploadContent() {
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold text-primary-foreground">
                   {selectedChannel.display_name[0].toUpperCase()}
                 </div>
               )}
               <div className="text-left">
-                <p className="font-semibold">{selectedChannel.display_name}</p>
-                <p className="text-xs text-gray-400">@{selectedChannel.handle}</p>
+                <p className="font-semibold text-foreground">{selectedChannel.display_name}</p>
+                <p className="text-xs text-muted-foreground">@{selectedChannel.handle}</p>
               </div>
             </div>
-            <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${showChannelDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDownIcon className={`w-5 h-5 text-muted-foreground transition-transform ${showChannelDropdown ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Dropdown */}
@@ -153,13 +153,13 @@ function UploadContent() {
                 className="fixed inset-0 z-10"
                 onClick={() => setShowChannelDropdown(false)}
               />
-              <div className="absolute top-full left-0 mt-2 w-full md:w-auto min-w-[300px] bg-gray-900 border border-gray-700 rounded-xl shadow-xl z-20 max-h-64 overflow-y-auto">
+              <div className="absolute top-full left-0 mt-2 w-full md:w-auto min-w-[300px] bg-card border border-border rounded-xl shadow-xl z-20 max-h-64 overflow-y-auto">
                 {channels.map((channel) => (
                   <button
                     key={channel.id}
                     onClick={() => handleChannelSelect(channel)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-800 transition ${
-                      selectedChannel.id === channel.id ? 'bg-gray-800/50' : ''
+                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition text-foreground ${
+                      selectedChannel.id === channel.id ? 'bg-muted/50' : ''
                     }`}
                   >
                     {channel.avatar_url ? (
@@ -171,16 +171,16 @@ function UploadContent() {
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold text-primary-foreground">
                         {channel.display_name[0].toUpperCase()}
                       </div>
                     )}
                     <div className="text-left flex-1">
-                      <p className="font-semibold">{channel.display_name}</p>
-                      <p className="text-xs text-gray-400">@{channel.handle}</p>
+                      <p className="font-semibold text-foreground">{channel.display_name}</p>
+                      <p className="text-xs text-muted-foreground">@{channel.handle}</p>
                     </div>
                     {selectedChannel.id === channel.id && (
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <div className="w-2 h-2 rounded-full bg-accent" />
                     )}
                   </button>
                 ))}
@@ -192,49 +192,49 @@ function UploadContent() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
-          <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl p-6 shadow-xl">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
             <VideoUpload channelId={selectedChannel.id} key={selectedChannel.id} />
           </div>
         </div>
         <div className="space-y-6">
-          <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-5">
-            <h3 className="text-sm font-bold flex items-center gap-2 mb-3 text-blue-400">
+          <div className="bg-accent/5 border border-accent/20 rounded-2xl p-5">
+            <h3 className="text-sm font-bold flex items-center gap-2 mb-3 text-accent">
               <ShieldCheckIcon className="w-5 h-5" />
               Upload Guidelines
             </h3>
-            <ul className="text-xs text-gray-400 space-y-3">
+            <ul className="text-xs text-muted-foreground space-y-3">
               <li className="flex gap-2">
-                <span className="text-blue-500">•</span>
+                <span className="text-accent">•</span>
                 Ensure you own the rights to the content you are uploading.
               </li>
               <li className="flex gap-2">
-                <span className="text-blue-500">•</span>
+                <span className="text-accent">•</span>
                 Videos must comply with our community standards.
               </li>
               <li className="flex gap-2">
-                <span className="text-blue-500">•</span>
+                <span className="text-accent">•</span>
                 AI-generated content must be disclosed during the upload process.
               </li>
             </ul>
           </div>
 
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5">
-            <h3 className="text-sm font-bold flex items-center gap-2 mb-3">
-              <InformationCircleIcon className="w-5 h-5 text-gray-400" />
+          <div className="bg-secondary border border-border rounded-2xl p-5">
+            <h3 className="text-sm font-bold flex items-center gap-2 mb-3 text-foreground">
+              <InformationCircleIcon className="w-5 h-5 text-muted-foreground" />
               File Requirements
             </h3>
-            <div className="space-y-2 text-xs text-gray-500">
+            <div className="space-y-2 text-xs text-muted-foreground">
               <div className="flex justify-between">
                 <span>Max size</span>
-                <span className="text-gray-300">2 GB</span>
+                <span className="text-secondary-foreground">2 GB</span>
               </div>
               <div className="flex justify-between">
                 <span>Formats</span>
-                <span className="text-gray-300">MP4, MOV, WebM</span>
+                <span className="text-secondary-foreground">MP4, MOV, WebM</span>
               </div>
               <div className="flex justify-between">
                 <span>Resolution</span>
-                <span className="text-gray-300">Up to 4K</span>
+                <span className="text-secondary-foreground">Up to 4K</span>
               </div>
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function UploadPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
       </div>
     }>
       <UploadContent />
