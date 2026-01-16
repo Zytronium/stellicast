@@ -43,7 +43,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center text-white relative overflow-hidden">
+    <div className="flex flex-1 items-center justify-center text-foreground relative overflow-hidden">
       {/* Animated gradient blur background */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[500px] h-[500px] bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-blue-600/30 rounded-full blur-3xl animate-pulse animation-duration-5000" />
@@ -52,13 +52,13 @@ export default function AuthPage() {
       <div className="w-full max-w-md space-y-6 relative z-10">
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 rounded-2xl border border-gray-800 bg-[#0a0a0a] p-8"
+          className="space-y-6 rounded-2xl border border-border bg-card p-8"
         >
           <div className="space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">
               {mode === 'signin' ? 'Sign in to Stellicast' : 'Create your account'}
             </h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {mode === 'signin'
                 ? 'Welcome back! Enter your credentials to continue.'
                 : 'Join the future of video streaming.'}
@@ -67,27 +67,27 @@ export default function AuthPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-200">Email</label>
+              <label className="block text-sm font-medium text-card-foreground">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="w-full rounded-lg border border-gray-800 bg-black px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
                 placeholder="you@example.com"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-200">Password</label>
+              <label className="block text-sm font-medium text-card-foreground">Password</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                className="w-full rounded-lg border border-gray-800 bg-black px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="w-full rounded-lg border border-border bg-input px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
                 placeholder="••••••••"
               />
             </div>
@@ -100,16 +100,16 @@ export default function AuthPage() {
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="rounded border-gray-800 bg-black text-blue-600 focus:ring-blue-600"
+                  className="rounded border-border bg-input text-primary focus:ring-ring"
                 />
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-muted-foreground">
                   I agree to the{' '}
-                  <a href="/terms-of-use" className="text-blue-500 hover:text-blue-400"
+                  <a href="/terms-of-use" className="text-primary hover:text-accent"
                      target="_blank">
                     Terms of Use
                   </a>{' '}
                   and{' '}
-                  <a href="/privacy-policy" className="text-blue-500 hover:text-blue-400"
+                  <a href="/privacy-policy" className="text-primary hover:text-accent"
                      target="_blank">
                     Privacy Policy
                   </a>
@@ -119,15 +119,15 @@ export default function AuthPage() {
           )}
 
           {error && (
-            <div className="rounded-lg border border-red-900 bg-red-950/30 p-3">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+              <p className="text-sm text-destructive-foreground">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-60 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
           >
             {loading ? 'Working...' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
@@ -135,7 +135,7 @@ export default function AuthPage() {
           <div className="text-center">
             <button
               type="button"
-              className="text-sm text-gray-400 hover:text-gray-200 cursor-pointer transition-colors duration-200"
+              className="text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors duration-200"
               onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
             >
               {mode === 'signin'
