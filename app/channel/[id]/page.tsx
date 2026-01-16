@@ -49,7 +49,7 @@ export default async function ChannelPage({ params }: PageProps) {
             className="object-cover rounded-lg"
           />
         ) : (
-          <div className="w-full h-full bg-zinc-900" />
+          <div className="w-full h-full bg-secondary" />
         )}
       </div>
 
@@ -67,7 +67,7 @@ export default async function ChannelPage({ params }: PageProps) {
                 />
               ) : (
                 <div
-                  className="grid h-full w-full place-items-center bg-zinc-600 text-4xl sm:text-6xl font-bold text-white"
+                  className="grid h-full w-full place-items-center bg-muted text-4xl sm:text-6xl font-bold text-muted-foreground"
                 >
                   {channel.display_name?.[0]?.toUpperCase() ?? "C"}
                 </div>
@@ -76,13 +76,13 @@ export default async function ChannelPage({ params }: PageProps) {
 
             {/* Name + metadata */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                 {channel.display_name}
               </h1>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 @{channel.handle}
               </p>
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {(videos?.length ?? channel.video_count ?? 0)} video
                 {(videos?.length ?? channel.video_count ?? 0) === 1 ? '' : 's'} •{' '}
                 {(channel.follower_count ?? 0)} follower
@@ -94,7 +94,7 @@ export default async function ChannelPage({ params }: PageProps) {
             <div className="w-full sm:w-auto flex-shrink-0">
               {isOwner ? (
                 <Link href={`/channel/${channel.handle}/manage`}
-                      className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+                      className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
                       aria-label="Manage"
                       title="Manage"
                 >Manage</Link>
@@ -107,12 +107,12 @@ export default async function ChannelPage({ params }: PageProps) {
                   px-6
                   w-full sm:w-auto
                   rounded-full
-                  bg-blue-600
-                  text-sm font-semibold text-white
-                  hover:bg-blue-500
+                  bg-primary
+                  text-sm font-semibold text-primary-foreground
+                  hover:bg-accent hover:text-accent-foreground
                   transition
                   self-center
-                  hover:shadow-lg hover:shadow-blue-600/30
+                  hover:shadow-lg hover:shadow-primary/30
                 "
                 >Follow</button>
               )}
@@ -120,7 +120,7 @@ export default async function ChannelPage({ params }: PageProps) {
           </div>
 
           {channel.description && (
-            <p className="mt-4 max-w-2xl text-sm sm:text-base text-gray-300">
+            <p className="mt-4 max-w-2xl text-sm sm:text-base text-card-foreground">
               {channel.description}
             </p>
           )}
@@ -128,19 +128,19 @@ export default async function ChannelPage({ params }: PageProps) {
 
         <div className="flex flex-row gap-4 sm:gap-8 mt-6">
           <p
-            className="relative cursor-pointer text-sm sm:text-base font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110">
+            className="relative cursor-pointer text-sm sm:text-base font-bold text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-110">
             Videos
           </p>
           <p
-            className="relative cursor-pointer text-sm sm:text-base font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100">
+            className="relative cursor-pointer text-sm sm:text-base font-thin text-muted-foreground hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-100">
             Playlists
           </p>
           <p
-            className="relative cursor-pointer text-sm sm:text-base font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100">
+            className="relative cursor-pointer text-sm sm:text-base font-thin text-muted-foreground hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-100">
             About
           </p>
         </div>
-        <hr className="border-zinc-600 mt-2"/>
+        <hr className="border-border mt-2"/>
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
           {videos?.map((video) => (
