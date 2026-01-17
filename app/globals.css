@@ -861,6 +861,182 @@ body {
   scrollbar-color: #f6b93b #1a1f28;
 }
 
+/* Forestry (green dim) and Lava Lamp (primarily red with dark blue accents) themes
+   - Both keep the same background and (Moonshine) gradients.
+   - Lava Lamp uses slightly darker gradients. */
+
+/* Shared Moonshine gradients / background (reference values) */
+:root {
+  --moon-bg: #1a1f28;
+  --moon-gradient-from: rgba(26, 35, 48, 0.86);
+  --moon-gradient-to: rgba(15, 19, 24, 0.95);
+  --moon-gradient-darker-from: #151b22;
+  --moon-gradient-darker-to: #0f1318;
+}
+
+/* Forestry Theme (green, dim) */
+.theme-forestry {
+  /* Core surface / text */
+  --background: var(--moon-bg);
+  --foreground: #eaf7ee;
+
+  /* Cards & popovers */
+  --card: #1e2228;
+  --card-foreground: var(--foreground);
+  --card-accent: #102617; /* deep green trim */
+  --popover: #1e2228;
+  --popover-foreground: var(--foreground);
+
+  /* Primary / brand (forest greens) */
+  --primary: #34d399;          /* medium green */
+  --primary-foreground: #081310;
+  --primary-dark: #065f46;
+  --primary-light: #bbf7d0;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
+
+  /* Secondary / subtle accents */
+  --secondary: #151a19;
+  --secondary-foreground: #dff6e8;
+
+  /* Muted */
+  --muted: #344235;
+  --muted-foreground: #bfcfc2;
+
+  /* Accent */
+  --accent: #16a34a; /* stronger green */
+  --accent-foreground: #ffffff;
+  --accent-alt: var(--primary-light);
+
+  /* Gradient Colors (identical to Moonshine) */
+  --gradient-from: var(--moon-gradient-from);
+  --gradient-to: var(--moon-gradient-to);
+  --gradient-darker-from: var(--moon-gradient-darker-from);
+  --gradient-darker-to: var(--moon-gradient-darker-to);
+
+  /* Destructive actions */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffd7d7;
+
+  /* Warnings */
+  --warning: #f59e0b;
+  --warning-foreground: #ffecd2;
+
+  /* Success */
+  --success: #16a34a;
+  --success-foreground: #d1fae5;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: -100deg; /* warm-to-green nudge */
+
+  /* Borders / inputs / rings */
+  --border: #243026;
+  --input: #1e2228;
+  --ring: var(--primary);
+
+  /* Sidebar */
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: #18221a;
+  --sidebar-primary-foreground: var(--foreground);
+  --sidebar-accent: #122a1a;
+  --sidebar-accent-foreground: var(--primary-light);
+  --sidebar-border: #2f3b33;
+  --sidebar-ring: var(--primary);
+}
+
+.theme-forestry ::selection {
+  background: rgba(52, 211, 153, 0.18);
+}
+
+.theme-forestry * {
+  scrollbar-width: thin;
+  scrollbar-color: #34d399 var(--background);
+}
+
+/* Lava Lamp Theme (red dim; warmer, molten look) */
+.theme-lava-lamp {
+  /* Core surface / text */
+  --background: var(--moon-bg);
+  --foreground: #fff2f2;
+
+  /* Cards & popovers */
+  --card: #1e2228;
+  --card-foreground: var(--foreground);
+  --card-accent: #2a0f14; /* deep crimson trim */
+  --popover: #1e2228;
+  --popover-foreground: var(--foreground);
+
+  /* Primary / brand (pure red family) */
+  --primary: #ef4444;
+  --primary-foreground: #0b0b0b;
+  --primary-dark: #991b1b;
+  --primary-light: #fecaca;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
+
+  /* Secondary / subtle accents (dark red instead of blue) */
+  --secondary: #1a0e12;
+  --secondary-foreground: #f5dada;
+
+  /* Muted */
+  --muted: #4a2a2f;
+  --muted-foreground: #d9b7bc;
+
+  /* Accent (still red, just deeper) */
+  --accent: #dc2626;
+  --accent-foreground: #ffffff;
+  --accent-alt: var(--primary-light);
+
+  /* Gradient Colors (slightly darker than Moonshine) */
+  --gradient-from: rgba(18, 26, 38, 0.90);
+  --gradient-to:   rgba(10, 13, 18, 0.98);
+
+  --gradient-darker-from: #0f151b;
+  --gradient-darker-to:   #07090c;
+
+  /* Destructive actions */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffd7d7;
+
+  /* Warnings */
+  --warning: #ffb020;
+  --warning-foreground: #fff0d6;
+
+  /* Success */
+  --success: #16a34a;
+  --success-foreground: #d1fae5;
+
+  /* Logo hue rotation (strong red shift) */
+  --logo-hue-rotate: 145deg;
+
+  /* Borders / inputs / rings */
+  --border: #3b1f25;
+  --input: #1e2228;
+  --ring: var(--primary);
+
+  /* Sidebar */
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: #1b1215;
+  --sidebar-primary-foreground: var(--foreground);
+  --sidebar-accent: #2a0f14;
+  --sidebar-accent-foreground: #fecaca;
+  --sidebar-border: #352026;
+  --sidebar-ring: var(--primary);
+}
+
+.theme-lava-lamp ::selection {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.theme-lava-lamp * {
+  scrollbar-width: thin;
+  scrollbar-color: #ef4444 var(--background);
+}
+
+
+
 /* ---------------------------
    LIGHT THEMES
    --------------------------- */
