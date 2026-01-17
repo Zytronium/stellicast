@@ -172,6 +172,8 @@ function applyThemeToBody(theme: string) {
     'simple dark': 'theme-simple-dark',
     'moonshine (dim)': 'theme-moonshine',
     'moonset (dim)': 'theme-moonset',
+    'forestry (dim)': 'theme-forestry',
+    'lava lamp (dim)': 'theme-lava-lamp',
     'simple dim': 'theme-simple-dim',
     'simple light': 'theme-simple-light',
     'palewhite (light)': 'theme-palewhite',
@@ -189,7 +191,7 @@ function applyThemeToBody(theme: string) {
   const themeClass = themeMap[theme] || '';
 
   // Remove all theme classes
-  document.body.classList.remove('theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-rose', 'theme-simple-dark', 'theme-moonshine', 'theme-moonset', 'theme-simple-dim', 'theme-palewhite', 'theme-rose-quartz', 'theme-simple-light', 'theme-colormatic', 'light');
+  document.body.classList.remove('theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-rose', 'theme-simple-dark', 'theme-moonshine', 'theme-moonset', 'theme-forestry', 'theme-lava-lamp', 'theme-simple-dim', 'theme-palewhite', 'theme-rose-quartz', 'theme-simple-light', 'theme-colormatic', 'light');
 
   // Add new theme class if it exists
   if (themeClass) {

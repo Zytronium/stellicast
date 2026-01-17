@@ -64,6 +64,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'simple dark': 'theme-simple-dark',
           'moonshine (dim)': 'theme-moonshine',
           'moonset (dim)': 'theme-moonset',
+          'forestry (dim)': 'theme-forestry',
+          'lava lamp (dim)': 'theme-lava-lamp',
           'simple dim': 'theme-simple-dim',
           'palewhite (light)': 'theme-palewhite',
           'rose quartz (light)': 'theme-rose-quartz',
