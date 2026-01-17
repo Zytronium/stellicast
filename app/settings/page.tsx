@@ -37,7 +37,7 @@ export default async function SettingsPage() {
           <div>
             <h3 className="text-sm font-semibold text-warning">Settings Not Yet Implemented</h3>
             <p className="mt-1 text-sm text-warning-foreground/90">
-              These settings are currently under development. While you can change and save them, they do not affect the application yet. Changes will take effect once the features are fully implemented.
+              These settings are currently under development. While you can change and save them, they do not affect the application yet, <strong>with the exception of Theme</strong>. Changes will take effect once the features are fully implemented.
             </p>
           </div>
         </div>
@@ -52,7 +52,8 @@ export default async function SettingsPage() {
             "Theme": {
               "options": ["spaceblue (dark)", "volcanic (dark)", "alien (dark)", "royalty (dark)", "rose (dark)", "simple dark", "simple light", "palewhite (light)", "rose quartz (light)", "colormatic"],
               "type": "dropdown",
-              "settingName": "theme"
+              "settingName": "theme",
+              info: "Beta feature"
             },
             "Layout": {
               "options": ["default"],
