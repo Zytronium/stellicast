@@ -125,7 +125,6 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
       const fileName = `${type}-${Date.now()}.${fileExt}`;
-      // Changed: Use channel.id as folder name
       const filePath = `${channel.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -196,7 +195,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-zinc-900" />
+          <div className="w-full h-full bg-secondary" />
         )}
         <label
           htmlFor="bannerUpload"
@@ -227,7 +226,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
                 className="object-cover"
               />
             ) : (
-              <div className="grid h-full w-full place-items-center bg-zinc-600 text-4xl sm:text-6xl font-bold text-white">
+              <div className="grid h-full w-full place-items-center bg-muted text-4xl sm:text-6xl font-bold text-muted-foreground">
                 {channel.display_name?.[0]?.toUpperCase() ?? "C"}
               </div>
             )}
@@ -250,13 +249,13 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
 
           {/* Name + metadata */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
               {channel.display_name}
             </h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               @{channel.handle}
             </p>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               {channel.video_count ?? 0} video{channel.video_count === 1 ? '' : 's'} •{' '}
               {channel.follower_count ?? 0} follower{channel.follower_count === 1 ? '' : 's'}
             </p>
@@ -266,7 +265,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
           <div className="w-full sm:w-auto flex-shrink-0 flex gap-2">
             <Link
               href={`/channel/${channel.handle}`}
-              className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+              className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
             >
               View Channel
             </Link>
@@ -274,7 +273,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
         </div>
 
         {channel.description && (
-          <p className="mt-4 max-w-2xl text-sm sm:text-base text-gray-300">
+          <p className="mt-4 max-w-2xl text-sm sm:text-base text-card-foreground">
             {channel.description}
           </p>
         )}
@@ -302,15 +301,15 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
             aria-selected={active === id}
             className={`relative cursor-pointer text-sm sm:text-base transition-all ${
               active === id
-                ? 'font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110'
-                : 'font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100'
+                ? 'font-bold text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-110'
+                : 'font-thin text-muted-foreground hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-100'
             }`}
           >
             {id.charAt(0).toUpperCase() + id.slice(1)}
           </p>
         ))}
       </div>
-      <hr className="border-zinc-600 mt-2"/>
+      <hr className="border-border mt-2"/>
 
       <div className="pt-6 sm:pt-8">
         {['videos', 'profile', 'settings'].map(id => (
@@ -418,29 +417,29 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
   return (
     <div className="space-y-4 sm:space-y-6">
       {selectedVideos.length > 0 && (
-        <div className="bg-zinc-800/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <span className="text-sm text-gray-300">
+        <div className="bg-secondary/50 backdrop-blur-sm rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-border">
+          <span className="text-sm text-card-foreground">
             {selectedVideos.length} video{selectedVideos.length !== 1 ? 's' : ''} selected
           </span>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => bulkUpdateVisibility('public')}
               disabled={loading}
-              className="px-3 py-1.5 text-xs sm:text-sm bg-zinc-700 text-white rounded hover:bg-zinc-600 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-xs sm:text-sm bg-muted text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
             >
               Make Public
             </button>
             <button
               onClick={() => bulkUpdateVisibility('private')}
               disabled={loading}
-              className="px-3 py-1.5 text-xs sm:text-sm bg-zinc-700 text-white rounded hover:bg-zinc-600 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-xs sm:text-sm bg-muted text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
             >
               Make Private
             </button>
             <button
               onClick={bulkDelete}
               disabled={loading}
-              className="px-3 py-1.5 text-xs sm:text-sm bg-red-600 text-white rounded hover:bg-red-500 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-xs sm:text-sm bg-destructive text-destructive-foreground rounded hover:opacity-90 transition disabled:opacity-50"
             >
               Delete
             </button>
@@ -502,11 +501,11 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
         }
       }}
       onClick={() => onToggleSelect()}
-      className={`group overflow-hidden rounded-2xl border shadow-sm transition transform focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-        isSelected ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-800 hover:border-gray-700'
-      } bg-[#0a0a0a] cursor-pointer`}
+      className={`group overflow-hidden rounded-2xl border shadow-sm transition transform focus:outline-none focus:ring-2 focus:ring-ring ${
+        isSelected ? 'ring-2 ring-primary border-primary' : 'border-border hover:border-muted'
+      } bg-card cursor-pointer`}
     >
-      <div className="relative aspect-video bg-gray-900">
+      <div className="relative aspect-video bg-secondary">
         <Image
           src={imgSrc}
           alt={video.title}
@@ -516,7 +515,7 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
         />
 
         {video.is_ai && (
-          <div className="absolute left-2 top-2 rounded-md bg-blue-600 px-2 py-1 text-xs font-semibold text-white shadow-sm z-2">
+          <div className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow-sm z-2">
             AI
           </div>
         )}
@@ -536,11 +535,11 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
             isSelected ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <div className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-blue-500 bg-transparent shadow-lg">
+          <div className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-primary bg-transparent shadow-lg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="w-12 h-12 sm:w-16 sm:h-16 text-blue-500"
+              className="w-12 h-12 sm:w-16 sm:h-16 text-primary"
               fill="none"
               stroke="currentColor"
               strokeWidth={3}
@@ -554,12 +553,12 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
       </div>
 
       <div className="space-y-2 p-3 sm:p-4">
-        <div className="line-clamp-2 text-sm font-semibold leading-snug">
+        <div className="line-clamp-2 text-sm font-semibold leading-snug text-card-foreground">
           {video.title}
         </div>
 
         <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="text-gray-500">
+          <span className="text-muted-foreground">
             {formatViews(video.view_count)} • {new Date(video.created_at).toLocaleDateString()}
           </span>
         </div>
@@ -580,7 +579,7 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
               e.stopPropagation();
               onEdit();
             }}
-            className="text-xs text-blue-400 hover:text-blue-300 transition font-semibold px-2 py-1 rounded hover:bg-blue-400/10"
+            className="text-xs text-primary hover:text-accent transition font-semibold px-2 py-1 rounded hover:bg-primary/10"
             aria-label={`Edit ${video.title}`}
           >
             Edit
@@ -630,41 +629,41 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-10" onClick={onClose}>
-      <div className="bg-zinc-900 rounded-lg max-w-lg w-full p-4 sm:p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-        <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Edit Video</h2>
+      <div className="bg-card rounded-lg max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-border" onClick={e => e.stopPropagation()}>
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Edit Video</h2>
         <div className="space-y-4">
           <div>
-            <label htmlFor="video-title" className="block text-sm font-medium text-gray-200 mb-1">Title</label>
+            <label htmlFor="video-title" className="block text-sm font-medium text-card-foreground mb-1">Title</label>
             <input
               id="video-title"
               type="text"
               value={form.title}
               onChange={e => setForm({ ...form, title: e.target.value })}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md bg-input border border-border text-foreground placeholder-muted-foreground px-3 py-2 text-sm sm:text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="video-description" className="block text-sm font-medium text-gray-200 mb-1">Description</label>
+            <label htmlFor="video-description" className="block text-sm font-medium text-card-foreground mb-1">Description</label>
             <textarea
               id="video-description"
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
               rows={4}
-              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              className="w-full rounded-md bg-input border border-border text-foreground placeholder-muted-foreground px-3 py-2 text-sm sm:text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring resize-none"
               placeholder="Add a description for your video..."
             />
           </div>
 
           <div>
-            <label htmlFor="visibility" className="block text-sm font-medium text-gray-200 mb-1">Visibility</label>
+            <label htmlFor="visibility" className="block text-sm font-medium text-card-foreground mb-1">Visibility</label>
             <select
               id="visibility"
               value={form.visibility}
               onChange={e => setForm({ ...form, visibility: e.target.value as 'public' | 'private' | 'unlisted' })}
-              className="w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md bg-input border border-border text-foreground px-3 py-2 text-sm sm:text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
             >
               <option value="public">Public</option>
               <option value="unlisted">Unlisted</option>
@@ -678,9 +677,9 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               id="is_ai"
               checked={form.is_ai}
               onChange={e => setForm({ ...form, is_ai: e.target.checked })}
-              className="w-4 h-4 rounded accent-blue-600"
+              className="w-4 h-4 rounded accent-primary"
             />
-            <label htmlFor="is_ai" className="text-sm text-gray-200">Contains AI content</label>
+            <label htmlFor="is_ai" className="text-sm text-card-foreground">Contains AI content</label>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
@@ -688,7 +687,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-gray-200 bg-zinc-800 rounded hover:bg-zinc-700 transition disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-muted-foreground bg-secondary rounded hover:bg-muted transition disabled:opacity-50"
             >
               Cancel
             </button>
@@ -696,7 +695,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               type="button"
               onClick={handleSubmit}
               disabled={saving}
-              className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-semibold text-primary-foreground bg-primary rounded hover:bg-accent hover:text-accent-foreground transition hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -746,7 +745,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6">
       <div>
-        <label htmlFor="display_name" className="block text-sm font-medium text-gray-200 mb-1">
+        <label htmlFor="display_name" className="block text-sm font-medium text-card-foreground mb-1">
           Display name
         </label>
         <input
@@ -755,12 +754,12 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
           type="text"
           value={form.display_name}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md bg-input border border-border text-foreground placeholder-muted-foreground px-3 py-2 text-sm sm:text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
         />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-200 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-card-foreground mb-1">
           Description
         </label>
         <textarea
@@ -769,7 +768,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
           rows={4}
           value={form.description}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+          className="block w-full rounded-md bg-input border border-border text-foreground placeholder-muted-foreground px-3 py-2 text-sm sm:text-base focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring resize-none"
         />
       </div>
 
@@ -778,7 +777,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
           type="button"
           onClick={handleSubmit}
           disabled={saving}
-          className="h-9 sm:h-10 px-6 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
+          className="h-9 sm:h-10 px-6 bg-primary text-primary-foreground text-sm font-semibold rounded-full hover:bg-accent hover:text-accent-foreground transition hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50"
         >
           {saving ? 'Updating...' : 'Update profile'}
         </button>
@@ -860,12 +859,12 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6">
       {/* Export analytics */}
-      <div className="p-4 bg-zinc-900/50 rounded-lg">
-        <h3 className="text-sm font-medium text-white mb-2">Analytics Export</h3>
-        <p className="text-xs text-gray-400 mb-4">Download your channel analytics and metrics</p>
+      <div className="p-4 bg-card/50 rounded-lg border border-border">
+        <h3 className="text-sm font-medium text-foreground mb-2">Analytics Export</h3>
+        <p className="text-xs text-muted-foreground mb-4">Download your channel analytics and metrics</p>
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-500 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-success text-white text-sm font-medium rounded hover:opacity-90 transition"
           aria-label="Export analytics"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -876,37 +875,37 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
       </div>
 
       {/* Danger Zone */}
-      <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg">
-        <h3 className="text-sm font-medium text-red-400 mb-2">Danger Zone</h3>
-        <p className="text-xs text-gray-400 mb-4">
+      <div className="p-4 bg-destructive/10 border border-destructive/50 rounded-lg">
+        <h3 className="text-sm font-medium text-destructive mb-2">Danger Zone</h3>
+        <p className="text-xs text-muted-foreground mb-4">
           Delete your channel permanently. All videos and data will be removed. This action cannot be undone.
         </p>
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-500 transition"
+          className="px-4 py-2 bg-destructive text-white text-sm font-medium rounded hover:opacity-90 transition"
         >
           Delete channel
         </button>
 
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowDeleteConfirm(false)}>
-            <div className="bg-zinc-900 rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h2 className="text-lg sm:text-xl font-semibold text-white mb-2">Delete Channel?</h2>
-              <p className="text-sm text-gray-400 mb-6">
+            <div className="bg-card rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl border border-border" onClick={e => e.stopPropagation()}>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Delete Channel?</h2>
+              <p className="text-sm text-muted-foreground mb-6">
                 This will permanently delete your channel, all videos, and data. This action cannot be undone.
               </p>
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleting}
-                  className="px-4 py-2 text-sm font-medium text-gray-200 bg-zinc-800 rounded hover:bg-zinc-700 transition disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground bg-secondary rounded hover:bg-muted transition disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded hover:bg-red-500 transition disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-destructive rounded hover:opacity-90 transition disabled:opacity-50"
                 >
                   {deleting ? 'Deleting...' : 'Delete permanently'}
                 </button>

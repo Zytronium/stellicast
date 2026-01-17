@@ -304,45 +304,45 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       {/* Metadata form - always visible */}
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1.5">Video Title</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1.5">Video Title</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter a descriptive title"
-            className="w-full px-4 py-2.5 bg-black border border-gray-800 rounded-xl focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all"
+            className="w-full px-4 py-2.5 bg-input border border-border rounded-xl focus:border-ring focus:ring-1 focus:ring-ring outline-none transition-all text-foreground placeholder:text-muted-foreground"
             maxLength={100}
           />
-          <p className="text-xs text-gray-500 mt-1">{title.length}/100 characters</p>
+          <p className="text-xs text-muted-foreground mt-1">{title.length}/100 characters</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1.5">Description</label>
+          <label className="block text-sm font-medium text-muted-foreground mb-1.5">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Tell viewers about your video"
             rows={4}
-            className="w-full px-4 py-2.5 bg-black border border-gray-800 rounded-xl focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all resize-none"
+            className="w-full px-4 py-2.5 bg-input border border-border rounded-xl focus:border-ring focus:ring-1 focus:ring-ring outline-none transition-all resize-none text-foreground placeholder:text-muted-foreground"
             maxLength={5000}
           />
-          <p className="text-xs text-gray-500 mt-1">{description.length}/5000 characters</p>
+          <p className="text-xs text-muted-foreground mt-1">{description.length}/5000 characters</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1.5">Tags</label>
-          <div className="w-full px-4 py-2.5 bg-black border border-gray-800 rounded-xl focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
+          <label className="block text-sm font-medium text-muted-foreground mb-1.5">Tags</label>
+          <div className="w-full px-4 py-2.5 bg-input border border-border rounded-xl focus-within:border-ring focus-within:ring-1 focus-within:ring-ring transition-all">
             <div className="flex flex-wrap gap-2 items-center">
               {tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600/20 text-blue-400 text-sm rounded-lg border border-blue-600/30"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/20 text-accent text-sm rounded-lg border border-accent/30"
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => removeTag(index)}
-                    className="hover:bg-blue-600/30 rounded-full p-0.5 transition-colors"
+                    className="hover:bg-accent/30 rounded-full p-0.5 transition-colors"
                   >
                     <XMarkIcon className="w-3.5 h-3.5" />
                   </button>
@@ -354,12 +354,12 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={tags.length === 0 ? "Gaming, Music, Science..." : "Add a tag..."}
-                className="flex-1 min-w-[120px] bg-transparent outline-none text-white placeholder-gray-500"
+                className="flex-1 min-w-[120px] bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
-          <p className="mt-1.5 text-xs text-gray-500">
-            Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> or <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">,</kbd> to add tags
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-muted-foreground">Enter</kbd> or <kbd className="px-1.5 py-0.5 bg-muted rounded text-muted-foreground">,</kbd> to add tags
           </p>
         </div>
 
@@ -369,8 +369,8 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             onClick={() => setVisibility('public')}
             className={`px-4 py-2 rounded-lg border-2 transition-colors ${
               visibility === 'public'
-                ? 'border-blue-600 bg-blue-600/10 text-blue-400'
-                : 'border-gray-700 hover:border-gray-600'
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border hover:border-muted text-foreground'
             }`}
           >
             Public
@@ -380,8 +380,8 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             onClick={() => setVisibility('unlisted')}
             className={`px-4 py-2 rounded-lg border-2 transition-colors ${
               visibility === 'unlisted'
-                ? 'border-blue-600 bg-blue-600/10 text-blue-400'
-                : 'border-gray-700 hover:border-gray-600'
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border hover:border-muted text-foreground'
             }`}
           >
             Unlisted
@@ -391,8 +391,8 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             onClick={() => setVisibility('private')}
             className={`px-4 py-2 rounded-lg border-2 transition-colors ${
               visibility === 'private'
-                ? 'border-blue-600 bg-blue-600/10 text-blue-400'
-                : 'border-gray-700 hover:border-gray-600'
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border hover:border-muted text-foreground'
             }`}
           >
             Private
@@ -405,9 +405,9 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
               type="checkbox"
               checked={isAI}
               onChange={(e) => setIsAI(e.target.checked)}
-              className="w-4 h-4 rounded accent-blue-600"
+              className="w-4 h-4 rounded accent-primary"
             />
-            <span className="text-sm text-gray-300">This video contains AI-generated content</span>
+            <span className="text-sm text-foreground">This video contains AI-generated content</span>
           </label>
         </div>
       </div>
@@ -417,7 +417,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-500/5 transition-all"
+          className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -427,9 +427,9 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             onChange={handleFileInputChange}
             className="hidden"
           />
-          <CloudArrowUpIcon className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-          <div className="text-lg font-semibold">Select or drag & drop a video file</div>
-          <div className="text-sm text-gray-400 mt-1">MP4, MOV, WebM • Max 2GB</div>
+          <CloudArrowUpIcon className="w-12 h-12 mx-auto mb-3 text-muted" />
+          <div className="text-lg font-semibold text-foreground">Select or drag & drop a video file</div>
+          <div className="text-sm text-muted-foreground mt-1">MP4, MOV, WebM • Max 2GB</div>
         </div>
       )}
 
@@ -451,8 +451,8 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             />
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-gray-400">
-            <div className="font-medium text-white">{title || videoPreview.file.name}</div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="font-medium text-foreground">{title || videoPreview.file.name}</div>
             <div>•</div>
             <div>{formatDuration(videoPreview.duration)}</div>
             <div>•</div>
@@ -462,13 +462,13 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
           {/* Upload progress during publish */}
           {uploading && (
             <div>
-              <div className="flex items-center justify-between text-xs text-gray-400">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{uploadStage}</span>
                 <span>{Math.min(Math.round(uploadProgress), 100)}%</span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden mt-2">
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden mt-2">
                 <div
-                  className="bg-gradient-to-r from-blue-600 to-blue-400 h-full transition-all duration-200"
+                  className="bg-gradient-to-r from-primary to-accent h-full transition-all duration-200"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
@@ -476,7 +476,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
           )}
 
           {uploadCompleted && (
-            <div className="flex items-center gap-2 justify-center text-green-400">
+            <div className="flex items-center gap-2 justify-center text-success">
               <CheckCircleIcon className="w-5 h-5" />
               <span className="text-sm font-medium">Upload complete!</span>
             </div>
@@ -489,7 +489,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         <button
           onClick={clearVideo}
           disabled={uploading}
-          className="flex-1 px-6 py-3 border border-gray-700 rounded-xl font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-6 py-3 border border-border rounded-xl font-semibold hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-foreground"
           type="button"
         >
           {videoPreview ? 'Remove Video' : 'Cancel'}
@@ -497,7 +497,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         <button
           onClick={handlePublish}
           disabled={uploading || uploadCompleted || !title.trim() || !channelId || !videoPreview}
-          className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 transition-colors"
+          className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors"
         >
           {uploading ? `Uploading... ${Math.round(uploadProgress)}%` : uploadCompleted ? 'Published' : 'Publish Video'}
         </button>

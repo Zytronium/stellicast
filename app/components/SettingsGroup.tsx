@@ -23,6 +23,7 @@ type SettingsGroupProps = {
   settings: Record<string, Setting>;
   initialPreferences: Record<string, any>;
   showUnsubscribeButtons?: boolean;
+  groupType?: 'appearance' | 'default';
 };
 
 type MultiSelectProps = {
@@ -56,27 +57,27 @@ function MultiSelect({ options, value, onChange, disabled }: MultiSelectProps) {
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className="px-3 py-2 text-sm bg-zinc-800 text-white border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-600 flex items-center justify-between gap-2 min-w-[200px]"
+        className="px-3 py-2 text-sm bg-card text-foreground border border-border rounded-lg hover:bg-muted disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring flex items-center justify-between gap-2 min-w-[200px]"
       >
         <div className="flex flex-wrap gap-1 flex-1 min-w-0">
           {value.length === 0 ? (
-            <span className="text-gray-400">Select options...</span>
+            <span className="text-muted-foreground">Select options...</span>
           ) : (
             value.map(option => (
               <span
                 key={option}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600/20 text-blue-400 rounded text-xs"
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary rounded text-xs"
               >
                 {option}
                 <X
-                  className="w-3 h-3 cursor-pointer hover:text-blue-300"
+                  className="w-3 h-3 cursor-pointer hover:opacity-80"
                   onClick={(e) => removeOption(option, e)}
                 />
               </span>
             ))
           )}
         </div>
-        <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -85,7 +86,7 @@ function MultiSelect({ options, value, onChange, disabled }: MultiSelectProps) {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute z-20 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto min-w-[200px]">
+          <div className="absolute z-20 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto min-w-[200px]">
             {options.map(option => {
               const isSelected = value.includes(option);
               return (
@@ -93,15 +94,15 @@ function MultiSelect({ options, value, onChange, disabled }: MultiSelectProps) {
                   key={option}
                   type="button"
                   onClick={() => toggleOption(option)}
-                  className={`w-full px-3 py-2 text-sm text-left hover:bg-zinc-700 flex items-center gap-2 ${
-                    isSelected ? 'text-blue-400' : 'text-white'
+                  className={`w-full px-3 py-2 text-sm text-left hover:bg-muted flex items-center gap-2 ${
+                    isSelected ? 'text-primary' : 'text-foreground'
                   }`}
                 >
                   <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
-                    isSelected ? 'bg-blue-600 border-blue-600' : 'border-zinc-600'
+                    isSelected ? 'bg-primary border-primary' : 'border-border'
                   }`}>
                     {isSelected && (
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -162,7 +163,49 @@ function deepEqual(a: any, b: any) {
   }
 }
 
-export default function SettingsGroup({ title, settings, initialPreferences, showUnsubscribeButtons = false }: SettingsGroupProps) {
+function applyThemeToBody(theme: string) {
+  const themeMap: Record<string, string> = {
+    'volcanic (dark)': 'theme-volcanic',
+    'alien (dark)': 'theme-alien',
+    'royalty (dark)': 'theme-royalty',
+    'rose (dark)': 'theme-rose',
+    'simple dark': 'theme-simple-dark',
+    'simple light': 'theme-simple-light',
+    'palewhite (light)': 'theme-palewhite',
+    'rose quartz (light)': 'theme-rose-quartz',
+    'colormatic': 'theme-colormatic',
+  };
+
+  // Map of which themes are light
+  const lightThemes = new Set([
+    'simple light',
+    'palewhite (light)',
+    'rose quartz (light)'
+  ]);
+
+  const themeClass = themeMap[theme] || '';
+
+  // Remove all theme classes
+  document.body.classList.remove('theme-volcanic', 'theme-alien', 'theme-royalty', 'theme-rose', 'theme-simple-dark', 'theme-simple-light', 'theme-palewhite', 'theme-rose-quartz', 'theme-colormatic', 'light');
+
+  // Add new theme class if it exists
+  if (themeClass) {
+    document.body.classList.add(themeClass);
+  }
+
+  // Add 'light' class if it's a light theme
+  if (lightThemes.has(theme)) {
+    document.body.classList.add('light');
+  }
+}
+
+export default function SettingsGroup({
+  title,
+  settings,
+  initialPreferences,
+  showUnsubscribeButtons = false,
+  groupType = 'default'
+}: SettingsGroupProps) {
   const [savedPreferences, setSavedPreferences] = useState<Record<string, any>>(initialPreferences);
   const [currentPreferences, setCurrentPreferences] = useState<Record<string, any>>(initialPreferences);
   const [saving, setSaving] = useState(false);
@@ -202,6 +245,11 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
         return acc;
       }, {} as Record<string, any>);
 
+      // Apply theme immediately if this is the appearance group and theme changed
+      if (groupType === 'appearance' && changes.theme) {
+        applyThemeToBody(changes.theme);
+      }
+
       const response = await fetch('/api/user/preferences', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -211,12 +259,20 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
       if (!response.ok) {
         console.error('Failed to save preferences');
         setCurrentPreferences(savedPreferences); // Revert on error
+        // Revert theme if it was changed
+        if (groupType === 'appearance' && changes.theme) {
+          applyThemeToBody(savedPreferences.theme);
+        }
       } else {
         setSavedPreferences(currentPreferences);
       }
     } catch (error) {
       console.error('Error saving preferences:', error);
       setCurrentPreferences(savedPreferences); // Revert on error
+      // Revert theme if appearance group
+      if (groupType === 'appearance' && currentPreferences.theme !== savedPreferences.theme) {
+        applyThemeToBody(savedPreferences.theme);
+      }
     } finally {
       setSaving(false);
     }
@@ -265,20 +321,20 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
   return (
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
         {hasChanges && (
           <div className="flex items-center gap-2">
             <button
               onClick={discardChanges}
               disabled={saving}
-              className="px-4 py-1.5 text-sm font-medium text-gray-300 bg-zinc-800 rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="px-4 py-1.5 text-sm font-medium text-muted-foreground bg-card rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               Discard
             </button>
             <button
               onClick={applyChanges}
               disabled={saving}
-              className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="px-4 py-1.5 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {saving ? 'Applying...' : 'Apply Changes'}
             </button>
@@ -290,14 +346,14 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => unsubscribeFromAll('email')}
-            className="flex-1 px-4 py-3 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 text-sm font-medium text-primary-foreground bg-destructive rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             <X className="w-4 h-4" />
             Unsubscribe from All Emails
           </button>
           <button
             onClick={() => unsubscribeFromAll('in-app')}
-            className="flex-1 px-4 py-3 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 text-sm font-medium text-primary-foreground bg-destructive rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             <X className="w-4 h-4" />
             Unsubscribe from All In-App Notifications
@@ -321,19 +377,19 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
           return (
             <div
               key={setting.settingName}
-              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 rounded-lg bg-blue-950/30 border ${
-                hasChanged ? 'border-blue-600/50' : 'border-zinc-800'
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-4 rounded-lg bg-card-accent/40 border ${
+                hasChanged ? 'border-primary/50' : 'border-border'
               } ${isDisabled ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-sm font-medium text-white">{label}</span>
+                <span className="text-sm font-medium text-card-foreground">{label}</span>
                 {hasChanged && (
-                  <span className="text-xs text-blue-400 font-medium">•</span>
+                  <span className="text-xs text-primary font-medium">•</span>
                 )}
                 {setting.info && (
                   <div className="group relative">
-                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                    <div className="invisible group-hover:visible absolute left-0 top-6 z-10 w-64 p-2 text-xs bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg text-gray-300">
+                    <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                    <div className="invisible group-hover:visible absolute left-0 top-6 z-10 w-64 p-2 text-xs bg-popover border border-border rounded-lg shadow-lg text-popover-foreground">
                       {setting.info}
                     </div>
                   </div>
@@ -351,11 +407,11 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
                     }}
                     disabled={isDisabled}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      displayValue ? 'bg-blue-600' : 'bg-zinc-700'
+                      displayValue ? 'bg-primary' : 'bg-muted'
                     } ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      className={`inline-block h-4 w-4 transform rounded-full bg-primary-foreground transition-transform ${
                         displayValue ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
@@ -373,7 +429,7 @@ export default function SettingsGroup({ title, settings, initialPreferences, sho
                       updatePreference(setting.settingName, value);
                     }}
                     disabled={isDisabled}
-                    className="px-3 py-1.5 text-sm bg-zinc-800 text-white border border-zinc-700 rounded-lg hover:bg-zinc-700 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="px-3 py-1.5 text-sm bg-card text-foreground border border-border rounded-lg hover:bg-muted disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     {setting.options.map((option) => (
                       <option key={option} value={option}>

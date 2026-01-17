@@ -39,8 +39,8 @@ export default function Home() {
               key={c}
               className={
                 idx === 0
-                  ? 'rounded-full bg-blue-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm'
-                  : 'rounded-full border border-gray-800 bg-[#0a0a0a] px-3 py-1.5 text-xs font-medium text-gray-200 hover:bg-gray-900'
+                  ? 'rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm'
+                  : 'rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-card-foreground hover:bg-card'
               }
               type="button"
             >
@@ -53,7 +53,7 @@ export default function Home() {
       {loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="aspect-video bg-gray-900 rounded-2xl animate-pulse" />
+            <div key={i} className="aspect-video bg-card rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : videos.length > 0 ? (
@@ -74,7 +74,7 @@ export default function Home() {
         </section>
       ) : (
         <div className="py-20 text-center">
-          <p className="text-gray-400">No videos found. Be the first to upload!</p>
+          <p className="text-muted-foreground">No videos found. Be the first to upload!</p>
         </div>
       )}
     </div>

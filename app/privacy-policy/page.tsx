@@ -8,7 +8,7 @@ export default async function PrivacyPolicy() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <article className="prose prose-invert lg:prose-lg max-w-none">
+      <article className="prose [body:not(.light)_&]:prose-invert lg:prose-lg max-w-none">
         <MDXRemote source={markdown} />
       </article>
     </div>

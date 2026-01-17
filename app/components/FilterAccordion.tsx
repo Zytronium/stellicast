@@ -13,10 +13,10 @@ export default function FilterAccordion({ title, children }: FilterAccordionProp
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="border-b border-gray-800 pb-4">
+    <div className="border-b border-border pb-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-2 hover:text-blue-500 transition-colors"
+        className="w-full flex items-center justify-between py-2 text-foreground hover:text-accent cursor-pointer transition-colors"
       >
         <h3 className="font-semibold text-sm">{title}</h3>
         <ChevronDownIcon
