@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
 export default function AuthPage() {
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        router.push('/');
+      }
+    };
+    checkUser();
+  }, [supabase, router]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
