@@ -61,11 +61,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           'alien (dark)': 'theme-alien',
           'royalty (dark)': 'theme-royalty',
           'rose (dark)': 'theme-rose',
-          'colormatic (dark)': 'theme-colormatic',
           'simple dark': 'theme-simple-dark',
-          'simple light': 'theme-simple-light',
+          'moonshine (dim)': 'theme-moonshine',
+          'moonset (dim)': 'theme-moonset',
+          'simple dim': 'theme-simple-dim',
           'palewhite (light)': 'theme-palewhite',
           'rose quartz (light)': 'theme-rose-quartz',
+          'simple light': 'theme-simple-light',
           'colormatic': 'theme-colormatic',
         };
 

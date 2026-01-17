@@ -50,10 +50,10 @@ export default async function SettingsPage() {
           initialPreferences={preferences}
           settings={{
             "Theme": {
-              "options": ["spaceblue (dark)", "volcanic (dark)", "alien (dark)", "royalty (dark)", "rose (dark)", "simple dark", "simple light", "palewhite (light)", "rose quartz (light)", "colormatic"],
+              "options": ["space blue (dark)", "volcanic (dark)", "alien (dark)", "royalty (dark)", "rose (dark)", "simple dark", "moonshine (dim)", "moonset (dim)", "simple dim", "palewhite (light)", "rose quartz (light)", "simple light", "colormatic"],
               "type": "dropdown",
               "settingName": "theme",
-              info: "Beta feature"
+              "info": "Beta feature"
             },
             "Layout": {
               "options": ["default"],
