@@ -168,11 +168,11 @@ function Header({ user, setUser, supabase }: HeaderProps) {
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-blue-950" />
+          <div className="w-full h-full bg-gradient" />
         )}
         <label
           htmlFor="bannerUpload"
-          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-black/60 backdrop-blur-sm text-xs text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded cursor-pointer hover:bg-black/80 transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-card/80 backdrop-blur-sm text-xs text-card-foreground px-2 sm:px-3 py-1.5 sm:py-2 rounded border border-border cursor-pointer hover:bg-card transition ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {uploading ? 'Uploading...' : 'Change banner'}
           <input
@@ -199,13 +199,13 @@ function Header({ user, setUser, supabase }: HeaderProps) {
                 className="object-cover"
               />
             ) : (
-              <div className="grid h-full w-full place-items-center bg-zinc-600 text-4xl sm:text-6xl font-bold text-white">
+              <div className="grid h-full w-full place-items-center bg-muted text-4xl sm:text-6xl font-bold text-muted-foreground">
                 {user.display_name?.[0]?.toUpperCase() ?? user.username?.[0]?.toUpperCase() ?? "U"}
               </div>
             )}
             <label
               htmlFor="avatarUpload"
-              className={`absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-xs text-white font-medium ${uploading ? 'cursor-not-allowed' : ''}`}
+              className={`absolute inset-0 flex items-center justify-center bg-card/80 opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-xs text-card-foreground font-medium ${uploading ? 'cursor-not-allowed' : ''}`}
               aria-label="Change avatar"
             >
               {uploading ? 'Uploading...' : 'Change'}
@@ -222,13 +222,13 @@ function Header({ user, setUser, supabase }: HeaderProps) {
 
           {/* Name + metadata */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
               {user.display_name || user.username}
             </h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               @{user.username}
             </p>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Joined: {new Date(user.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -237,7 +237,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
           <div className="w-full sm:w-auto flex-shrink-0 flex gap-2">
             <Link
               href={`/user/${user.username}`}
-              className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-zinc-800 text-sm font-semibold text-white hover:bg-zinc-700 transition"
+              className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
             >
               View Profile
             </Link>
@@ -245,7 +245,7 @@ function Header({ user, setUser, supabase }: HeaderProps) {
         </div>
 
         {user.description && (
-          <p className="mt-4 max-w-2xl text-sm sm:text-base text-gray-300">
+          <p className="mt-4 max-w-2xl text-sm sm:text-base text-card-foreground">
             {user.description}
           </p>
         )}
@@ -271,17 +271,17 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
             onClick={() => setActive(id)}
             role="tab"
             aria-selected={active === id}
-            className={`relative cursor-pointer transition-all text-sm sm:text-base ${
+            className={`relative cursor-pointer transition-all text-sm sm:text-base text-foreground ${
               active === id
-                ? 'font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-110'
-                : 'font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-blue-100 after:transition-transform after:duration-200 hover:after:scale-x-100'
+                ? 'font-bold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-100 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-110'
+                : 'font-thin after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 hover:after:scale-x-100'
             }`}
           >
             {id.charAt(0).toUpperCase() + id.slice(1)}
           </p>
         ))}
       </div>
-      <hr className="border-zinc-600 mt-2"/>
+      <hr className="border-border mt-2"/>
 
       <div className="pt-6 sm:pt-8">
         {['profile', 'channels'].map(id => (
@@ -435,7 +435,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6">
       <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-200 mb-1">
+        <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
           Username
         </label>
         <input
@@ -444,44 +444,44 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           type="text"
           value={form.username}
           onChange={handleChange}
-          className={`block w-full rounded-md bg-zinc-800 border ${
-            usernameError ? 'border-red-500' : 'border-zinc-600'
-          } text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`block w-full rounded-md bg-input border ${
+            usernameError ? 'border-destructive' : 'border-border'
+          } text-foreground px-3 py-2 text-sm sm:text-base focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground`}
           placeholder="Your username"
         />
         {!loadingChangeInfo && usernameChangeInfo && (
           <div className="mt-1 text-xs">
             {usernameChanged && !usernameError && usernameChangeInfo.canChange && (
-              <p className="text-yellow-500">
+              <p className="text-warning">
                 ⚠️ Username changes remaining today: {usernameChangeInfo.changesRemaining}/3
               </p>
             )}
             {usernameChanged && !usernameError && !usernameChangeInfo.canChange && (
-              <p className="text-red-500">
+              <p className="text-destructive">
                 ❌ No username changes remaining. Try again in {formatNextChangeTime(usernameChangeInfo.nextChangeAvailable!)}
               </p>
             )}
             {!usernameChanged && usernameChangeInfo.changesUsed > 0 && (
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 Username changes used today: {usernameChangeInfo.changesUsed}/3
               </p>
             )}
           </div>
         )}
         {usernameError && (
-          <p className="mt-1 text-xs text-red-500">
+          <p className="mt-1 text-xs text-destructive">
             {usernameError}
           </p>
         )}
         {!usernameChanged && !usernameError && !loadingChangeInfo && (
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Letters, numbers, underscores, and hyphens only
           </p>
         )}
       </div>
 
       <div>
-        <label htmlFor="display_name" className="block text-sm font-medium text-gray-200 mb-1">
+        <label htmlFor="display_name" className="block text-sm font-medium text-foreground mb-1">
           Display name
         </label>
         <input
@@ -490,13 +490,13 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           type="text"
           value={form.display_name}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md bg-input border border-border text-foreground px-3 py-2 text-sm sm:text-base focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
           placeholder="Your display name"
         />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-200 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
           Bio
         </label>
         <textarea
@@ -505,7 +505,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           rows={4}
           value={form.description}
           onChange={handleChange}
-          className="block w-full rounded-md bg-zinc-800 border border-zinc-600 text-white px-3 py-2 text-sm sm:text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+          className="block w-full rounded-md bg-input border border-border text-foreground px-3 py-2 text-sm sm:text-base focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring resize-none placeholder:text-muted-foreground"
           placeholder="Tell us about yourself..."
         />
       </div>
@@ -515,7 +515,7 @@ function ProfileEditor({ user, setUser, supabase }: ProfileEditorProps) {
           type="button"
           onClick={handleSubmit}
           disabled={saving}
-          className="h-9 sm:h-10 px-6 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30 disabled:opacity-50"
+          className="h-9 sm:h-10 px-6 bg-primary text-primary-foreground text-sm font-semibold rounded-full hover:bg-primary/90 transition hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50"
         >
           {saving ? 'Updating...' : 'Update profile'}
         </button>
@@ -529,10 +529,10 @@ function ChannelsList({ channels }: ChannelsListProps) {
     <div>
       {channels.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4 text-sm sm:text-base">You don&apos;t have any channels yet</p>
+          <p className="text-muted-foreground mb-4 text-sm sm:text-base">You don&apos;t have any channels yet</p>
           <Link
             href="/account"
-            className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-blue-600 text-sm font-semibold text-white hover:bg-blue-500 transition hover:shadow-lg hover:shadow-blue-600/30"
+            className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition hover:shadow-lg hover:shadow-primary/30"
           >
             Create a channel
           </Link>
@@ -543,7 +543,7 @@ function ChannelsList({ channels }: ChannelsListProps) {
             <Link
               key={channel.id}
               href={`/channel/${channel.handle}`}
-              className="group block p-4 sm:p-6 rounded-lg bg-gradient-darker border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
+              className="group block p-4 sm:p-6 rounded-lg bg-gradient-darker border border-border hover:bg-muted hover:border-muted transition-all duration-200"
             >
               <div className="flex flex-col items-center text-center">
                 {/* Channel Avatar */}
@@ -556,22 +556,22 @@ function ChannelsList({ channels }: ChannelsListProps) {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center bg-zinc-600 text-2xl sm:text-3xl font-bold text-white">
+                    <div className="grid h-full w-full place-items-center bg-muted text-2xl sm:text-3xl font-bold text-muted-foreground">
                       {channel.display_name?.[0]?.toUpperCase() ?? "C"}
                     </div>
                   )}
                 </div>
 
                 {/* Channel Info */}
-                <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-1">
                   {channel.display_name}
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   @{channel.handle}
                 </p>
 
                 {/* Stats */}
-                <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400">
+                <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm text-muted-foreground">
                   <span>{channel.follower_count ?? 0} followers</span>
                   <span>•</span>
                   <span>{channel.video_count ?? 0} videos</span>
@@ -579,7 +579,7 @@ function ChannelsList({ channels }: ChannelsListProps) {
 
                 {/* Description */}
                 {channel.description && (
-                  <p className="text-xs sm:text-sm text-gray-400 mt-2 sm:mt-3 line-clamp-2 w-full">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3 line-clamp-2 w-full">
                     {channel.description}
                   </p>
                 )}
