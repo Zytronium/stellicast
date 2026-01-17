@@ -30,6 +30,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isColormaticTheme, setIsColormaticTheme] = useState(false);
 
   useEffect(() => {
     // Get initial user
@@ -85,6 +86,25 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
 
     return () => subscription.unsubscribe();
   }, [supabase]);
+
+  useEffect(() => {
+    // Check if body has theme-colormatic class
+    const checkTheme = () => {
+      setIsColormaticTheme(document.body.classList.contains('theme-colormatic'));
+    };
+
+    // Check initially
+    checkTheme();
+
+    // Observe body class changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,17 +189,21 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
 
         {/* Desktop Navigation - Hidden on mobile */}
         <nav className="hidden min-w-fit items-center gap-6 lg:flex">
-          <Link href="/" className="text-sm text-foreground/80 hover:text-accent">
+          <Link href="/"
+                className={`text-sm ${isColormaticTheme ? 'text-black hover:text-black/80' : 'text-foreground/80 hover:text-accent'}`}>
             Feed
           </Link>
-          <Link href="/upload" className="text-sm text-foreground/80 hover:text-accent">
+          <Link href="/upload"
+                className={`text-sm ${isColormaticTheme ? 'text-black hover:text-black/80' : 'text-foreground/80 hover:text-accent'}`}>
             Upload
           </Link>
-          <Link href="/settings" className="text-sm text-foreground/80 hover:text-accent">
+          <Link href="/settings"
+                className={`text-sm ${isColormaticTheme ? 'text-black hover:text-black/80' : 'text-foreground/80 hover:text-accent'}`}>
             Settings
           </Link>
-          <Link href="/more" className="text-sm text-foreground/80 hover:text-accent">
-            More
+          <Link href="/more"
+                className={`text-sm ${isColormaticTheme ? 'text-black hover:text-black/80' : 'text-foreground/80 hover:text-accent'}`}>
+          More
           </Link>
         </nav>
 
@@ -222,14 +246,14 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
                   <div className="py-2">
                     <Link
                       href="/account"
-                      className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
+                      className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       Account
                     </Link>
                     <Link
                       href="/profile"
-                      className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted"
+                      className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       Profile

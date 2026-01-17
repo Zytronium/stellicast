@@ -845,106 +845,106 @@ body {
 /* Colormatic (Spectrum) Theme */
 .theme-colormatic {
   /* Core surface / text */
-  --background: #071018;
-  --foreground: #eef8ff;
+  --background: #0a1420;
+  --foreground: #f0f9ff;
 
   /* Cards & popovers */
-  --card: #0b1620;
-  --card-foreground: #f7fbff;
-  --card-accent: #6b5bff;
-  --popover: #0b1620;
-  --popover-foreground: #f7fbff;
+  --card: #152030;
+  --card-foreground: #f0f9ff;
+  --card-accent: #7c6dff;
+  --popover: #152030;
+  --popover-foreground: #f0f9ff;
 
   /* Primary / brand (cyan) */
-  --primary: #00c2ff;
-  --primary-foreground: #04121a;
-  --primary-dark: #075985;
-  --primary-light: #bae6fd;
+  --primary: #22d3ff;
+  --primary-foreground: #002b3d;
+  --primary-dark: #0891b2;
+  --primary-light: #cff4ff;
   --primary-2: var(--primary-dark);
   --primary-3: var(--primary-light);
 
   /* Secondary (indigo) */
-  --secondary: #6b5bff;
-  --secondary-foreground: #eef0ff;
+  --secondary: #7c6dff;
+  --secondary-foreground: #f5f3ff;
 
   /* Muted */
-  --muted: #16303a;
-  --muted-foreground: #95a6b3;
+  --muted: #1e3a4a;
+  --muted-foreground: #b8cdd9;
 
   /* Accent & alternate (picked from the spectrum) */
-  --accent: #ff3b3b;
+  --accent: #ff5252;
   --accent-foreground: #ffffff;
-  --accent-alt: #ffd700;
+  --accent-alt: #ffdd44;
 
   /* Spectrum stops (expanded) */
-  --spectrum-rose: #ff4da6;
-  --spectrum-pink: #ff79c6;
-  --spectrum-cerise: #ff2d6f;
-  --spectrum-red: #ff3b3b;
-  --spectrum-orange: #ff8a00;
-  --spectrum-amber: #ffb400;
-  --spectrum-yellow: #ffd700;
-  --spectrum-lime: #c7ff3b;
-  --spectrum-green: #2bd34a;
-  --spectrum-emerald: #00c57a;
-  --spectrum-teal: #00c2b8;
-  --spectrum-cyan: #00c2ff;
-  --spectrum-sky: #47bfff;
-  --spectrum-blue: #3b82f6;
-  --spectrum-indigo: #6b5bff;
-  --spectrum-violet: #8b5cf6;
-  --spectrum-magenta: #ff3bd9;
+  --spectrum-rose: #ff66b8;
+  --spectrum-pink: #ff8ad4;
+  --spectrum-cerise: #ff4488;
+  --spectrum-red: #ff5252;
+  --spectrum-orange: #ff9933;
+  --spectrum-amber: #ffc233;
+  --spectrum-yellow: #ffdd44;
+  --spectrum-lime: #d4ff55;
+  --spectrum-green: #44dd66;
+  --spectrum-emerald: #22d88d;
+  --spectrum-teal: #22d4cc;
+  --spectrum-cyan: #22d3ff;
+  --spectrum-sky: #5fd0ff;
+  --spectrum-blue: #5599ff;
+  --spectrum-indigo: #7c6dff;
+  --spectrum-violet: #9d6dff;
+  --spectrum-magenta: #ff55e6;
 
   /* Gradient Colors (tokens kept for backward compatibility) */
   --gradient-from: linear-gradient(180deg,
-    var(--spectrum-red) 0%,
-    var(--spectrum-orange) 10%,
-    var(--spectrum-amber) 18%,
-    var(--spectrum-yellow) 26%,
-    var(--spectrum-lime) 36%,
-    var(--spectrum-green) 46%,
-    var(--spectrum-teal) 56%,
-    var(--spectrum-cyan) 64%,
-    var(--spectrum-sky) 72%,
-    var(--spectrum-blue) 80%,
-    var(--spectrum-indigo) 86%,
-    var(--spectrum-violet) 92%,
-    var(--spectrum-magenta) 100%);
+  var(--spectrum-red) 0%,
+  var(--spectrum-orange) 10%,
+  var(--spectrum-amber) 18%,
+  var(--spectrum-yellow) 26%,
+  var(--spectrum-lime) 36%,
+  var(--spectrum-green) 46%,
+  var(--spectrum-teal) 56%,
+  var(--spectrum-cyan) 64%,
+  var(--spectrum-sky) 72%,
+  var(--spectrum-blue) 80%,
+  var(--spectrum-indigo) 86%,
+  var(--spectrum-violet) 92%,
+  var(--spectrum-magenta) 100%);
   /* fallback simple stops for code that expects two colors */
   --gradient-from-color: var(--spectrum-red);
   --gradient-to-color: var(--spectrum-magenta);
 
   /* darker variants (used by .bg-gradient-darker override) */
-  --gradient-darker-from: rgba(7,16,24,0.75);
-  --gradient-darker-to: rgba(2,6,10,0.9);
+  --gradient-darker-from: rgba(10, 20, 32, 0.8);
+  --gradient-darker-to: rgba(4, 10, 16, 0.95);
 
   /* Status */
-  --destructive: #ff4d4d;
-  --destructive-foreground: #fff2f2;
+  --destructive: #ff5c5c;
+  --destructive-foreground: #fff5f5;
 
-  --warning: #ffb020;
-  --warning-foreground: #fff7e6;
+  --warning: #ffbb33;
+  --warning-foreground: #fffaf0;
 
-  --success: #2bd34a;
-  --success-foreground: #002b08;
+  --success: #44dd66;
+  --success-foreground: #003314;
 
   /* Logo hue rotation (optional subtle vibrance) */
   --logo-hue-rotate: 300deg;
 
   /* Borders / inputs / rings */
-  --border: #17313b;
-  --input: #0b1620;
-  --ring: #00c2ff;
+  --border: #2a4555;
+  --input: #152030;
+  --ring: #22d3ff;
 
   /* Sidebar */
-  --sidebar: #071018;
-  --sidebar-foreground: #eef7ff;
-  --sidebar-primary: #071824;
-  --sidebar-primary-foreground: #eef7ff;
-  --sidebar-accent: #16303a;
-  --sidebar-accent-foreground: #eaf6ff;
-  --sidebar-border: #12323a;
-  --sidebar-ring: #00c2ff;
+  --sidebar: #0a1420;
+  --sidebar-foreground: #f0f9ff;
+  --sidebar-primary: #0f1e30;
+  --sidebar-primary-foreground: #f0f9ff;
+  --sidebar-accent: #1e3a4a;
+  --sidebar-accent-foreground: #e0f2ff;
+  --sidebar-border: #2a4555;
+  --sidebar-ring: #22d3ff;
 
   /* convenience horizontal spectrum gradient var */
   --spectrum-gradient: linear-gradient(90deg,
@@ -967,18 +967,18 @@ body {
 /* selection: subtle rainbow smear (keeps selection readable on colormatic backgrounds) */
 .theme-colormatic ::selection {
   background: linear-gradient(90deg,
-    rgba(255,77,166,0.22),
-    rgba(255,138,0,0.18),
-    rgba(255,215,0,0.14),
-    rgba(43,211,74,0.12),
-    rgba(0,194,255,0.12),
-    rgba(107,91,255,0.12));
+  rgba(255, 102, 184, 0.35),
+  rgba(255, 153, 51, 0.32),
+  rgba(255, 221, 68, 0.28),
+  rgba(68, 221, 102, 0.25),
+  rgba(34, 211, 255, 0.25),
+  rgba(124, 109, 255, 0.25));
 }
 
 /* scrollbar: colorful thumb on dark track */
 .theme-colormatic * {
   scrollbar-width: thin;
-  scrollbar-color: #6b5bff #071018;
+  scrollbar-color: #7c6dff #152030;
 }
 
 /* Override .bg-gradient to a full rainbow when the theme is active */
