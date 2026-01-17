@@ -33,6 +33,10 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-primary-2: var(--primary-2);
+  --color-primary-3: var(--primary-3);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -118,42 +122,46 @@ body {
   --radius: 0.625rem;
 
   /* Core surface / text */
-  --background: #0a0a0a;        /* currently used as page background (bg-[#0a0a0a]) */
-  --foreground: #ffffff;        /* primary text color (text-white) */
+  --background: #0a0a0a;
+  --foreground: #ffffff;
 
-  /* Cards & popovers (surfaces slightly above background) */
-  --card: #0f1113;              /* card / panel background (was bg-gray-900 / bg-[#0a0a0a]) */
-  --card-foreground: #f3f4f6;   /* text inside cards (text-gray-100 / text-white alternative) */
+  /* Cards & popovers */
+  --card: #0f1113;
+  --card-foreground: #f3f4f6;
   --card-accent: #0a1f47;
   --popover: #0f1113;
   --popover-foreground: #f3f4f6;
 
-  /* Primary / brand (maps to buttons and primary actions) */
-  --primary: #2563eb;           /* tailwind blue-600 — used for primary actions */
+  /* Primary / brand */
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
+  --primary-dark: #172554;
+  --primary-light: #bfdbfe;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary / subtle accents */
-  --secondary: #1f2937;         /* neutral/dark secondary surface (gray-800) */
+  --secondary: #1f2937;
   --secondary-foreground: #e5e7eb;
 
-  /* Muted (labels, helper text) */
-  --muted: #374151;             /* gray-700 */
-  --muted-foreground: #9ca3af;  /* gray-400/500 for muted text */
+  /* Muted */
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
 
-  /* Accent (hover/interactive highlights — can be same-family as primary) */
-  --accent: #3b82f6;            /* tailwind blue-500 — hover/secondary highlight */
+  /* Accent */
+  --accent: #3b82f6;
   --accent-foreground: #ffffff;
-  --accent-alt: #bfdbfe;        /* pastel blue-200 */
+  --accent-alt: #bfdbfe;
 
   /* Gradient Colors */
-  --gradient-from: rgba(23, 36, 87, 0.8);   /* blue-950/80 */
-  --gradient-to: rgb(2 6 23 / 0.9);     /* slate-950/90 */
+  --gradient-from: rgba(23, 36, 87, 0.8);
+  --gradient-to: rgb(2 6 23 / 0.9);
 
   --gradient-darker-from: #020617;
   --gradient-darker-to: #020203;
 
   /* Destructive actions */
-  --destructive: #d52525;       /* red-600 */
+  --destructive: #d52525;
   --destructive-foreground: #ff7878;
 
   /* Warnings */
@@ -168,11 +176,11 @@ body {
   --logo-hue-rotate: 0;
 
   /* Borders / inputs / rings */
-  --border: #1f2937;            /* border-gray-800 */
-  --input: #0f1113;             /* input background (matches card) */
-  --ring: #3b82f6;              /* focus ring (blue-500/400 family) */
+  --border: #1f2937;
+  --input: #0f1113;
+  --ring: #3b82f6;
 
-  /* Sidebar (keeps sidebar visually tied to main surface but removable) */
+  /* Sidebar */
   --sidebar: #0a0a0a;
   --sidebar-foreground: #f8fafc;
   --sidebar-primary: #111827;
@@ -206,8 +214,12 @@ body {
   --popover-foreground: #262626;
 
   /* Primary / brand */
-  --primary: #4f46e5;           /* indigo-600 */
+  --primary: #4f46e5;
   --primary-foreground: #ffffff;
+  --primary-dark: #312e81;
+  --primary-light: #c7d2fe;
+  --primary-2: var(--primary-light);
+  --primary-3: var(--primary-dark);
 
   /* Secondary / subtle accents */
   --secondary: #f5f5f5;
@@ -218,12 +230,12 @@ body {
   --muted-foreground: #737373;
 
   /* Accent */
-  --accent: #6366f1;            /* indigo-500 */
+  --accent: #6366f1;
   --accent-foreground: #ffffff;
-  --accent-alt: #c7d2fe;        /* pastel indigo-200 */
+  --accent-alt: #c7d2fe;
 
   /* Gradient Colors */
-  --gradient-from: rgba(238, 242, 255, 0.9);  /* indigo-50 */
+  --gradient-from: rgba(238, 242, 255, 0.9);
   --gradient-to: rgba(250, 250, 250, 0.95);
 
   --gradient-darker-from: #f5f5f5;
@@ -283,8 +295,12 @@ body {
   --popover-foreground: #fef2f2;
 
   /* Primary / brand */
-  --primary: #f94b16;           /* orange-500 */
+  --primary: #f94b16;
   --primary-foreground: #ffffff;
+  --primary-dark: #7c2d12;
+  --primary-light: #fed7aa;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary / subtle accents */
   --secondary: #2d1410;
@@ -295,12 +311,12 @@ body {
   --muted-foreground: #d4a5a0;
 
   /* Accent */
-  --accent: #fb923c;            /* orange-400 */
+  --accent: #fb923c;
   --accent-foreground: #ffffff;
-  --accent-alt: #fed7aa;        /* pastel orange-200 */
+  --accent-alt: #fed7aa;
 
   /* Gradient Colors */
-  --gradient-from: rgba(69, 10, 10, 0.8);    /* dark red */
+  --gradient-from: rgba(69, 10, 10, 0.8);
   --gradient-to: rgba(15, 9, 7, 0.95);
 
   --gradient-darker-from: #1a0808;
@@ -360,8 +376,12 @@ body {
   --popover-foreground: #d1fae5;
 
   /* Primary / brand */
-  --primary: #10b981;           /* emerald-500 */
+  --primary: #10b981;
   --primary-foreground: #ffffff;
+  --primary-dark: #064e3b;
+  --primary-light: #a7f3d0;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary / subtle accents */
   --secondary: #0f2420;
@@ -372,12 +392,12 @@ body {
   --muted-foreground: #a8ebc0;
 
   /* Accent */
-  --accent: #34d399;            /* emerald-400 */
-  --accent-foreground: #ffffff; /* FIXED: was #022c22 (dark), now light for visibility */
-  --accent-alt: #a7f3d0;        /* pastel emerald-200 */
+  --accent: #34d399;
+  --accent-foreground: #ffffff;
+  --accent-alt: #a7f3d0;
 
   /* Gradient Colors */
-  --gradient-from: rgba(4, 47, 46, 0.8);     /* dark teal */
+  --gradient-from: rgba(4, 47, 46, 0.8);
   --gradient-to: rgba(4, 13, 9, 0.95);
 
   --gradient-darker-from: #021716;
@@ -426,22 +446,26 @@ body {
 /* Royalty (Dark) Theme - Golden with Red Accent */
 .theme-royalty {
   /* Core surface / text */
-  --background: #0a0604;        /* very dark brown-black */
-  --foreground: #fef3c7;        /* warm cream/gold */
+  --background: #0a0604;
+  --foreground: #fef3c7;
 
   /* Cards & popovers */
-  --card: #1a1108;              /* dark warm brown */
+  --card: #1a1108;
   --card-foreground: #fef3c7;
-  --card-accent: #4a2c0a;       /* deep golden brown */
+  --card-accent: #4a2c0a;
   --popover: #1a1108;
   --popover-foreground: #fef3c7;
 
   /* Primary / brand - Golden */
-  --primary: #d4af37;           /* rich gold */
+  --primary: #d4af37;
   --primary-foreground: #1a0f00;
+  --primary-dark: #78571b;
+  --primary-light: #fef3c7;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary / subtle accents */
-  --secondary: #2d1f10;         /* dark brown */
+  --secondary: #2d1f10;
   --secondary-foreground: #f3d99e;
 
   /* Muted */
@@ -451,10 +475,10 @@ body {
   /* Accent - Golden */
   --accent: #e2b14f;
   --accent-foreground: #1a0f00;
-  --accent-alt: #ffdba3;        /* pastel gold */
+  --accent-alt: #ffdba3;
 
   /* Gradient Colors */
-  --gradient-from: rgba(172, 132, 52, 0.85);   /* dark gold-brown */
+  --gradient-from: rgba(172, 132, 52, 0.85);
   --gradient-to: rgba(56, 39, 24, 0.95);
 
   --gradient-darker-from: #2b1f0f;
@@ -476,9 +500,9 @@ body {
   --logo-hue-rotate: 180deg;
 
   /* Borders / inputs / rings */
-  --border: #50310f;            /* deep golden brown */
+  --border: #50310f;
   --input: #1a1108;
-  --ring: #d4af37;              /* gold ring */
+  --ring: #d4af37;
 
   /* Sidebar */
   --sidebar: #0a0604;
@@ -507,18 +531,22 @@ body {
   --foreground: #fec7d9;
 
   /* Cards & popovers */
-  --card: #1a080d;              /* dark magenta */
+  --card: #1a080d;
   --card-foreground: #fec7d8;
-  --card-accent: #4a0a1f;       /* dark hot pink */
+  --card-accent: #4a0a1f;
   --popover: #1a0809;
   --popover-foreground: #fec7ca;
 
   /* Primary / brand - Rose-red/hot pink */
-  --primary: #d43766;           /* hot pink */
+  --primary: #d43766;
   --primary-foreground: #ffe9ef;
+  --primary-dark: #881337;
+  --primary-light: #fecdd3;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary / subtle accents */
-  --secondary: #2d1012;         /* dark rose-quartz */
+  --secondary: #2d1012;
   --secondary-foreground: #f39ea7;
 
   /* Muted */
@@ -527,8 +555,8 @@ body {
 
   /* Accent - Red */
   --accent: #e24f4f;
-  --accent-foreground: #ffffff; /* FIXED: was #1a0000 (dark), now light for visibility */
-  --accent-alt: #ffa3a6;        /* pastel red */
+  --accent-foreground: #ffffff;
+  --accent-alt: #ffa3a6;
 
   /* Gradient Colors */
   --gradient-from: rgba(105, 25, 40, 0.85);
@@ -553,9 +581,9 @@ body {
   --logo-hue-rotate: 115deg;
 
   /* Borders / inputs / rings */
-  --border: #341823;            /* deep magenta */
+  --border: #341823;
   --input: #1a080e;
-  --ring: #d43747;              /* rose-red ring */
+  --ring: #d43747;
 
   /* Sidebar */
   --sidebar: #0a0406;
@@ -580,32 +608,36 @@ body {
 /* Rose Quartz (Light) Theme - Bright Pink with Rose Red Accent */
 .theme-rose-quartz {
   /* Core surface / text */
-  --background: #fff8fb;        /* very pale rose */
-  --foreground: #2b0b14;        /* deep warm text for readability */
+  --background: #fff8fb;
+  --foreground: #2b0b14;
 
   /* Cards & popovers */
   --card: #ffffff;
   --card-foreground: #2b0b14;
-  --card-accent: #ffd7e0;       /* soft rose accent for cards */
+  --card-accent: #ffd7e0;
   --popover: #ffffff;
   --popover-foreground: #2b0b14;
 
   /* Primary / brand - Rose-red/hot pink */
-  --primary: #d43766;           /* hot pink */
+  --primary: #d43766;
   --primary-foreground: #ffffff;
+  --primary-dark: #881337;
+  --primary-light: #fecdd3;
+  --primary-2: var(--primary-light);
+  --primary-3: var(--primary-dark);
 
   /* Secondary / subtle accents */
-  --secondary: #fff1f6;         /* light rose surface */
+  --secondary: #fff1f6;
   --secondary-foreground: #6b2130;
 
   /* Muted */
-  --muted: #f3dbe3;             /* desaturated rose for borders/labels */
+  --muted: #f3dbe3;
   --muted-foreground: #9b6474;
 
   /* Accent - Red */
   --accent: #e24f4f;
   --accent-foreground: #ffffff;
-  --accent-alt: #ffd1d6;        /* pastel red */
+  --accent-alt: #ffd1d6;
 
   /* Gradient Colors */
   --gradient-from: rgba(255, 224, 236, 0.95);
@@ -628,9 +660,9 @@ body {
   --logo-hue-rotate: 115deg;
 
   /* Borders / inputs / rings */
-  --border: #f3d7df;            /* subtle rose border */
+  --border: #f3d7df;
   --input: #ffffff;
-  --ring: #d43747;              /* rose ring for focus */
+  --ring: #d43747;
 
   /* Sidebar */
   --sidebar: #fff6f9;
@@ -668,6 +700,10 @@ body {
   /* Primary / brand (pure white) */
   --primary: #ffffff;
   --primary-foreground: #000000;
+  --primary-dark: #525252;
+  --primary-light: #fafafa;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary */
   --secondary: #141414;
@@ -743,6 +779,10 @@ body {
   /* Primary / brand (pure black) */
   --primary: #000000;
   --primary-foreground: #ffffff;
+  --primary-dark: #171717;
+  --primary-light: #e5e5e5;
+  --primary-2: var(--primary-light);
+  --primary-3: var(--primary-dark);
 
   /* Secondary */
   --secondary: #f5f5f5;
@@ -805,19 +845,23 @@ body {
 /* Colormatic (Spectrum) Theme */
 .theme-colormatic {
   /* Core surface / text */
-  --background: #071018;           /* deep neutral to let colors pop */
-  --foreground: #eef8ff;           /* cool light text */
+  --background: #071018;
+  --foreground: #eef8ff;
 
   /* Cards & popovers */
   --card: #0b1620;
   --card-foreground: #f7fbff;
-  --card-accent: #6b5bff;          /* indigo anchor for accents */
+  --card-accent: #6b5bff;
   --popover: #0b1620;
   --popover-foreground: #f7fbff;
 
   /* Primary / brand (cyan) */
   --primary: #00c2ff;
   --primary-foreground: #04121a;
+  --primary-dark: #075985;
+  --primary-light: #bae6fd;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
   /* Secondary (indigo) */
   --secondary: #6b5bff;
@@ -828,9 +872,9 @@ body {
   --muted-foreground: #95a6b3;
 
   /* Accent & alternate (picked from the spectrum) */
-  --accent: #ff3b3b;               /* red */
+  --accent: #ff3b3b;
   --accent-foreground: #ffffff;
-  --accent-alt: #ffd700;           /* yellow */
+  --accent-alt: #ffd700;
 
   /* Spectrum stops (expanded) */
   --spectrum-rose: #ff4da6;
@@ -986,13 +1030,6 @@ body {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
-/* --- keep default .bg-gradient/.bg-gradient-darker behavior for non-colormatic themes --- */
-/* (these are already defined up above using --gradient-from and --gradient-to) */
-
-/* Base utilities and tokens already expect --gradient-from and --gradient-to.
-   For colormatic we've provided --gradient-from (as a linear-gradient value)
-   and fallback --gradient-from-color / --gradient-to-color for two-stop consumers. */
 
 @layer base {
   * {
