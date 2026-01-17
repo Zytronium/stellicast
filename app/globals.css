@@ -4,6 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* NOTE: when adding or removing themes, the following files need to be updated:
+ * Globals.css (obviously)
+ * Layout.tsx (x2 for light themes)
+ * Settings/page.tsx
+ * SettingsGroup.tsx (x2 for dark, x3 for light)
+*/
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -73,11 +80,11 @@
 }
 
 @font-face {
-    font-family: 'Falling Sky';
-    src: url('/fonts/FallingSky.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+  font-family: 'Falling Sky';
+  src: url('/fonts/FallingSky.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 html,
@@ -109,12 +116,12 @@ body {
 
 /* Optional: nicer text selection + subtle scrollbars */
 ::selection {
-    background: color-mix(in oklab, oklch(0.503 0.169 255.562) 70%, transparent);
+  background: color-mix(in oklab, oklch(0.503 0.169 255.562) 70%, transparent);
 }
 
 * {
-    scrollbar-width: thin;
-    scrollbar-color: oklch(0.64 0.079 246.858) oklch(0.24 0.05 266.231);
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.64 0.079 246.858) oklch(0.24 0.05 266.231);
 }
 
 :root {
@@ -200,85 +207,87 @@ body {
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Palewhite (Light) Theme */
-.theme-palewhite {
+/* ---------------------------
+   DARK THEMES (simple first)
+   --------------------------- */
+
+/* Simple Dark Theme */
+.theme-simple-dark {
   /* Core surface / text */
-  --background: #fafafa;
-  --foreground: #1a1a1a;
+  --background: #000000;
+  --foreground: #e5e5e5;
 
   /* Cards & popovers */
-  --card: #ffffff;
-  --card-foreground: #262626;
-  --card-accent: #b4c5ff;
-  --popover: #ffffff;
-  --popover-foreground: #262626;
+  --card: #0d0d0d;
+  --card-foreground: #e5e5e5;
+  --card-accent: #1a1a1a;
+  --popover: #0d0d0d;
+  --popover-foreground: #e5e5e5;
 
-  /* Primary / brand */
-  --primary: #4f46e5;
-  --primary-foreground: #ffffff;
-  --primary-dark: #312e81;
-  --primary-light: #c7d2fe;
-  --primary-2: var(--primary-light);
-  --primary-3: var(--primary-dark);
+  /* Primary / brand (pure white) */
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --primary-dark: #525252;
+  --primary-light: #fafafa;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
 
-  /* Secondary / subtle accents */
-  --secondary: #f5f5f5;
-  --secondary-foreground: #404040;
+  /* Secondary */
+  --secondary: #141414;
+  --secondary-foreground: #d4d4d4;
 
   /* Muted */
-  --muted: #e5e5e5;
-  --muted-foreground: #737373;
+  --muted: #1f1f1f;
+  --muted-foreground: #9ca3af;
 
-  /* Accent */
-  --accent: #6366f1;
+  /* Accent (neutral gray) */
+  --accent: #404040;
   --accent-foreground: #ffffff;
-  --accent-alt: #c7d2fe;
+  --accent-alt: #737373;
 
-  /* Gradient Colors */
-  --gradient-from: rgba(238, 242, 255, 0.9);
-  --gradient-to: rgba(250, 250, 250, 0.95);
+  /* Gradients */
+  --gradient-from: rgba(24, 24, 24, 0.9);
+  --gradient-to: rgba(0, 0, 0, 0.95);
 
-  --gradient-darker-from: #f5f5f5;
-  --gradient-darker-to: #fafafa;
+  --gradient-darker-from: #0a0a0a;
+  --gradient-darker-to: #000000;
 
-  /* Destructive */
-  --destructive: #e12a2a;
-  --destructive-foreground: #7d1313;
+  /* Status */
+  --destructive: #b91c1c;
+  --destructive-foreground: #fecaca;
 
-  /* Warnings */
-  --warning: #f7a539;
-  --warning-foreground: #7f5318;
+  --warning: #a16207;
+  --warning-foreground: #fde68a;
 
-  /* Success */
-  --success: #44a119;
-  --success-foreground: #234b0f;
+  --success: #15803d;
+  --success-foreground: #bbf7d0;
 
-  /* Logo hue rotation */
-  --logo-hue-rotate: 20deg;
+  /* Logo */
+  --logo-hue-rotate: 0deg;
 
   /* Borders / inputs / rings */
-  --border: #e5e5e5;
-  --input: #ffffff;
-  --ring: #6366f1;
+  --border: #1f1f1f;
+  --input: #0d0d0d;
+  --ring: #ffffff;
 
   /* Sidebar */
-  --sidebar: #fafafa;
-  --sidebar-foreground: #262626;
-  --sidebar-primary: #f5f5f5;
-  --sidebar-primary-foreground: #1a1a1a;
-  --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #6366f1;
+  --sidebar: #000000;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #0d0d0d;
+  --sidebar-primary-foreground: #e5e5e5;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #e5e5e5;
+  --sidebar-border: #1f1f1f;
+  --sidebar-ring: #ffffff;
 }
 
-.theme-palewhite ::selection {
-  background: rgba(99, 102, 241, 0.25);
+.theme-simple-dark ::selection {
+  background: rgba(255, 255, 255, 0.25);
 }
 
-.theme-palewhite * {
+.theme-simple-dark * {
   scrollbar-width: thin;
-  scrollbar-color: #d4d4d4 #f5f5f5;
+  scrollbar-color: #404040 #000000;
 }
 
 /* Volcanic (Dark) Theme */
@@ -605,163 +614,256 @@ body {
   scrollbar-color: #d43744 #1a080a;
 }
 
-/* Rose Quartz (Light) Theme - Bright Pink with Rose Red Accent */
-.theme-rose-quartz {
+/* ---------------------------
+   DIM THEMES
+   --------------------------- */
+
+/* Simple Dim Theme */
+.theme-simple-dim {
   /* Core surface / text */
-  --background: #fff8fb;
-  --foreground: #2b0b14;
+  --background: #0f1418;
+  --foreground: #dbe2e8;
 
   /* Cards & popovers */
-  --card: #ffffff;
-  --card-foreground: #2b0b14;
-  --card-accent: #ffd7e0;
-  --popover: #ffffff;
-  --popover-foreground: #2b0b14;
+  --card: #121418;
+  --card-foreground: #dbe2e8;
+  --card-accent: #1b2227;
+  --popover: #121418;
+  --popover-foreground: #dbe2e8;
 
-  /* Primary / brand - Rose-red/hot pink */
-  --primary: #d43766;
-  --primary-foreground: #ffffff;
-  --primary-dark: #881337;
-  --primary-light: #fecdd3;
-  --primary-2: var(--primary-light);
-  --primary-3: var(--primary-dark);
-
-  /* Secondary / subtle accents */
-  --secondary: #fff1f6;
-  --secondary-foreground: #6b2130;
-
-  /* Muted */
-  --muted: #f3dbe3;
-  --muted-foreground: #9b6474;
-
-  /* Accent - Red */
-  --accent: #e24f4f;
-  --accent-foreground: #ffffff;
-  --accent-alt: #ffd1d6;
-
-  /* Gradient Colors */
-  --gradient-from: rgba(255, 224, 236, 0.95);
-  --gradient-to: rgba(255, 248, 250, 1);
-
-  --gradient-darker-from: #ffebf1;
-  --gradient-darker-to: #fff8fb;
-
-  /* Destructive - Red */
-  --destructive: #dc2626;
-  --destructive-foreground: #7f1d1d;
-
-  --warning: #c29707;
-  --warning-foreground: #784f19;
-
-  --success: #119b44;
-  --success-foreground: #14532d;
-
-  /* Logo hue rotation */
-  --logo-hue-rotate: 115deg;
-
-  /* Borders / inputs / rings */
-  --border: #f3d7df;
-  --input: #ffffff;
-  --ring: #d43747;
-
-  /* Sidebar */
-  --sidebar: #fff6f9;
-  --sidebar-foreground: #2b0b14;
-  --sidebar-primary: #fff1f4;
-  --sidebar-primary-foreground: #2b0b14;
-  --sidebar-accent: #ffe7ec;
-  --sidebar-accent-foreground: #6b2130;
-  --sidebar-border: #ffdfe7;
-  --sidebar-ring: #d43744;
-}
-
-.theme-rose-quartz ::selection {
-  background: rgba(233, 60, 95, 0.25);
-}
-
-.theme-rose-quartz * {
-  scrollbar-width: thin;
-  scrollbar-color: #ff8aa7 #fff6f8;
-}
-
-/* Simple Dark Theme */
-.theme-simple-dark {
-  /* Core surface / text */
-  --background: #000000;
-  --foreground: #e5e5e5;
-
-  /* Cards & popovers */
-  --card: #0d0d0d;
-  --card-foreground: #e5e5e5;
-  --card-accent: #1a1a1a;
-  --popover: #0d0d0d;
-  --popover-foreground: #e5e5e5;
-
-  /* Primary / brand (pure white) */
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --primary-dark: #525252;
-  --primary-light: #fafafa;
+  /* Primary / brand (desaturated blue) */
+  --primary: #94a3b8; /* desaturated primary */
+  --primary-foreground: #07101a;
+  --primary-dark: #6b7f97;
+  --primary-light: #d6e6f6;
   --primary-2: var(--primary-dark);
   --primary-3: var(--primary-light);
 
-  /* Secondary */
-  --secondary: #141414;
-  --secondary-foreground: #d4d4d4;
+  /* Secondary / subtle accents */
+  --secondary: #13181c;
+  --secondary-foreground: #c8d4de;
 
   /* Muted */
-  --muted: #1f1f1f;
-  --muted-foreground: #9ca3af;
+  --muted: #2b333a;
+  --muted-foreground: #97a3ad;
 
-  /* Accent (neutral gray) */
-  --accent: #404040;
+  /* Accent */
+  --accent: #95a6c0;
   --accent-foreground: #ffffff;
-  --accent-alt: #737373;
+  --accent-alt: #cbd6e6;
 
-  /* Gradients */
-  --gradient-from: rgba(24, 24, 24, 0.9);
-  --gradient-to: rgba(0, 0, 0, 0.95);
+  /* Gradient Colors */
+  --gradient-from: rgba(20, 28, 36, 0.86);
+  --gradient-to: rgba(8, 12, 16, 0.95);
 
-  --gradient-darker-from: #0a0a0a;
-  --gradient-darker-to: #000000;
+  --gradient-darker-from: #0b0f12;
+  --gradient-darker-to: #07090b;
 
-  /* Status */
-  --destructive: #b91c1c;
-  --destructive-foreground: #fecaca;
+  /* Destructive actions */
+  --destructive: #bf5757;
+  --destructive-foreground: #ffd7d7;
 
-  --warning: #a16207;
-  --warning-foreground: #fde68a;
+  /* Warnings */
+  --warning: #b58b2a;
+  --warning-foreground: #ffebc9;
 
-  --success: #15803d;
-  --success-foreground: #bbf7d0;
+  /* Success */
+  --success: #3b7a3b;
+  --success-foreground: #d7f2d7;
 
-  /* Logo */
+  /* Logo hue rotation */
   --logo-hue-rotate: 0deg;
 
   /* Borders / inputs / rings */
-  --border: #1f1f1f;
-  --input: #0d0d0d;
-  --ring: #ffffff;
+  --border: #2b333a;
+  --input: #121418;
+  --ring: #94a3b8;
 
   /* Sidebar */
-  --sidebar: #000000;
-  --sidebar-foreground: #e5e5e5;
-  --sidebar-primary: #0d0d0d;
-  --sidebar-primary-foreground: #e5e5e5;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #e5e5e5;
-  --sidebar-border: #1f1f1f;
-  --sidebar-ring: #ffffff;
+  --sidebar: #0f1418;
+  --sidebar-foreground: #dbe2e8;
+  --sidebar-primary: #12161a;
+  --sidebar-primary-foreground: #dbe2e8;
+  --sidebar-accent: #1b2227;
+  --sidebar-accent-foreground: #c8d4de;
+  --sidebar-border: #2b333a;
+  --sidebar-ring: #94a3b8;
 }
 
-.theme-simple-dark ::selection {
-  background: rgba(255, 255, 255, 0.25);
+.theme-simple-dim ::selection {
+  background: rgba(148, 163, 184, 0.18);
 }
 
-.theme-simple-dark * {
+.theme-simple-dim * {
   scrollbar-width: thin;
-  scrollbar-color: #404040 #000000;
+  scrollbar-color: #94a3b8 #121418;
 }
+
+/* Moonshine Theme */
+.theme-moonshine {
+  /* Core surface / text */
+  --background: #1a1f28;
+  --foreground: #e6eef6;
+
+  /* Cards & popovers */
+  --card: #1e2228;
+  --card-foreground: #e6eef6;
+  --card-accent: #1f2d3d;
+  --popover: #1e2228;
+  --popover-foreground: #e6eef6;
+
+  /* Primary / brand */
+  --primary: #60a5fa;
+  --primary-foreground: #0b1220;
+  --primary-dark: #1e3a8a;
+  --primary-light: #bfdbfe;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
+
+  /* Secondary / subtle accents */
+  --secondary: #1a2230;
+  --secondary-foreground: #dbe7f2;
+
+  /* Muted */
+  --muted: #3a4555;
+  --muted-foreground: #b0b8c5;
+
+  /* Accent */
+  --accent: #60a5fa;
+  --accent-foreground: #ffffff;
+  --accent-alt: #bfdbfe;
+
+  /* Gradient Colors */
+  --gradient-from: rgba(26, 35, 48, 0.86);
+  --gradient-to: rgba(15, 19, 24, 0.95);
+
+  --gradient-darker-from: #151b22;
+  --gradient-darker-to: #0f1318;
+
+  /* Destructive actions */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffd7d7;
+
+  /* Warnings */
+  --warning: #f59e0b;
+  --warning-foreground: #ffecd2;
+
+  /* Success */
+  --success: #16a34a;
+  --success-foreground: #d1fae5;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: -10deg;
+
+  /* Borders / inputs / rings */
+  --border: #374556;
+  --input: #1e2228;
+  --ring: #60a5fa;
+
+  /* Sidebar */
+  --sidebar: #1a1f28;
+  --sidebar-foreground: #e6eef6;
+  --sidebar-primary: #1e2330;
+  --sidebar-primary-foreground: #e6eef6;
+  --sidebar-accent: #1f2d3d;
+  --sidebar-accent-foreground: #bfdbfe;
+  --sidebar-border: #374556;
+  --sidebar-ring: #60a5fa;
+}
+
+.theme-moonshine ::selection {
+  background: rgba(96, 165, 250, 0.18);
+}
+
+.theme-moonshine * {
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa #1a1f28;
+}
+
+/* Moonset Theme (warm Moonshine variant) */
+.theme-moonset {
+  /* Core surface / text */
+  --background: #1a1f28;
+  --foreground: #f3efe8;
+
+  /* Cards & popovers */
+  --card: #1e2228;
+  --card-foreground: var(--foreground);
+  --card-accent: #2b2416;
+  --popover: #1e2228;
+  --popover-foreground: var(--foreground);
+
+  /* Primary / brand (warm yellow / amber) */
+  --primary: #f6b93b;
+  --primary-foreground: #0b1220;
+  --primary-dark: #b45309;
+  --primary-light: #fde68a;
+  --primary-2: var(--primary-dark);
+  --primary-3: var(--primary-light);
+
+  /* Secondary / subtle accents */
+  --secondary: #171a20;
+  --secondary-foreground: #efe7d2;
+
+  /* Muted */
+  --muted: #4a463a;
+  --muted-foreground: #c7bda9;
+
+  /* Accent */
+  --accent: #f6b93b;
+  --accent-foreground: #ffffff;
+  --accent-alt: var(--primary-light);
+
+  /* Gradient Colors (IDENTICAL to Moonshine) */
+  --gradient-from: rgba(26, 35, 48, 0.86);
+  --gradient-to: rgba(15, 19, 24, 0.95);
+
+  --gradient-darker-from: #151b22;
+  --gradient-darker-to: #0f1318;
+
+  /* Destructive actions */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffd7d7;
+
+  /* Warnings */
+  --warning: #f59e0b;
+  --warning-foreground: #ffecd2;
+
+  /* Success */
+  --success: #16a34a;
+  --success-foreground: #d1fae5;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 185deg;
+
+  /* Borders / inputs / rings */
+  --border: #4b4030;
+  --input: #1e2228;
+  --ring: var(--primary);
+
+  /* Sidebar */
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: #1e2330;
+  --sidebar-primary-foreground: var(--foreground);
+  --sidebar-accent: #2b1f0f;
+  --sidebar-accent-foreground: var(--primary-light);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
+}
+
+.theme-moonset ::selection {
+  background: rgba(246, 185, 59, 0.18);
+}
+
+.theme-moonset * {
+  scrollbar-width: thin;
+  scrollbar-color: #f6b93b #1a1f28;
+}
+
+/* ---------------------------
+   LIGHT THEMES
+   --------------------------- */
 
 /* Simple Light Theme */
 .theme-simple-light {
@@ -842,6 +944,170 @@ body {
   scrollbar-color: #a3a3a3 #f5f5f5;
 }
 
+/* Palewhite (Light) Theme */
+.theme-palewhite {
+  /* Core surface / text */
+  --background: #fafafa;
+  --foreground: #1a1a1a;
+
+  /* Cards & popovers */
+  --card: #ffffff;
+  --card-foreground: #262626;
+  --card-accent: #b4c5ff;
+  --popover: #ffffff;
+  --popover-foreground: #262626;
+
+  /* Primary / brand */
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --primary-dark: #312e81;
+  --primary-light: #c7d2fe;
+  --primary-2: var(--primary-light);
+  --primary-3: var(--primary-dark);
+
+  /* Secondary / subtle accents */
+  --secondary: #f5f5f5;
+  --secondary-foreground: #404040;
+
+  /* Muted */
+  --muted: #e5e5e5;
+  --muted-foreground: #737373;
+
+  /* Accent */
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
+  --accent-alt: #c7d2fe;
+
+  /* Gradient Colors */
+  --gradient-from: rgba(238, 242, 255, 0.9);
+  --gradient-to: rgba(250, 250, 250, 0.95);
+
+  --gradient-darker-from: #f5f5f5;
+  --gradient-darker-to: #fafafa;
+
+  /* Destructive */
+  --destructive: #e12a2a;
+  --destructive-foreground: #7d1313;
+
+  /* Warnings */
+  --warning: #f7a539;
+  --warning-foreground: #7f5318;
+
+  /* Success */
+  --success: #44a119;
+  --success-foreground: #234b0f;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 20deg;
+
+  /* Borders / inputs / rings */
+  --border: #e5e5e5;
+  --input: #ffffff;
+  --ring: #6366f1;
+
+  /* Sidebar */
+  --sidebar: #fafafa;
+  --sidebar-foreground: #262626;
+  --sidebar-primary: #f5f5f5;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #6366f1;
+}
+
+.theme-palewhite ::selection {
+  background: rgba(99, 102, 241, 0.25);
+}
+
+.theme-palewhite * {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 #f5f5f5;
+}
+
+/* Rose Quartz (Light) Theme - Bright Pink with Rose Red Accent */
+.theme-rose-quartz {
+  /* Core surface / text */
+  --background: #fff8fb;
+  --foreground: #2b0b14;
+
+  /* Cards & popovers */
+  --card: #ffffff;
+  --card-foreground: #2b0b14;
+  --card-accent: #ffd7e0;
+  --popover: #ffffff;
+  --popover-foreground: #2b0b14;
+
+  /* Primary / brand - Rose-red/hot pink */
+  --primary: #d43766;
+  --primary-foreground: #ffffff;
+  --primary-dark: #881337;
+  --primary-light: #fecdd3;
+  --primary-2: var(--primary-light);
+  --primary-3: var(--primary-dark);
+
+  /* Secondary / subtle accents */
+  --secondary: #fff1f6;
+  --secondary-foreground: #6b2130;
+
+  /* Muted */
+  --muted: #f3dbe3;
+  --muted-foreground: #9b6474;
+
+  /* Accent - Red */
+  --accent: #e24f4f;
+  --accent-foreground: #ffffff;
+  --accent-alt: #ffd1d6;
+
+  /* Gradient Colors */
+  --gradient-from: rgba(255, 224, 236, 0.95);
+  --gradient-to: rgba(255, 248, 250, 1);
+
+  --gradient-darker-from: #ffebf1;
+  --gradient-darker-to: #fff8fb;
+
+  /* Destructive - Red */
+  --destructive: #dc2626;
+  --destructive-foreground: #7f1d1d;
+
+  --warning: #c29707;
+  --warning-foreground: #784f19;
+
+  --success: #119b44;
+  --success-foreground: #14532d;
+
+  /* Logo hue rotation */
+  --logo-hue-rotate: 115deg;
+
+  /* Borders / inputs / rings */
+  --border: #f3d7df;
+  --input: #ffffff;
+  --ring: #d43747;
+
+  /* Sidebar */
+  --sidebar: #fff6f9;
+  --sidebar-foreground: #2b0b14;
+  --sidebar-primary: #fff1f4;
+  --sidebar-primary-foreground: #2b0b14;
+  --sidebar-accent: #ffe7ec;
+  --sidebar-accent-foreground: #6b2130;
+  --sidebar-border: #ffdfe7;
+  --sidebar-ring: #d43744;
+}
+
+.theme-rose-quartz ::selection {
+  background: rgba(233, 60, 95, 0.25);
+}
+
+.theme-rose-quartz * {
+  scrollbar-width: thin;
+  scrollbar-color: #ff8aa7 #fff6f8;
+}
+
+/* ---------------------------
+   SPECIAL: Colormatic (Spectrum)
+   --------------------------- */
+
 /* Colormatic (Spectrum) Theme */
 .theme-colormatic {
   /* Core surface / text */
@@ -897,19 +1163,19 @@ body {
 
   /* Gradient Colors (tokens kept for backward compatibility) */
   --gradient-from: linear-gradient(180deg,
-  var(--spectrum-red) 0%,
-  var(--spectrum-orange) 10%,
-  var(--spectrum-amber) 18%,
-  var(--spectrum-yellow) 26%,
-  var(--spectrum-lime) 36%,
-  var(--spectrum-green) 46%,
-  var(--spectrum-teal) 56%,
-  var(--spectrum-cyan) 64%,
-  var(--spectrum-sky) 72%,
-  var(--spectrum-blue) 80%,
-  var(--spectrum-indigo) 86%,
-  var(--spectrum-violet) 92%,
-  var(--spectrum-magenta) 100%);
+    var(--spectrum-red) 0%,
+    var(--spectrum-orange) 10%,
+    var(--spectrum-amber) 18%,
+    var(--spectrum-yellow) 26%,
+    var(--spectrum-lime) 36%,
+    var(--spectrum-green) 46%,
+    var(--spectrum-teal) 56%,
+    var(--spectrum-cyan) 64%,
+    var(--spectrum-sky) 72%,
+    var(--spectrum-blue) 80%,
+    var(--spectrum-indigo) 86%,
+    var(--spectrum-violet) 92%,
+    var(--spectrum-magenta) 100%);
   /* fallback simple stops for code that expects two colors */
   --gradient-from-color: var(--spectrum-red);
   --gradient-to-color: var(--spectrum-magenta);
@@ -950,17 +1216,17 @@ body {
   --spectrum-gradient: linear-gradient(90deg,
   var(--spectrum-red),
   var(--spectrum-orange),
-    var(--spectrum-amber),
+  var(--spectrum-amber),
   var(--spectrum-yellow),
-    var(--spectrum-lime),
+  var(--spectrum-lime),
   var(--spectrum-green),
-    var(--spectrum-emerald),
-    var(--spectrum-teal),
+  var(--spectrum-emerald),
+  var(--spectrum-teal),
   var(--spectrum-cyan),
-    var(--spectrum-sky),
-    var(--spectrum-blue),
+  var(--spectrum-sky),
+  var(--spectrum-blue),
   var(--spectrum-indigo),
-    var(--spectrum-violet),
+  var(--spectrum-violet),
   var(--spectrum-magenta));
 }
 
