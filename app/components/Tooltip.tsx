@@ -19,7 +19,7 @@ export default function Tooltip({ content, children }: TooltipProps) {
         {children}
       </div>
       {isVisible && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-popover text-popover-foreground text-xs rounded border border-border whitespace-nowrap z-50 shadow-lg">
           {content}
         </div>
       )}
