@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 type RouteContext = {
   params: Promise<{ id: string; commentId: string }>;
 };
 
-const LIKE_COOLDOWN_MS = 3 * 1000; // 3 seconds
+const LIKE_COOLDOWN_MS = 1000; // 1 second
 
 export async function POST(
   request: NextRequest,
@@ -13,6 +13,8 @@ export async function POST(
 ) {
   try {
     const { commentId } = await context.params;
+
+    // Use standard client to get user (respects session)
     const supabase = await createSupabaseServerClient();
 
     // Authenticate user
@@ -24,8 +26,11 @@ export async function POST(
       );
     }
 
+    // Use admin client for all database operations (bypasses RLS)
+    const adminClient = createSupabaseAdminClient();
+
     // Check if comment exists
-    const { data: comment, error: commentError } = await supabase
+    const { data: comment, error: commentError } = await adminClient
       .from('comments')
       .select('id, like_count, dislike_count, visible')
       .eq('id', commentId)
@@ -46,7 +51,7 @@ export async function POST(
     }
 
     // Check rate limit
-    const { data: rateLimitData } = await supabase
+    const { data: rateLimitData } = await adminClient
       .from('comment_engagement_rate_limits')
       .select('last_action_at')
       .eq('user_id', user.id)
@@ -73,7 +78,7 @@ export async function POST(
     }
 
     // Get user's current engagement
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await adminClient
       .from('users')
       .select('liked_comments, disliked_comments')
       .eq('id', user.id)
@@ -117,7 +122,7 @@ export async function POST(
     }
 
     // Update comment counts
-    const { error: updateCommentError } = await supabase
+    const { error: updateCommentError } = await adminClient
       .from('comments')
       .update({
         like_count: newLikeCount,
@@ -135,7 +140,7 @@ export async function POST(
     }
 
     // Update user's engagement
-    const { error: updateUserError } = await supabase
+    const { error: updateUserError } = await adminClient
       .from('users')
       .update({
         liked_comments: updatedLikedComments,
@@ -153,7 +158,7 @@ export async function POST(
     }
 
     // Update rate limit
-    await supabase
+    await adminClient
       .from('comment_engagement_rate_limits')
       .upsert(
         {
