@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-// Cooldown period in milliseconds (5 seconds for stars)
-const STAR_COOLDOWN_MS = 5000;
+// Cooldown period in milliseconds (3 seconds for stars)
+const STAR_COOLDOWN_MS = 3000;
 
 export async function POST(
   request: NextRequest,
@@ -17,6 +17,7 @@ export async function POST(
     const body = await request.json();
     const { watchedSeconds } = body;
 
+    // Use standard client to get user (respects session)
     const supabase = await createSupabaseServerClient();
 
     // Get authenticated user
@@ -29,8 +30,11 @@ export async function POST(
       );
     }
 
+    // Use admin client for all database operations (bypasses RLS)
+    const adminClient = createSupabaseAdminClient();
+
     // Check if video exists and get duration
-    const { data: video, error: videoError } = await supabase
+    const { data: video, error: videoError } = await adminClient
       .from('videos')
       .select('id, star_count, duration')
       .eq('id', videoId)
@@ -58,7 +62,7 @@ export async function POST(
     }
 
     // Check rate limit
-    const { data: rateLimitData } = await supabase
+    const { data: rateLimitData } = await adminClient
       .from('engagement_rate_limits')
       .select('last_action_at')
       .eq('user_id', user.id)
@@ -86,7 +90,7 @@ export async function POST(
     }
 
     // Get user's current starred videos
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await adminClient
       .from('users')
       .select('starred_videos')
       .eq('id', user.id)
@@ -120,7 +124,7 @@ export async function POST(
     }
 
     // Update video star count
-    const { error: updateVideoError } = await supabase
+    const { error: updateVideoError } = await adminClient
       .from('videos')
       .update({
         star_count: newStarCount,
@@ -137,7 +141,7 @@ export async function POST(
     }
 
     // Update user's starred videos
-    const { error: updateUserError } = await supabase
+    const { error: updateUserError } = await adminClient
       .from('users')
       .update({
         starred_videos: updatedStarredVideos,
@@ -154,7 +158,7 @@ export async function POST(
     }
 
     // Update rate limit
-    const { error: rateLimitError } = await supabase
+    const { error: rateLimitError } = await adminClient
       .from('engagement_rate_limits')
       .upsert(
         {

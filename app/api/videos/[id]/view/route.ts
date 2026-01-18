@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -42,9 +42,10 @@ export async function POST(
     }
 
     const supabase = await createSupabaseServerClient();
+    const adminClient = createSupabaseAdminClient();
 
     // Check if video exists
-    const { data: videoExists, error: checkError } = await supabase
+    const { data: videoExists, error: checkError } = await adminClient
       .from('videos')
       .select('id')
       .eq('id', id)
@@ -59,7 +60,7 @@ export async function POST(
     }
 
     // Check rate limit
-    const { data: rateLimitData } = await supabase
+    const { data: rateLimitData } = await adminClient
       .from('view_rate_limits')
       .select('last_view_at')
       .eq('ip_address', clientIp)
@@ -87,7 +88,7 @@ export async function POST(
     }
 
     // Update or insert rate limit record
-    const { error: rateLimitError } = await supabase
+    const { error: rateLimitError } = await adminClient
       .from('view_rate_limits')
       .upsert(
         {
@@ -106,7 +107,7 @@ export async function POST(
     }
 
     // Increment view count
-    const { data, error } = await supabase
+    const { data, error } = await adminClient
       .rpc('increment_video_view', { video_id: id });
 
     if (error) {

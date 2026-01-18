@@ -1,8 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseSecretKey = process.env.SUPABASE_SECRET_API_KEY!;
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
@@ -22,6 +24,16 @@ export async function createSupabaseServerClient() {
           // They will be refreshed on the next request
         }
       },
+    },
+  });
+}
+
+// Admin client using secret API key - bypasses RLS, use with caution!
+export function createSupabaseAdminClient() {
+  return createClient(supabaseUrl, supabaseSecretKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
   });
 }

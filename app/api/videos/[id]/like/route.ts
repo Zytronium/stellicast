@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-// Cooldown period in milliseconds (3 seconds to prevent spam)
-const LIKE_COOLDOWN_MS = 3 * 1000;
+// Cooldown period in milliseconds (1 second to prevent spam)
+const LIKE_COOLDOWN_MS = 1000;
 
 export async function POST(
   request: NextRequest,
@@ -14,6 +14,8 @@ export async function POST(
 ) {
   try {
     const { id: videoId } = await context.params;
+
+    // Use standard client to get user (respects session)
     const supabase = await createSupabaseServerClient();
 
     // Get authenticated user
@@ -26,8 +28,11 @@ export async function POST(
       );
     }
 
+    // Use admin client for all database operations (bypasses RLS)
+    const adminClient = createSupabaseAdminClient();
+
     // Check if video exists
-    const { data: video, error: videoError } = await supabase
+    const { data: video, error: videoError } = await adminClient
       .from('videos')
       .select('id, like_count, dislike_count')
       .eq('id', videoId)
@@ -41,7 +46,7 @@ export async function POST(
     }
 
     // Check rate limit
-    const { data: rateLimitData } = await supabase
+    const { data: rateLimitData } = await adminClient
       .from('engagement_rate_limits')
       .select('last_action_at')
       .eq('user_id', user.id)
@@ -69,7 +74,7 @@ export async function POST(
     }
 
     // Get user's current liked and disliked videos
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await adminClient
       .from('users')
       .select('liked_videos, disliked_videos')
       .eq('id', user.id)
@@ -113,7 +118,7 @@ export async function POST(
     }
 
     // Update video counts
-    const { error: updateVideoError } = await supabase
+    const { error: updateVideoError } = await adminClient
       .from('videos')
       .update({
         like_count: newLikeCount,
@@ -131,7 +136,7 @@ export async function POST(
     }
 
     // Update user's liked/disliked videos
-    const { error: updateUserError } = await supabase
+    const { error: updateUserError } = await adminClient
       .from('users')
       .update({
         liked_videos: updatedLikedVideos,
@@ -149,7 +154,7 @@ export async function POST(
     }
 
     // Update rate limit
-    const { error: rateLimitError } = await supabase
+    const { error: rateLimitError } = await adminClient
       .from('engagement_rate_limits')
       .upsert(
         {
