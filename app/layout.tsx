@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import TopBar from '@/components/TopBar';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
+import ToastContainer from '@/components/ToastContainer';
 import { usePathname } from "next/navigation";
 import { createSupabaseBrowserClient } from "../lib/supabase-client";
 
@@ -149,6 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
         </div>
     {showBottomNav && <BottomNav />}
+    <ToastContainer />
     </body>
     </html>
   );
