@@ -24,11 +24,21 @@ export default function ToastContainer() {
         long: 6000,
       };
 
-      setToasts(prev => [...prev, { id, message, duration }]);
+      const safeDuration: "short" | "medium" | "long" = duration ?? "medium";
+
+      setToasts(prev => [
+        ...prev,
+        {
+          id,
+          message,
+          duration: safeDuration
+        }
+      ]);
+
 
       setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== id));
-      }, durationMap[duration]);
+      }, durationMap[safeDuration]);
     });
   }, []);
 
