@@ -4,6 +4,7 @@
 // params: sort order, page number, search query
 // auth: none
 // response: a section of the comments after applying sort order and search query, or error
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
 
@@ -26,10 +27,13 @@ export async function GET(
 
     const supabase = await createSupabaseServerClient();
 
-    // Build query
+    // -------------------------
+    // Fetch comments
+    // -------------------------
     let query = supabase
       .from('comments')
-      .select(`
+      .select(
+        `
         *,
         user:users!comments_user_id_fkey (
           id,
@@ -37,7 +41,9 @@ export async function GET(
           display_name,
           avatar_url
         )
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .eq('video_id', videoId)
       .eq('visible', true);
 
@@ -75,24 +81,49 @@ export async function GET(
       );
     }
 
-    // Get user's liked/disliked comments if authenticated
+    // -------------------------
+    // Hydrate user engagement from new tables
+    // -------------------------
     let likedComments: string[] = [];
     let dislikedComments: string[] = [];
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('liked_comments, disliked_comments')
-        .eq('id', user.id)
-        .single();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (userData) {
-        likedComments = userData.liked_comments || [];
-        dislikedComments = userData.disliked_comments || [];
+    if (user) {
+      const [likedResult, dislikedResult] = await Promise.all([
+        supabase
+          .from('comment_likes')
+          .select(`comment_id, comments!inner(video_id)`)
+          .eq('user_id', user.id)
+          .eq('comments.video_id', videoId),
+
+        supabase
+          .from('comment_dislikes')
+          .select(`comment_id, comments!inner(video_id)`)
+          .eq('user_id', user.id)
+          .eq('comments.video_id', videoId)
+      ]);
+
+      if (likedResult.error) {
+        console.error('Error fetching comment likes:', likedResult.error);
       }
+
+      if (dislikedResult.error) {
+        console.error('Error fetching comment dislikes:', dislikedResult.error);
+      }
+
+      likedComments =
+        likedResult.data?.map((r) => r.comment_id) ?? [];
+
+      dislikedComments =
+        dislikedResult.data?.map((r) => r.comment_id) ?? [];
     }
 
+    // -------------------------
+    // Response
+    // -------------------------
     return NextResponse.json({
       success: true,
       comments: comments || [],
@@ -100,12 +131,12 @@ export async function GET(
         page,
         pageSize,
         total: count || 0,
-        totalPages: Math.ceil((count || 0) / pageSize)
+        totalPages: Math.ceil((count || 0) / pageSize),
       },
       userEngagement: {
         likedComments,
-        dislikedComments
-      }
+        dislikedComments,
+      },
     });
 
   } catch (error) {
