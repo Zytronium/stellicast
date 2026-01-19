@@ -1,193 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
+type RouteContext = { params: Promise<{ id: string }> };
 
-// Cooldown period in milliseconds (3 seconds for stars)
-const STAR_COOLDOWN_MS = 3000;
-
-export async function POST(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id: videoId } = await context.params;
-    const body = await request.json();
-    const { watchedSeconds } = body;
+    const body = await request.json().catch(() => ({}));
+    const watchedSeconds = typeof body?.watchedSeconds === 'number' ? Math.floor(body.watchedSeconds) : 0;
 
-    // Use standard client to get user (respects session)
     const supabase = await createSupabaseServerClient();
-
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Use admin client for all database operations (bypasses RLS)
     const adminClient = createSupabaseAdminClient();
 
-    // Check if video exists and get duration
-    const { data: video, error: videoError } = await adminClient
-      .from('videos')
-      .select('id, star_count, duration')
-      .eq('id', videoId)
-      .single();
+    const { data: videoExists, error: videoErr } = await adminClient.from('videos').select('id').eq('id', videoId).single();
+    if (videoErr || !videoExists) return NextResponse.json({ error: 'Video not found' }, { status: 404 });
 
-    if (videoError || !video) {
-      return NextResponse.json(
-        { error: 'Video not found' },
-        { status: 404 }
-      );
+    const rpcRes = await adminClient.rpc('user_star', { p_user: user.id, p_video: videoId, p_watched_seconds: watchedSeconds }).single();
+
+    if (rpcRes.error) {
+      const msg = String(rpcRes.error.message || rpcRes.error).toLowerCase();
+      if (msg.includes('rate_limited')) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+      if (msg.includes('insufficient_watch_time')) return NextResponse.json({ error: 'Insufficient watch time' }, { status: 403 });
+      if (msg.includes('video_not_found')) return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+      console.error('user_star RPC error:', rpcRes.error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
-    // Verify user has watched at least 20% of the video
-    const requiredWatchTime = (video.duration || 0) * 0.20;
-    if (watchedSeconds < requiredWatchTime && watchedSeconds < 15 * 60 * 1000) {
-      return NextResponse.json(
-        {
-          error: 'Insufficient watch time',
-          message: `You must watch at least 20% of the video (${Math.ceil(requiredWatchTime)} seconds) or 15 minutes (whichever is shorter) to star it`,
-          requiredSeconds: Math.ceil(requiredWatchTime),
-          watchedSeconds
-        },
-        { status: 403 }
-      );
-    }
-
-    // Check rate limit
-    const { data: rateLimitData } = await adminClient
-      .from('engagement_rate_limits')
-      .select('last_action_at')
-      .eq('user_id', user.id)
-      .eq('video_id', videoId)
-      .eq('action_type', 'star')
-      .single();
-
-    if (rateLimitData) {
-      const lastActionTime = new Date(rateLimitData.last_action_at).getTime();
-      const now = Date.now();
-      const timeSinceLastAction = now - lastActionTime;
-
-      if (timeSinceLastAction < STAR_COOLDOWN_MS) {
-        const remainingMs = STAR_COOLDOWN_MS - timeSinceLastAction;
-
-        return NextResponse.json(
-          {
-            error: 'Rate limit exceeded',
-            message: `Please wait ${Math.ceil(remainingMs / 1000)} second${Math.ceil(remainingMs / 1000) === 1 ? '' : 's'} before starring/unstarring again`,
-            remainingMs
-          },
-          { status: 429 }
-        );
-      }
-    }
-
-    // Get user's current starred videos
-    const { data: userData, error: userError } = await adminClient
-      .from('users')
-      .select('starred_videos')
-      .eq('id', user.id)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-      return NextResponse.json(
-        { error: 'Failed to fetch user data' },
-        { status: 500 }
-      );
-    }
-
-    const starredVideos = userData.starred_videos || [];
-    const hasStarred = starredVideos.includes(videoId);
-
-    let newStarCount;
-    let updatedStarredVideos: string[];
-    let action: 'starred' | 'unstarred';
-
-    if (hasStarred) {
-      // User already starred - remove star
-      newStarCount = Math.max(0, video.star_count - 1);
-      updatedStarredVideos = starredVideos.filter((id: string) => id !== videoId);
-      action = 'unstarred';
-    } else {
-      // User hasn't starred - add star
-      newStarCount = video.star_count + 1;
-      updatedStarredVideos = [...starredVideos, videoId];
-      action = 'starred';
-    }
-
-    // Update video star count
-    const { error: updateVideoError } = await adminClient
-      .from('videos')
-      .update({
-        star_count: newStarCount,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', videoId);
-
-    if (updateVideoError) {
-      console.error('Error updating video:', updateVideoError);
-      return NextResponse.json(
-        { error: 'Failed to update video' },
-        { status: 500 }
-      );
-    }
-
-    // Update user's starred videos
-    const { error: updateUserError } = await adminClient
-      .from('users')
-      .update({
-        starred_videos: updatedStarredVideos,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
-
-    if (updateUserError) {
-      console.error('Error updating user:', updateUserError);
-      return NextResponse.json(
-        { error: 'Failed to update user preferences' },
-        { status: 500 }
-      );
-    }
-
-    // Update rate limit
-    const { error: rateLimitError } = await adminClient
-      .from('engagement_rate_limits')
-      .upsert(
-        {
-          user_id: user.id,
-          video_id: videoId,
-          action_type: 'star',
-          last_action_at: new Date().toISOString()
-        },
-        {
-          onConflict: 'user_id,video_id,action_type'
-        }
-      );
-
-    if (rateLimitError) {
-      console.error('Error updating rate limit:', rateLimitError);
+    const data = rpcRes.data as { starred: boolean; star_count: number } | null;
+    if (!data) {
+      console.error('user_star RPC returned no data:', rpcRes);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      action,
-      star_count: newStarCount,
-      starred: action === 'starred'
+      starred: data.starred,
+      star_count: data.star_count
     });
-
-  } catch (error) {
-    console.error('Error handling star:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    const msg = String(err?.message || err).toLowerCase();
+    if (msg.includes('rate_limited')) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    if (msg.includes('insufficient_watch_time')) return NextResponse.json({ error: 'Insufficient watch time' }, { status: 403 });
+    console.error('Unexpected error in star route:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

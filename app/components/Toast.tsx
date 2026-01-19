@@ -34,7 +34,7 @@ export default function Toast({ message, duration = "medium" }: ToastProps) {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
-        className="bg-primary text-primary-foreground p-8 m-4 z-100 rounded-2xl relative"
+        className="bg-primary text-primary-foreground p-4 m-2 z-100 rounded-2xl relative"
       >
         <button
           onClick={() => setIsVisible(false)}

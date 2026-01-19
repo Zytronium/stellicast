@@ -1,190 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
+type RouteContext = { params: Promise<{ id: string }> };
 
-// Cooldown period in milliseconds (1 second to prevent spam)
-const DISLIKE_COOLDOWN_MS = 1000;
-
-export async function POST(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { id: videoId } = await context.params;
 
-    // Use standard client to get user (respects session)
     const supabase = await createSupabaseServerClient();
-
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Use admin client for all database operations (bypasses RLS)
     const adminClient = createSupabaseAdminClient();
 
-    // Check if video exists
-    const { data: video, error: videoError } = await adminClient
+    // Cheap existence check (return 404 early)
+    const { data: videoExists, error: videoErr } = await adminClient
       .from('videos')
-      .select('id, like_count, dislike_count')
+      .select('id')
       .eq('id', videoId)
       .single();
 
-    if (videoError || !video) {
-      return NextResponse.json(
-        { error: 'Video not found' },
-        { status: 404 }
-      );
-    }
+    if (videoErr || !videoExists) return NextResponse.json({ error: 'Video not found' }, { status: 404 });
 
-    // Check rate limit
-    const { data: rateLimitData } = await adminClient
-      .from('engagement_rate_limits')
-      .select('last_action_at')
-      .eq('user_id', user.id)
-      .eq('video_id', videoId)
-      .eq('action_type', 'dislike')
-      .single();
+    // Call the DB RPC
+    const rpcRes = await adminClient.rpc('user_dislike', { p_user: user.id, p_video: videoId }).single();
 
-    if (rateLimitData) {
-      const lastActionTime = new Date(rateLimitData.last_action_at).getTime();
-      const now = Date.now();
-      const timeSinceLastAction = now - lastActionTime;
-
-      if (timeSinceLastAction < DISLIKE_COOLDOWN_MS) {
-        const remainingMs = DISLIKE_COOLDOWN_MS - timeSinceLastAction;
-
-        return NextResponse.json(
-          {
-            error: 'Rate limit exceeded',
-            message: `Please wait ${Math.ceil(remainingMs / 1000)} second${Math.ceil(remainingMs / 1000) === 1 ? '' : 's'} before disliking/removing dislike again`,
-            remainingMs
-          },
-          { status: 429 }
-        );
+    if (rpcRes.error) {
+      const msg = String(rpcRes.error.message || rpcRes.error).toLowerCase();
+      if (msg.includes('rate_limited')) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+      if (msg.includes('video_not_found')) return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+      if (msg.includes('select for update is not allowed')) {
+        console.error('RPC config error:', rpcRes.error);
+        return NextResponse.json({ error: 'Server misconfiguration: RPC must be VOLATILE' }, { status: 500 });
       }
+      console.error('user_dislike RPC error:', rpcRes.error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
-    // Get user's current liked and disliked videos
-    const { data: userData, error: userError } = await adminClient
-      .from('users')
-      .select('liked_videos, disliked_videos')
-      .eq('id', user.id)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-      return NextResponse.json(
-        { error: 'Failed to fetch user data' },
-        { status: 500 }
-      );
-    }
-
-    const likedVideos = userData.liked_videos || [];
-    const dislikedVideos = userData.disliked_videos || [];
-    const hasLiked = likedVideos.includes(videoId);
-    const hasDisliked = dislikedVideos.includes(videoId);
-
-    let newLikeCount = video.like_count;
-    let newDislikeCount = video.dislike_count;
-    let updatedLikedVideos: string[] = likedVideos;
-    let updatedDislikedVideos: string[];
-    let action: 'disliked' | 'removed_dislike';
-
-    if (hasDisliked) {
-      // User already disliked - remove dislike
-      newDislikeCount = Math.max(0, video.dislike_count - 1);
-      updatedDislikedVideos = dislikedVideos.filter((id: string) => id !== videoId);
-      action = 'removed_dislike';
-    } else {
-      // User hasn't disliked - add dislike
-      newDislikeCount = video.dislike_count + 1;
-      updatedDislikedVideos = [...dislikedVideos, videoId];
-      action = 'disliked';
-
-      // If user had liked the video, remove the like
-      if (hasLiked) {
-        newLikeCount = Math.max(0, video.like_count - 1);
-        updatedLikedVideos = likedVideos.filter((id: string) => id !== videoId);
-      }
-    }
-
-    // Update video counts
-    const { error: updateVideoError } = await adminClient
-      .from('videos')
-      .update({
-        like_count: newLikeCount,
-        dislike_count: newDislikeCount,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', videoId);
-
-    if (updateVideoError) {
-      console.error('Error updating video:', updateVideoError);
-      return NextResponse.json(
-        { error: 'Failed to update video' },
-        { status: 500 }
-      );
-    }
-
-    // Update user's liked/disliked videos
-    const { error: updateUserError } = await adminClient
-      .from('users')
-      .update({
-        liked_videos: updatedLikedVideos,
-        disliked_videos: updatedDislikedVideos,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
-
-    if (updateUserError) {
-      console.error('Error updating user:', updateUserError);
-      return NextResponse.json(
-        { error: 'Failed to update user preferences' },
-        { status: 500 }
-      );
-    }
-
-    // Update rate limit
-    const { error: rateLimitError } = await adminClient
-      .from('engagement_rate_limits')
-      .upsert(
-        {
-          user_id: user.id,
-          video_id: videoId,
-          action_type: 'dislike',
-          last_action_at: new Date().toISOString()
-        },
-        {
-          onConflict: 'user_id,video_id,action_type'
-        }
-      );
-
-    if (rateLimitError) {
-      console.error('Error updating rate limit:', rateLimitError);
+    const data = rpcRes.data as { disliked: boolean; like_count: number; dislike_count: number } | null;
+    if (!data) {
+      console.error('user_dislike RPC returned no data:', rpcRes);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      action,
-      like_count: newLikeCount,
-      dislike_count: newDislikeCount,
-      disliked: action === 'disliked'
+      disliked: data.disliked,
+      like_count: data.like_count,
+      dislike_count: data.dislike_count
     });
-
-  } catch (error) {
-    console.error('Error handling dislike:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    const msg = String(err?.message || err).toLowerCase();
+    if (msg.includes('rate_limited')) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    console.error('Unexpected error in dislike route:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Plus, X, Share2, ChevronDown, ChevronUp } from 'lucide-react';
@@ -11,6 +11,8 @@ import { StarIcon } from "@/components/StarIcon";
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import { formatTimeAgo } from '@/../lib/utils';
 import { Comment as CommentComponent } from '@/components/Comment';
+import { interactionQueue } from '@/../lib/interaction-queue';
+import { showErrorToast } from '@/../lib/toast-manager';
 import type { Comment, CommentWithChildren, Video } from '@/../types';
 import Card from '@/components/Card';
 
@@ -167,20 +169,36 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           setIsAuthenticated(true);
           setCurrentUserId(session.user.id);
 
-          // Fetch user engagement data
-          const { data: userData } = await supabase
-            .from('users')
-            .select('liked_videos, disliked_videos, starred_videos')
-            .eq('id', session.user.id)
-            .single();
-
-          if (mounted && userData) {
+        // Get video ID
             const resolvedParams = await Promise.resolve(params);
-            const { id } = resolvedParams;
+        const { id: videoId } = resolvedParams;
 
-            setLiked(userData.liked_videos?.includes(id) || false);
-            setDisliked(userData.disliked_videos?.includes(id) || false);
-            setStarred(userData.starred_videos?.includes(id) || false);
+        // Fetch engagement state from new tables (not user arrays)
+        const [likeResult, dislikeResult, starResult] = await Promise.all([
+          supabase
+            .from('video_likes')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('video_id', videoId)
+            .maybeSingle(),
+          supabase
+            .from('video_dislikes')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('video_id', videoId)
+            .maybeSingle(),
+          supabase
+            .from('video_stars')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .eq('video_id', videoId)
+            .maybeSingle()
+        ]);
+
+        if (mounted) {
+            setLiked(!!(likeResult && likeResult.data));
+            setDisliked(!!(dislikeResult && dislikeResult.data));
+            setStarred(!!(starResult && starResult.data));
           }
         }
       } catch (error) {
@@ -379,18 +397,51 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     }
   };
 
-  const handleLikeClick = async () => {
+  const handleLikeClick = useCallback(async () => {
     if (!isAuthenticated) {
       alert('Please sign in to like videos');
       return;
     }
 
-    if (likeLoading || !video) return;
+    if (!video || likeLoading)
+      return;
+
+  // Check if there's already a request in flight
+  if (interactionQueue.isRequestInFlight('like', video.id)) {
+    console.log('Like request already in flight, ignoring click');
+    return;
+  }
 
     setLikeLoading(true);
-    const wasLiked = liked;
 
-    try {
+    // Store original state for rollback
+    const wasLiked = liked;
+    const wasDisliked = disliked;
+    const originalLikes = video.likes;
+    const originalDislikes = video.dislikes;
+
+  // Calculate new state (toggle like)
+    const newLiked = !wasLiked;
+  const newDisliked = false; // Liking removes dislike
+
+    // Calculate count changes
+  let likesDelta = newLiked ? 1 : -1;
+  let dislikesDelta = wasDisliked ? -1 : 0;
+
+    // Apply optimistic update
+    setLiked(newLiked);
+    setDisliked(newDisliked);
+    setVideo(prev => prev ? {
+      ...prev,
+      likes: originalLikes + likesDelta,
+      dislikes: originalDislikes + dislikesDelta
+    } : null);
+
+    if (newLiked && !wasLiked) {
+      likeIconRef.current?.startAnimation();
+    }
+
+    const performLike = async () => {
       const response = await fetch(`/api/videos/${video.id}/like`, {
         method: 'POST',
       });
@@ -398,50 +449,116 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       const data = await response.json();
 
       if (response.status === 429) {
-        alert(data.message || 'Please wait before liking again');
-        setLikeLoading(false);
-        return;
+        const error = new Error(data.message || 'Rate limited');
+        (error as any).status = 429;
+        throw error;
       }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to like video');
       }
 
+    // Update with server truth (important!)
       setLiked(data.liked);
-      if (data.liked && disliked) {
+      // RPC guarantees dislike removed when like is present
+      if (data.liked) {
         setDisliked(false);
       }
-
       setVideo(prev => prev ? {
         ...prev,
-        likes: data.like_count ?? data.likes ?? prev.likes,
-        dislikes: data.dislike_count ?? data.dislikes ?? prev.dislikes
+      likes: data.like_count,
+      dislikes: data.dislike_count
       } : null);
+    };
 
-      if (data.liked && !wasLiked) {
-        likeIconRef.current?.startAnimation();
+  // Register this request as in-flight
+  const requestPromise = performLike();
+  interactionQueue.registerInFlight('like', video.id, requestPromise);
+
+    try {
+    await requestPromise;
+    } catch (error: any) {
+      if (error.status === 429) {
+        // Rate limited - queue for retry
+        interactionQueue.queueForRetry(
+          'like',
+          video.id,
+          performLike,
+          (errorMsg) => {
+            // Rollback on final error
+            setLiked(wasLiked);
+            setDisliked(wasDisliked);
+            setVideo(prev => prev ? {
+              ...prev,
+              likes: originalLikes,
+              dislikes: originalDislikes
+            } : null);
+            showErrorToast(`Failed to like video: ${errorMsg}`);
+        },
+        () => {
+          // Success callback - state already updated in performLike
+          console.log('Like action completed after retry');
       }
-
-    } catch (error) {
+        );
+      } else {
+        // Other error - rollback immediately
+        setLiked(wasLiked);
+        setDisliked(wasDisliked);
+        setVideo(prev => prev ? {
+          ...prev,
+          likes: originalLikes,
+          dislikes: originalDislikes
+        } : null);
+        showErrorToast('Failed to like video. Please try again.');
       console.error('Error liking video:', error);
-      alert('Failed to like video. Please try again.');
+    }
     } finally {
       setLikeLoading(false);
     }
-  };
+  }, [isAuthenticated, likeLoading, video, liked, disliked]);
 
-  const handleDislikeClick = async () => {
+  const handleDislikeClick = useCallback(async () => {
     if (!isAuthenticated) {
       alert('Please sign in to dislike videos');
       return;
     }
 
-    if (dislikeLoading || !video) return;
+  if (!video || dislikeLoading) return;
+
+  if (interactionQueue.isRequestInFlight('dislike', video.id)) {
+    console.log('Dislike request already in flight, ignoring click');
+      return;
+  }
 
     setDislikeLoading(true);
-    const wasDisliked = disliked;
 
-    try {
+    // Store original state for rollback
+    const wasDisliked = disliked;
+    const wasLiked = liked;
+    const originalLikes = video.likes;
+    const originalDislikes = video.dislikes;
+
+    // Calculate new state
+    const newDisliked = !wasDisliked;
+    const newLiked = false;
+
+    // Calculate count changes
+  let likesDelta = wasLiked ? -1 : 0;
+  let dislikesDelta = newDisliked ? 1 : -1;
+
+    setDisliked(newDisliked);
+    setLiked(newLiked);
+    setVideo(prev => prev ? {
+      ...prev,
+      dislikes: originalDislikes + dislikesDelta,
+      likes: originalLikes + likesDelta
+    } : null);
+
+    if (newDisliked && !wasDisliked) {
+      dislikeIconRef.current?.startAnimation();
+    }
+
+    const performDislike = async () => {
       const response = await fetch(`/api/videos/${video.id}/dislike`, {
         method: 'POST',
       });
@@ -449,95 +566,184 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       const data = await response.json();
 
       if (response.status === 429) {
-        alert(data.message || 'Please wait before disliking again');
-        setDislikeLoading(false);
-        return;
+        const error = new Error(data.message || 'Rate limited');
+        (error as any).status = 429;
+        throw error;
       }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to dislike video');
       }
 
+      // Update with actual server data
       setDisliked(data.disliked);
-      if (data.disliked && liked) {
+      if (data.disliked) {
         setLiked(false);
       }
-
       setVideo(prev => prev ? {
         ...prev,
-        likes: data.like_count ?? data.likes ?? prev.likes,
-        dislikes: data.dislike_count ?? data.dislikes ?? prev.dislikes
+      likes: data.like_count,
+      dislikes: data.dislike_count
       } : null);
+    };
 
-      if (data.disliked && !wasDisliked) {
-        dislikeIconRef.current?.startAnimation();
+  const requestPromise = performDislike();
+  interactionQueue.registerInFlight('dislike', video.id, requestPromise);
+
+    try {
+    await requestPromise;
+    } catch (error: any) {
+      if (error.status === 429) {
+        // Rate limited - queue for retry
+        interactionQueue.queueForRetry(
+          'dislike',
+          video.id,
+          performDislike,
+          (errorMsg) => {
+            // Rollback on final error
+            setDisliked(wasDisliked);
+            setLiked(wasLiked);
+            setVideo(prev => prev ? {
+              ...prev,
+              likes: originalLikes,
+              dislikes: originalDislikes
+            } : null);
+            showErrorToast(`Failed to dislike video: ${errorMsg}`);
+        },
+        () => {
+          console.log('Dislike action completed after retry');
       }
-
-    } catch (error) {
+        );
+      } else {
+        // Other error - rollback immediately
+        setDisliked(wasDisliked);
+        setLiked(wasLiked);
+        setVideo(prev => prev ? {
+          ...prev,
+          likes: originalLikes,
+          dislikes: originalDislikes
+        } : null);
+        showErrorToast('Failed to dislike video. Please try again.');
       console.error('Error disliking video:', error);
-      alert('Failed to dislike video. Please try again.');
+    }
     } finally {
       setDislikeLoading(false);
     }
-  };
+  }, [isAuthenticated, dislikeLoading, video, liked, disliked]);
 
-  const handleStarClick = async () => {
+  const handleStarClick = useCallback(async () => {
     if (!isAuthenticated) {
       alert('Please sign in to star videos');
       return;
     }
 
-    if (!canStar) {
+    if (!canStar && !starred) {
       const requiredSeconds = Math.ceil((video?.duration || 0) * 0.20);
       alert(`You must watch at least 20% of the video (${requiredSeconds} seconds) or 15 minutes (whichever is shorter) to star it. You've watched ${watchedSeconds} seconds so far.`);
       return;
     }
 
-    if (starLoading || !video) return;
+    if (!video || starLoading)
+      return;
+
+  if (interactionQueue.isRequestInFlight('star', video.id)) {
+    console.log('Star request already in flight, ignoring click');
+    return;
+  }
 
     setStarLoading(true);
 
-    try {
+    // Store original state for rollback
+    const wasStarred = starred;
+    const originalStars = video.stars;
+
+    // Toggle star state
+    const newStarred = !wasStarred;
+
+    // Apply optimistic update
+    setStarred(newStarred);
+    setVideo(prev => prev ? {
+      ...prev,
+      stars: originalStars + (newStarred ? 1 : -1)
+    } : null);
+
+    const performStar = async () => {
+      // Ensure seconds are sent as integer seconds
+      const watchedSecs = Math.floor(watchedSeconds);
+
       const response = await fetch(`/api/videos/${video.id}/star`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ watchedSeconds }),
+        body: JSON.stringify({ watchedSeconds: watchedSecs }),
       });
 
       const data = await response.json();
 
       if (response.status === 429) {
-        alert(data.message || 'Please wait before starring again');
-        setStarLoading(false);
-        return;
+        const error = new Error(data.message || 'Rate limited');
+        (error as any).status = 429;
+        throw error;
       }
 
       if (response.status === 403) {
-        alert(data.message || 'You need to watch more of the video to star it');
-        setStarLoading(false);
-        return;
+        const error = new Error(data.message || 'You need to watch more of the video to star it');
+        (error as any).status = 403;
+        throw error;
       }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to star video');
       }
 
+      // Update with actual server data
       setStarred(data.starred);
-
       setVideo(prev => prev ? {
         ...prev,
-        stars: data.star_count ?? data.stars ?? prev.stars
+      stars: data.star_count
       } : null);
+    };
 
-    } catch (error) {
-      console.error('Error starring video:', error);
-      alert('Failed to star video. Please try again.');
+  const requestPromise = performStar();
+  interactionQueue.registerInFlight('star', video.id, requestPromise);
+
+    try {
+    await requestPromise;
+    } catch (error: any) {
+      if (error.status === 429) {
+        // Rate limited - queue for retry
+        interactionQueue.queueForRetry(
+          'star',
+          video.id,
+          performStar,
+          (errorMsg) => {
+            // Rollback on final error
+            setStarred(wasStarred);
+            setVideo(prev => prev ? {
+              ...prev,
+              stars: originalStars
+            } : null);
+            showErrorToast(`Failed to star video: ${errorMsg}`);
+        },
+        () => {
+          console.log('Star action completed after retry');
+          }
+        );
+      } else {
+        // Other error - rollback immediately
+        setStarred(wasStarred);
+        setVideo(prev => prev ? {
+          ...prev,
+          stars: originalStars
+        } : null);
+        showErrorToast('Failed to star video. Please try again.');
+        console.error('Error starring video:', error);
+      }
     } finally {
       setStarLoading(false);
     }
-  };
+  }, [isAuthenticated, canStar, starLoading, video, starred, watchedSeconds]);
 
   const handleShare = async () => {
     try {
@@ -658,20 +864,18 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                   <div className="flex flex-col lg:flex-col rounded-lg overflow-hidden border border-border">
                     <button
                       onClick={handleLikeClick}
-                      disabled={likeLoading}
                       className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
                         liked ? 'bg-blue-600 text-white' : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
-                      } ${likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      }`}
                     >
                       <ThumbsUpIcon ref={likeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
                     </button>
                     <div className="h-px bg-border"></div>
                     <button
                       onClick={handleDislikeClick}
-                      disabled={dislikeLoading}
                       className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
                         disliked ? 'bg-red-600 text-white' : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
-                      } ${dislikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      }`}
                     >
                       <ThumbsDownIcon ref={dislikeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
                     </button>
@@ -688,11 +892,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 <div className="flex items-center gap-2.5 lg:hidden">
                   <button
                     onClick={handleStarClick}
-                    disabled={!canStar || starLoading}
+                    disabled={!canStar && !starred}
                     className={`transition ${
-                      canStar && !starLoading ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
-                    } ${starLoading ? 'opacity-50' : ''}`}
-                    title={!canStar ? `Watch ${Math.ceil((video.duration || 0) * 0.20)}s (20%) to star` : ''}
+                      (canStar || starred) ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
+                    }`}
+                    title={!canStar && !starred ? `Watch ${Math.ceil((video.duration || 0) * 0.20)}s (20%) to star` : ''}
                   >
                     <StarIcon
                       className={`w-9 h-9 transition ${
@@ -713,11 +917,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
               <div className="hidden lg:flex items-center gap-2">
                 <button
                   onClick={handleStarClick}
-                  disabled={!canStar || starLoading}
+                  disabled={!canStar && !starred}
                   className={`transition ${
-                    canStar && !starLoading ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
-                  } ${starLoading ? 'opacity-50' : ''}`}
-                  title={!canStar ? `Watch ${Math.ceil((video.duration || 0) * 0.20)}s (20%) to star` : ''}
+                    (canStar || starred) ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
+                  }`}
+                  title={!canStar && !starred ? `Watch ${Math.ceil((video.duration || 0) * 0.20)}s (20%) to star` : ''}
                 >
                   <StarIcon
                     className={`w-8 h-8 transition ${
@@ -774,7 +978,7 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
           </div>
         </div>
 
-        {/* Mobile Comments Section - Between Description and More Videos */}
+        {/* Mobile Comments Section */}
         <div className="lg:hidden mt-6">
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
             {/* Comments Header - Clickable to expand */}

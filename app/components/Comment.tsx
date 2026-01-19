@@ -1,9 +1,11 @@
 import { ChevronRight, ChevronDown, ThumbsUp, ThumbsDown, Edit2, Trash2 } from 'lucide-react';
 import { CommentWithChildren } from "@/../types";
 import { formatTimeAgo } from '@/../lib/utils';
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { interactionQueue } from '@/../lib/interaction-queue';
+import { showErrorToast } from '@/../lib/toast-manager';
 
 async function postReply(videoId: string, commentId: string, message: string) {
   const response = await fetch(
@@ -26,11 +28,20 @@ async function likeComment(videoId: string, commentId: string) {
     `/api/videos/${videoId}/comments/${commentId}/like`,
     { method: 'POST' }
   );
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to like comment');
+
+  const data = await response.json();
+
+  if (response.status === 429) {
+    const error = new Error(data.message || 'Rate limited');
+    (error as any).status = 429;
+    throw error;
   }
-  return response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to like comment');
+  }
+
+  return data;
 }
 
 async function dislikeComment(videoId: string, commentId: string) {
@@ -38,11 +49,20 @@ async function dislikeComment(videoId: string, commentId: string) {
     `/api/videos/${videoId}/comments/${commentId}/dislike`,
     { method: 'POST' }
   );
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to dislike comment');
+
+  const data = await response.json();
+
+  if (response.status === 429) {
+    const error = new Error(data.message || 'Rate limited');
+    (error as any).status = 429;
+    throw error;
   }
-  return response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to dislike comment');
+  }
+
+  return data;
 }
 
 async function editComment(videoId: string, commentId: string, message: string) {
@@ -119,47 +139,123 @@ export function Comment({
       setShowReplyBox(false);
       onReplySubmit?.();
     } catch (error: any) {
-      alert(error.message || 'Failed to post reply');
+      showErrorToast(error.message || 'Failed to post reply');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleLike = async () => {
-    try {
+  const handleLike = useCallback(async () => {
+    if (!currentUserId) {
+      alert('Please sign in to like comments');
+      return;
+    }
+
+    // Store original state
+    const wasLiked = isLiked;
+    const wasDisliked = isDisliked;
+    const originalLikeCount = localLikeCount;
+    const originalDislikeCount = localDislikeCount;
+
+    // Optimistic update
+    setIsLiked(true);
+    if (wasDisliked) setIsDisliked(false);
+    setLocalLikeCount(wasLiked ? originalLikeCount : originalLikeCount + 1);
+    setLocalDislikeCount(wasDisliked ? originalDislikeCount - 1 : originalDislikeCount);
+
+    const performLike = async () => {
       const result = await likeComment(videoId, comment.id);
       setLocalLikeCount(result.like_count);
       setLocalDislikeCount(result.dislike_count);
       setIsLiked(result.liked);
       if (result.liked) setIsDisliked(false);
+    };
+
+    try {
+      await performLike();
     } catch (error: any) {
-      if (error.message.includes('wait')) {
-        alert(error.message);
-      } else if (error.message.includes('sign in')) {
-        alert('Please sign in to like comments');
+      if (error.status === 429) {
+        // Rate limited - queue for retry
+        interactionQueue.queueForRetry(
+          'comment-like',
+          comment.id,
+          performLike,
+          (errorMsg) => {
+            // Rollback on final error
+            setIsLiked(wasLiked);
+            setIsDisliked(wasDisliked);
+            setLocalLikeCount(originalLikeCount);
+            setLocalDislikeCount(originalDislikeCount);
+            showErrorToast(`Failed to like comment: ${errorMsg}`);
+          }
+        );
       } else {
+        // Other error - rollback immediately
+        setIsLiked(wasLiked);
+        setIsDisliked(wasDisliked);
+        setLocalLikeCount(originalLikeCount);
+        setLocalDislikeCount(originalDislikeCount);
+        showErrorToast('Failed to like comment');
         console.error('Error liking comment:', error);
       }
     }
-  };
+  }, [isLiked, isDisliked, localLikeCount, localDislikeCount, currentUserId, videoId, comment.id]);
 
-  const handleDislike = async () => {
-    try {
+  const handleDislike = useCallback(async () => {
+    if (!currentUserId) {
+      alert('Please sign in to dislike comments');
+      return;
+    }
+
+    // Store original state
+    const wasDisliked = isDisliked;
+    const wasLiked = isLiked;
+    const originalLikeCount = localLikeCount;
+    const originalDislikeCount = localDislikeCount;
+
+    // Optimistic update
+    setIsDisliked(true);
+    if (wasLiked) setIsLiked(false);
+    setLocalDislikeCount(wasDisliked ? originalDislikeCount : originalDislikeCount + 1);
+    setLocalLikeCount(wasLiked ? originalLikeCount - 1 : originalLikeCount);
+
+    const performDislike = async () => {
       const result = await dislikeComment(videoId, comment.id);
       setLocalLikeCount(result.like_count);
       setLocalDislikeCount(result.dislike_count);
       setIsDisliked(result.disliked);
       if (result.disliked) setIsLiked(false);
+    };
+
+    try {
+      await performDislike();
     } catch (error: any) {
-      if (error.message.includes('wait')) {
-        alert(error.message);
-      } else if (error.message.includes('sign in')) {
-        alert('Please sign in to dislike comments');
+      if (error.status === 429) {
+        // Rate limited - queue for retry
+        interactionQueue.queueForRetry(
+          'comment-dislike',
+          comment.id,
+          performDislike,
+          (errorMsg) => {
+            // Rollback on final error
+            setIsDisliked(wasDisliked);
+            setIsLiked(wasLiked);
+            setLocalLikeCount(originalLikeCount);
+            setLocalDislikeCount(originalDislikeCount);
+            showErrorToast(`Failed to dislike comment: ${errorMsg}`);
+          }
+        );
       } else {
+        // Other error - rollback immediately
+        setIsDisliked(wasDisliked);
+        setIsLiked(wasLiked);
+        setLocalLikeCount(originalLikeCount);
+        setLocalDislikeCount(originalDislikeCount);
+        showErrorToast('Failed to dislike comment');
         console.error('Error disliking comment:', error);
       }
     }
-  };
+  }, [isLiked, isDisliked, localLikeCount, localDislikeCount, currentUserId, videoId, comment.id]);
 
   const handleEdit = async () => {
     if (!editText.trim() || isSubmitting) return;
@@ -170,7 +266,7 @@ export function Comment({
       setIsEditing(false);
       onCommentUpdate?.();
     } catch (error: any) {
-      alert(error.message || 'Failed to edit comment');
+      showErrorToast(error.message || 'Failed to edit comment');
     } finally {
       setIsSubmitting(false);
     }
@@ -184,7 +280,7 @@ export function Comment({
       setIsDeleted(true);
       onCommentUpdate?.();
     } catch (error: any) {
-      alert(error.message || 'Failed to delete comment');
+      showErrorToast(error.message || 'Failed to delete comment');
     }
   };
 
@@ -289,14 +385,15 @@ export function Comment({
                       <>
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition"
+                          className="text-xs font-medium text-muted-foreground hover:text-foreground transition flex items-center gap-1"
                         >
                           <Edit2 className="w-3 h-3" />
                           Edit
                         </button>
+
                         <button
                           onClick={handleDelete}
-                          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive transition"
+                          className="text-xs font-medium text-muted-foreground hover:text-red-500 transition flex items-center gap-1"
                         >
                           <Trash2 className="w-3 h-3" />
                           Delete
@@ -306,26 +403,39 @@ export function Comment({
 
                     {hasReplies && (
                       <button
-                        onClick={() => setCollapsed(true)}
-                        className="text-xs font-medium text-accent hover:text-accent/80 transition flex items-center gap-1 ml-1"
+                        onClick={() => setCollapsed(!collapsed)}
+                        className="text-xs font-medium text-muted-foreground hover:text-foreground transition flex items-center gap-1"
                       >
+                        {collapsed ? (
+                          <>
+                            <ChevronRight className="w-3 h-3" />
+                            Show {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                          </>
+                        ) : (
+                          <>
                         <ChevronDown className="w-3 h-3" />
-                        {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                            Hide {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                          </>
+                        )}
                       </button>
                     )}
                   </div>
+                </>
+              )}
+            </>
+          )}
 
-                  {showReplyBox && (
+          {!collapsed && showReplyBox && (
                     <div className="mt-3">
                       <textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
-                        placeholder="Add a reply..."
-                        className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring resize-none"
-                        rows={2}
+                placeholder="Write a reply..."
+                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-ring resize-none mb-2"
+                rows={3}
                         autoFocus
                       />
-                      <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
                             setShowReplyBox(false);
@@ -345,29 +455,13 @@ export function Comment({
                       </div>
                     </div>
                   )}
-                </>
-              )}
-            </>
-          )}
-
-          {collapsed && (
-            <button
-              onClick={() => setCollapsed(false)}
-              className="mt-1 text-xs font-medium text-accent hover:text-accent/80 transition flex items-center gap-1"
-            >
-              <ChevronRight className="w-3 h-3" />
-              Show {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
-            </button>
-          )}
-        </div>
-      </div>
 
       {!collapsed && hasReplies && (
-        <div className="mt-2 border-l-2 border-border pl-2">
-          {comment.children!.map((child) => (
+            <div className="mt-2">
+              {comment.children?.map((reply) => (
             <Comment
-              key={child.id}
-              comment={child}
+                  key={reply.id}
+                  comment={reply}
               videoId={videoId}
               currentUserId={currentUserId}
               userLikedComments={userLikedComments}
@@ -379,6 +473,8 @@ export function Comment({
           ))}
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }
