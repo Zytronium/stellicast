@@ -1,188 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/../lib/supabase-server';
 
-type RouteContext = {
-  params: Promise<{ id: string; commentId: string }>;
-};
+type RouteContext = { params: Promise<{ id: string; commentId: string }> };
 
-const DISLIKE_COOLDOWN_MS = 1000; // 1 second
+function json(body: any, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+}
 
-export async function POST(
-  request: NextRequest,
-  context: RouteContext
-) {
+export async function POST(req: Request, context: RouteContext) {
   try {
-    const { commentId } = await context.params;
+    const { id: videoId, commentId } = await context.params;
 
-    // Use standard client to get user (respects session)
     const supabase = await createSupabaseServerClient();
-
-    // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (authError || !user) return json({ error: 'Unauthorized' }, 401);
+
+    const admin = createSupabaseAdminClient();
+
+    const { data: c, error: cErr } = await admin.from('comments').select('id, video_id').eq('id', commentId).single();
+    if (cErr || !c) return json({ error: 'Comment not found' }, 404);
+    if (c.video_id !== videoId) return json({ error: 'Comment does not belong to this video' }, 400);
+
+    const rpcRes = await admin.rpc('user_comment_dislike', { p_user: user.id, p_comment: commentId }).single();
+
+    if (rpcRes.error) {
+      const msg = String(rpcRes.error.message || rpcRes.error).toLowerCase();
+      if (msg.includes('rate_limited')) return json({ error: 'Rate limit exceeded' }, 429);
+      if (msg.includes('comment_not_found')) return json({ error: 'Comment not found' }, 404);
+      console.error('user_comment_dislike RPC error:', rpcRes.error);
+      return json({ error: 'Internal server error' }, 500);
     }
 
-    // Use admin client for all database operations (bypasses RLS)
-    const adminClient = createSupabaseAdminClient();
-
-    // Check if comment exists
-    const { data: comment, error: commentError } = await adminClient
-      .from('comments')
-      .select('id, like_count, dislike_count, visible')
-      .eq('id', commentId)
-      .single();
-
-    if (commentError || !comment) {
-      return NextResponse.json(
-        { error: 'Comment not found' },
-        { status: 404 }
-      );
+    const data = rpcRes.data as { disliked: boolean; like_count: number; dislike_count: number } | null;
+    if (!data) {
+      console.error('user_comment_dislike returned no data:', rpcRes);
+      return json({ error: 'Internal server error' }, 500);
     }
 
-    if (!comment.visible) {
-      return NextResponse.json(
-        { error: 'Comment not available' },
-        { status: 404 }
-      );
-    }
-
-    // Check rate limit
-    const { data: rateLimitData } = await adminClient
-      .from('comment_engagement_rate_limits')
-      .select('last_action_at')
-      .eq('user_id', user.id)
-      .eq('comment_id', commentId)
-      .eq('action_type', 'dislike')
-      .single();
-
-    if (rateLimitData) {
-      const lastActionTime = new Date(rateLimitData.last_action_at).getTime();
-      const now = Date.now();
-      const timeSinceLastAction = now - lastActionTime;
-
-      if (timeSinceLastAction < DISLIKE_COOLDOWN_MS) {
-        const remainingMs = DISLIKE_COOLDOWN_MS - timeSinceLastAction;
-        return NextResponse.json(
-          {
-            error: 'Rate limit exceeded',
-            message: `Please wait ${Math.ceil(remainingMs / 1000)} second${Math.ceil(remainingMs / 1000) === 1 ? '' : 's'} before disliking/undisliking again`,
-            remainingMs
-          },
-          { status: 429 }
-        );
-      }
-    }
-
-    // Get user's current engagement
-    const { data: userData, error: userError } = await adminClient
-      .from('users')
-      .select('liked_comments, disliked_comments')
-      .eq('id', user.id)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-      return NextResponse.json(
-        { error: 'Failed to fetch user data' },
-        { status: 500 }
-      );
-    }
-
-    const likedComments = userData.liked_comments || [];
-    const dislikedComments = userData.disliked_comments || [];
-    const hasLiked = likedComments.includes(commentId);
-    const hasDisliked = dislikedComments.includes(commentId);
-
-    let newLikeCount = comment.like_count;
-    let newDislikeCount = comment.dislike_count;
-    let updatedLikedComments: string[] = likedComments;
-    let updatedDislikedComments: string[];
-    let action: 'disliked' | 'undisliked';
-
-    if (hasDisliked) {
-      // Remove dislike
-      newDislikeCount = Math.max(0, comment.dislike_count - 1);
-      updatedDislikedComments = dislikedComments.filter((id: string) => id !== commentId);
-      action = 'undisliked';
-    } else {
-      // Add dislike
-      newDislikeCount = comment.dislike_count + 1;
-      updatedDislikedComments = [...dislikedComments, commentId];
-      action = 'disliked';
-
-      // Remove like if present
-      if (hasLiked) {
-        newLikeCount = Math.max(0, comment.like_count - 1);
-        updatedLikedComments = likedComments.filter((id: string) => id !== commentId);
-      }
-    }
-
-    // Update comment counts
-    const { error: updateCommentError } = await adminClient
-      .from('comments')
-      .update({
-        like_count: newLikeCount,
-        dislike_count: newDislikeCount,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', commentId);
-
-    if (updateCommentError) {
-      console.error('Error updating comment:', updateCommentError);
-      return NextResponse.json(
-        { error: 'Failed to update comment' },
-        { status: 500 }
-      );
-    }
-
-    // Update user's engagement
-    const { error: updateUserError } = await adminClient
-      .from('users')
-      .update({
-        liked_comments: updatedLikedComments,
-        disliked_comments: updatedDislikedComments,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
-
-    if (updateUserError) {
-      console.error('Error updating user:', updateUserError);
-      return NextResponse.json(
-        { error: 'Failed to update user preferences' },
-        { status: 500 }
-      );
-    }
-
-    // Update rate limit
-    await adminClient
-      .from('comment_engagement_rate_limits')
-      .upsert(
-        {
-          user_id: user.id,
-          comment_id: commentId,
-          action_type: 'dislike',
-          last_action_at: new Date().toISOString()
-        },
-        { onConflict: 'user_id,comment_id,action_type' }
-      );
-
-    return NextResponse.json({
-      success: true,
-      action,
-      like_count: newLikeCount,
-      dislike_count: newDislikeCount,
-      disliked: action === 'disliked'
-    });
-
-  } catch (error) {
-    console.error('Error handling comment dislike:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return json({ success: true, disliked: data.disliked, like_count: data.like_count, dislike_count: data.dislike_count });
+  } catch (err: any) {
+    const msg = String(err?.message || err).toLowerCase();
+    if (msg.includes('rate_limited')) return json({ error: 'Rate limit exceeded' }, 429);
+    console.error('Unexpected error in comment dislike route:', err);
+    return json({ error: 'Internal server error' }, 500);
   }
 }
