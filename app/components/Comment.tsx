@@ -317,8 +317,6 @@ export function Comment({
             <span className="text-xs text-muted-foreground">{formatTimeAgo(comment.created_at)}</span>
           </div>
 
-          {!collapsed && (
-            <>
               {isEditing ? (
                 <div className="mt-2">
                   <textarea
@@ -422,8 +420,6 @@ export function Comment({
                   </div>
                 </>
               )}
-            </>
-          )}
 
           {!collapsed && showReplyBox && (
                     <div className="mt-3">
