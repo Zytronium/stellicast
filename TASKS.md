@@ -24,7 +24,7 @@ in. Show a signin/signup button when not logged in.
 ### 0.4. User profiles
 Create a public user profile page for every user.
 
-**Status:** In Progress
+**Status:** Done
 
 ### 0.4.5. Channel profiles
 Create public channel profiles that show videos uploaded by
@@ -36,7 +36,7 @@ that channel.
 Allow users to edit their profiles. Add certain buttons 
 on the profile page when that user is logged in.
 
-**Status:** In Progress
+**Status:** Done
 
 ### 0.6. Channel creation
 Allow users to create new Creator channels.
@@ -59,7 +59,7 @@ the results, they must convert into a Studio channel.
 ### 0.9. Followers
 Allow users to follow channels.
 
-**Status:** Todo
+**Status:** In Progress
 
 ### 0.10. Upload notifications
 Send notifications to suers when a channel they follow
@@ -110,7 +110,7 @@ Redesign the video player to match the new design.
 Add new functionalities to the watch page for likes, dislikes,
 stars, follows, comments, etc.
 
-**Status:** In Progress
+**Status:** Done (except follows)
 
 ## 3. Home Feed
 
@@ -185,7 +185,7 @@ and, if watch history is enabled, videos they have repeatedly rewatched recently
 ### 4.1. Use home feed as a template
 Duplicate the home feed page and make it the explore page.
 
-**Status:** Todo
+**Status:** Done
 
 ### 4.2. Adjust the algorithm 
 Adjust the Explore page's filters to show the user mostly
@@ -212,19 +212,19 @@ all the sidebar's content except filters.
 ### 5.3. Mobile filters
 Add filters on home feed and explore pages for mobile
 
-**Status:** Todo
+**Status:** Done
 
 ## 6. Settings
 
 ### 6.1. Add settings page
 Add a settings page for users to change their app settings.
 
-**Status:** Todo
+**Status:** Done
 
 ### 6.2. Add theme switcher
 Add a theme switcher to the settings page.
 
-**Status:** Todo
+**Status:** Done
 
 ### 6.3. Add layout switcher
 Add a layout switcher to the settings page.
@@ -234,7 +234,7 @@ Add a layout switcher to the settings page.
 ### 6.4. Make code compatible with themes
 Make the code compatible with themes by using CSS variables.
 
-**Status:** Todo
+**Status:** Done
 
 ### 6.5. Made code compatible with layouts
 Make the code compatible with custom layouts somehow.
@@ -245,7 +245,7 @@ Make the code compatible with custom layouts somehow.
 Implement more themes for the app and put them in the theme
 switcher.
 
-**Status:** Todo
+**Status:** Done
 
 ### 6.7. Implement more layouts
 Implement more layouts for the app and put them in the layout
@@ -267,5 +267,10 @@ different sectors.
 Add an admin panel page for the website to manage users, channels,
 videos, etc. It must display all data for each user and channel, 
 music email and password.
+
+**Status:** Todo
+
+### 8.2 Add mod panel
+Add a moderation panel for moderators to review reports and moderate content.
 
 **Status:** Todo
