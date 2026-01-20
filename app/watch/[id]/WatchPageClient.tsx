@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Plus, X, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
+import FollowButton from '@/components/FollowButton';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
 import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
 import { StarIcon } from "@/components/StarIcon";
@@ -91,6 +92,7 @@ function shouldCountView(videoId: string): boolean {
 export default function WatchPageClient({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfo>({});
+  const [isFollowing, setIsFollowing] = useState(false);
   const [upNext, setUpNext] = useState<Video[]>([]);
   const [allVideos, setAllVideos] = useState<Video[]>([]);
   const [videosToShow, setVideosToShow] = useState(6);
@@ -354,6 +356,26 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     const requiredWatchTime = (video.duration || 0) * 0.20;
     setCanStar(watchedSeconds >= requiredWatchTime);
   }, [watchedSeconds, video]);
+
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (!channelInfo.id) return;
+
+      try {
+        const response = await fetch(`/api/follow?channelId=${channelInfo.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsFollowing(data.isFollowing);
+        } else {
+          console.error('Failed to check follow status:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error checking follow status:', error);
+      }
+    };
+
+    checkFollowStatus();
+  }, [channelInfo.id]);
 
   useEffect(() => {
     setUpNext(allVideos.slice(0, videosToShow));
@@ -848,12 +870,17 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="rounded-full bg-primary px-4 sm:px-5 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition flex-shrink-0"
-              >
-                Follow
-              </button>
+              <FollowButton
+                channelId={channelInfo.id!}
+                initialFollowing={isFollowing}
+                initialFollowerCount={channelInfo.follower_count ?? 0}
+                onFollowerCountChange={(newCount) => {
+                  setChannelInfo(prev => ({ ...prev, follower_count: newCount }));
+                }}
+                onFollowStatusChange={(newStatus) => {
+                  setIsFollowing(newStatus);
+                }}
+              />
             </div>
 
             {/* Action Buttons - Mobile Optimized */}

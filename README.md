@@ -17,7 +17,7 @@ putting creators before corporations.
 - **Privacy-First**: No tracking, no data harvesting, no Google integration
 - **Ad-Conscious**: Maximum 1 ad per 30 minutes, all skippable, no ads on short or non-monetized videos
 - **Creator-Focused**: Algorithm favors personal creators over corporate studios
-- **Transparent Moderation**: Human-reviewed decisions with fair appeals process
+- **Transparent Moderation**: Human-reviewed decisions with a fair appeal process
 - **AI Transparency**: Mandatory disclosure of AI-generated content
 - **Community-Driven**: Built on feedback, not shareholder demands
 

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Card from "@/components/Card";
 import Link from 'next/link';
+import FollowButton from '@/components/FollowButton'; // Add this import
 
 type PageParams = {
   id: string;
@@ -37,6 +38,19 @@ export default async function ChannelPage({ params }: PageProps) {
   const { data: userData } = await supabase.auth.getUser();
   const currentUser = userData?.user ?? null;
   const isOwner = currentUser?.id === channel.owner_id;
+
+  // Check if current user is following this channel
+  let isFollowing = false;
+  if (currentUser && !isOwner) {
+    const { data: followerData } = await supabase
+      .from('followers')
+      .select('user_id')
+      .eq('user_id', currentUser.id)
+      .eq('channel_id', channel.id)
+      .maybeSingle();
+
+    isFollowing = !!followerData;
+  }
 
   return (
     <div className="relative">
@@ -99,22 +113,11 @@ export default async function ChannelPage({ params }: PageProps) {
                       title="Manage"
                 >Manage</Link>
               ) : (
-
-                <button
-                  type="button"
-                  className="
-                  h-9 sm:h-10
-                  px-6
-                  w-full sm:w-auto
-                  rounded-full
-                  bg-primary
-                  text-sm font-semibold text-primary-foreground
-                  hover:bg-accent hover:text-accent-foreground
-                  transition
-                  self-center
-                  hover:shadow-lg hover:shadow-primary/30
-                "
-                >Follow</button>
+                <FollowButton
+                  channelId={channel.id}
+                  initialFollowing={isFollowing}
+                  initialFollowerCount={channel.follower_count ?? 0}
+                />
               )}
             </div>
           </div>
