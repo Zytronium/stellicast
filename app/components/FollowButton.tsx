@@ -1,22 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FollowButtonProps {
   channelId: string;
   initialFollowing: boolean;
   initialFollowerCount: number;
   onFollowerCountChange?: (newCount: number) => void;
+  onFollowStatusChange?: (isFollowing: boolean) => void;
 }
 
 export default function FollowButton({
   channelId,
   initialFollowing,
   initialFollowerCount,
+  onFollowerCountChange,
+  onFollowStatusChange,
 }: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [followerCount, setFollowerCount] = useState(initialFollowerCount);
+
+  // Sync with prop changes (for when parent fetches follow status after mount)
+  useEffect(() => {
+    setIsFollowing(initialFollowing);
+  }, [initialFollowing]);
+
+  useEffect(() => {
+    setFollowerCount(initialFollowerCount);
+  }, [initialFollowerCount]);
 
   const handleFollowClick = async () => {
     setIsFollowLoading(true);
@@ -34,7 +46,10 @@ export default function FollowButton({
         }
 
         setIsFollowing(false);
-        setFollowerCount(prev => Math.max(prev - 1, 0));
+        const newCount = Math.max(followerCount - 1, 0);
+        setFollowerCount(newCount);
+        onFollowerCountChange?.(newCount);
+        onFollowStatusChange?.(false);
       } else {
         // Follow
         const response = await fetch('/api/follow', {
@@ -54,7 +69,10 @@ export default function FollowButton({
         }
 
         setIsFollowing(true);
-        setFollowerCount(prev => prev + 1);
+        const newCount = followerCount + 1;
+        setFollowerCount(newCount);
+        onFollowerCountChange?.(newCount);
+        onFollowStatusChange?.(true);
       }
     } catch (error) {
       console.error('Follow error:', error);

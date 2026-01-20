@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Plus, X, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
+import FollowButton from '@/components/FollowButton';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
 import { ThumbsDownIcon, ThumbsDownIconHandle } from "@/components/ThumbsDownIcon";
 import { StarIcon } from "@/components/StarIcon";
@@ -92,7 +93,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
   const [video, setVideo] = useState<Video | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfo>({});
   const [isFollowing, setIsFollowing] = useState(false);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [upNext, setUpNext] = useState<Video[]>([]);
   const [allVideos, setAllVideos] = useState<Video[]>([]);
   const [videosToShow, setVideosToShow] = useState(6);
@@ -778,61 +778,6 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     }
   };
 
-  const handleFollowClick = async () => {
-    if (!channelInfo.id) return;
-
-    setIsFollowLoading(true);
-
-    try {
-      if (isFollowing) {
-        // Unfollow
-        const response = await fetch(`/api/follow?channelId=${channelInfo.id}`, {
-          method: 'DELETE',
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to unfollow');
-        }
-
-        setIsFollowing(false);
-        setChannelInfo(prev => ({
-          ...prev,
-          follower_count: Math.max((prev.follower_count ?? 0) - 1, 0),
-        }));
-      } else {
-        // Follow
-        const response = await fetch('/api/follow', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            channelId: channelInfo.id,
-            notify: 'none', // Default notification preference
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to follow');
-        }
-
-        setIsFollowing(true);
-        setChannelInfo(prev => ({
-          ...prev,
-          follower_count: (prev.follower_count ?? 0) + 1,
-        }));
-      }
-    } catch (error) {
-      console.error('Follow error:', error);
-      // You can add toast notification here
-      alert(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
-      setIsFollowLoading(false);
-    }
-  };
-
   const handleLoadMore = () => {
     setVideosToShow(prev => prev + 6);
   };
@@ -925,18 +870,17 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleFollowClick}
-                disabled={isFollowLoading}
-                className={`rounded-full px-4 sm:px-5 py-1.5 text-sm font-semibold transition flex-shrink-0 ${
-                  isFollowing
-                    ? 'bg-muted text-foreground hover:bg-muted/80'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {isFollowLoading ? isFollowing ? 'Unfollowing...' : 'Following...' : isFollowing ? 'Unfollow' : 'Follow'}
-              </button>
+              <FollowButton
+                channelId={channelInfo.id!}
+                initialFollowing={isFollowing}
+                initialFollowerCount={channelInfo.follower_count ?? 0}
+                onFollowerCountChange={(newCount) => {
+                  setChannelInfo(prev => ({ ...prev, follower_count: newCount }));
+                }}
+                onFollowStatusChange={(newStatus) => {
+                  setIsFollowing(newStatus);
+                }}
+              />
             </div>
 
             {/* Action Buttons - Mobile Optimized */}
