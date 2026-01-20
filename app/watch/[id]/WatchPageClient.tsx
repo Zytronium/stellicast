@@ -362,10 +362,12 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
       if (!channelInfo.id) return;
 
       try {
-        const response = await fetch(`/api/follow/status?channelId=${channelInfo.id}`);
+        const response = await fetch(`/api/follow?channelId=${channelInfo.id}`);
         if (response.ok) {
           const data = await response.json();
           setIsFollowing(data.isFollowing);
+        } else {
+          console.error('Failed to check follow status:', await response.text());
         }
       } catch (error) {
         console.error('Error checking follow status:', error);

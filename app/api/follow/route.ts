@@ -176,7 +176,8 @@ export async function GET(request: NextRequest) {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ isFollowing: false }, { status: 200 });
+      // Not authenticated - return false
+      return NextResponse.json({ isFollowing: false, notify: null }, { status: 200 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -186,12 +187,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Channel ID is required' }, { status: 400 });
     }
 
-    const { data: follower } = await supabase
+    const { data: follower, error: queryError } = await supabase
       .from('followers')
       .select('notify')
       .eq('user_id', user.id)
       .eq('channel_id', channelId)
-      .single();
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors when no match
+
+    if (queryError) {
+      console.error('Error checking follow status:', queryError);
+      return NextResponse.json({ isFollowing: false, notify: null }, { status: 200 });
+    }
 
     return NextResponse.json({
       isFollowing: !!follower,
@@ -199,6 +205,6 @@ export async function GET(request: NextRequest) {
     }, { status: 200 });
   } catch (error) {
     console.error('Follow status check error:', error);
-    return NextResponse.json({ isFollowing: false }, { status: 200 });
+    return NextResponse.json({ isFollowing: false, notify: null }, { status: 200 });
   }
 }
