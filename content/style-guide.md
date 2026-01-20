@@ -1,7 +1,7 @@
 # Stellicast Style Guide
 
 This document covers the intended style and format for Stellicast UI. While it
-is not to be followed exactly, it is highly reccomended to follow all of these
+is not to be followed exactly, it is highly recommended to follow all of these
 guidelines.
 
 # 1. Theme compatibility
@@ -16,7 +16,7 @@ how everything looks on every theme before you push new UI or UI changes to the
 main development branch.
 
 # 2. No Emoji Icons
-This is a clear sign of AI vibe coding and many people will not like this. Use
+This is a clear sign of AI vibe coding, and many people will not like this. Use
 a React icon library or a custom SVG instead of emoji icons.
 
 # 3. Mobile Responsiveness
@@ -36,8 +36,8 @@ too much width on some mobile phones. This needs to be fixed eventually.
 
 # 5. Good UX
 Keep in mind user experience when designing new UI. Important things should
-be two or less clicks away. Nothing should be more than four or five clicks away
-unless of trivial importance or relevance.
+be two or fewer clicks away. Nothing should be more than four or five clicks
+away unless of trivial importance or relevance.
 
 # 6. Creative Liberty
 I know this is kind of vague and ambiguous, but try to be creative with new
@@ -50,5 +50,5 @@ to fit in different areas of the page if possible.
 
 # 7. Have Fun! Experiment a Little.
 To build on #6, you should enjoy making new designs. Use your creativity and 
-experiment with different designs. You might discover something that works\
+experiment with different designs. You might discover something that works
 really well or laugh at how terrible or goofy a design looks.
