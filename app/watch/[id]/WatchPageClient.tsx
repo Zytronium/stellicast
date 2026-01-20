@@ -91,6 +91,8 @@ function shouldCountView(videoId: string): boolean {
 export default function WatchPageClient({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfo>({});
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [upNext, setUpNext] = useState<Video[]>([]);
   const [allVideos, setAllVideos] = useState<Video[]>([]);
   const [videosToShow, setVideosToShow] = useState(6);
@@ -354,6 +356,24 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     const requiredWatchTime = (video.duration || 0) * 0.20;
     setCanStar(watchedSeconds >= requiredWatchTime);
   }, [watchedSeconds, video]);
+
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (!channelInfo.id) return;
+
+      try {
+        const response = await fetch(`/api/follow/status?channelId=${channelInfo.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsFollowing(data.isFollowing);
+        }
+      } catch (error) {
+        console.error('Error checking follow status:', error);
+      }
+    };
+
+    checkFollowStatus();
+  }, [channelInfo.id]);
 
   useEffect(() => {
     setUpNext(allVideos.slice(0, videosToShow));
@@ -756,6 +776,61 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
     }
   };
 
+  const handleFollowClick = async () => {
+    if (!channelInfo.id) return;
+
+    setIsFollowLoading(true);
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        const response = await fetch(`/api/follow?channelId=${channelInfo.id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to unfollow');
+        }
+
+        setIsFollowing(false);
+        setChannelInfo(prev => ({
+          ...prev,
+          follower_count: Math.max((prev.follower_count ?? 0) - 1, 0),
+        }));
+      } else {
+        // Follow
+        const response = await fetch('/api/follow', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            channelId: channelInfo.id,
+            notify: 'none', // Default notification preference
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to follow');
+        }
+
+        setIsFollowing(true);
+        setChannelInfo(prev => ({
+          ...prev,
+          follower_count: (prev.follower_count ?? 0) + 1,
+        }));
+      }
+    } catch (error) {
+      console.error('Follow error:', error);
+      // You can add toast notification here
+      alert(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
   const handleLoadMore = () => {
     setVideosToShow(prev => prev + 6);
   };
@@ -850,9 +925,15 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
 
               <button
                 type="button"
-                className="rounded-full bg-primary px-4 sm:px-5 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition flex-shrink-0"
+                onClick={handleFollowClick}
+                disabled={isFollowLoading}
+                className={`rounded-full px-4 sm:px-5 py-1.5 text-sm font-semibold transition flex-shrink-0 ${
+                  isFollowing
+                    ? 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                Follow
+                {isFollowLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
               </button>
             </div>
 
