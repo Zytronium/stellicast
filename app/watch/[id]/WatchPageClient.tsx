@@ -931,11 +931,11 @@ export default function WatchPageClient({ params }: { params: { id: string } | P
                 disabled={isFollowLoading}
                 className={`rounded-full px-4 sm:px-5 py-1.5 text-sm font-semibold transition flex-shrink-0 ${
                   isFollowing
-                    ? 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    ? 'bg-muted text-foreground hover:bg-muted/80'
                     : 'bg-primary text-primary-foreground hover:bg-primary/90'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isFollowLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
+                {isFollowLoading ? isFollowing ? 'Unfollowing...' : 'Following...' : isFollowing ? 'Unfollow' : 'Follow'}
               </button>
             </div>
 
