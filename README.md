@@ -126,10 +126,10 @@ grow.
 
 ## Funding
 
-**Current Budget**: $100
-**Money Spent**: $21.25
-**Money Donated**: $0
-**Profit Earned**: $0
+**Current Budget**: \$100  
+**Money Spent**: \$21.25  
+**Money Donated**: \$0  
+**Profit Earned**: \$0  
 
 Development is fueled by frustration with YouTube's direction and the belief 
 that users deserve better. Any donations will greatly help improve motivation
