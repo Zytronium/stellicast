@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
-export default function CompleteSignupPage() {
+function CompleteSignupForm() {
   const supabase = createSupabaseBrowserClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -180,5 +180,19 @@ export default function CompleteSignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CompleteSignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 to-black text-foreground">
+        <div className="max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CompleteSignupForm />
+    </Suspense>
   );
 }
