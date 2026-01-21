@@ -67,16 +67,17 @@ export default function AuthPage() {
             throw new Error('Parental consent required for users under 13');
           }
 
-          // Store pending account in database
-          const { error: dbError } = await supabase.from('pending_accounts').insert({
-            child_email: email,
-            parent_email: parentEmail,
-            date_of_birth: dateOfBirth,
-            consent_status: 'pending',
-            created_at: new Date().toISOString()
+          // Call the edge function to create pending account
+          const { data, error: functionError } = await supabase.functions.invoke('create-pending-account', {
+            body: {
+              childEmail: email,
+              parentEmail: parentEmail,
+              dateOfBirth: dateOfBirth,
+              password: password  // Send password to be hashed by edge function
+            }
           });
 
-          if (dbError) throw dbError;
+          if (functionError) throw functionError;
 
           // Send parental consent email
           const { error: emailError } = await supabase.functions.invoke('send-parental-consent', {
