@@ -59,7 +59,7 @@ the results, they must convert into a Studio channel.
 ### 0.9. Followers
 Allow users to follow channels.
 
-**Status:** In Progress
+**Status:** Done
 
 ### 0.10. Upload notifications
 Send notifications to suers when a channel they follow
@@ -110,7 +110,7 @@ Redesign the video player to match the new design.
 Add new functionalities to the watch page for likes, dislikes,
 stars, follows, comments, etc.
 
-**Status:** Done (except follows)
+**Status:** Done
 
 ## 3. Home Feed
 
@@ -270,7 +270,42 @@ music email and password.
 
 **Status:** Todo
 
-### 8.2 Add mod panel
+### 8.2. Add mod panel
 Add a moderation panel for moderators to review reports and moderate content.
+
+**Status:** Todo
+
+## 9. Legal Compliance
+
+### 9.1. Require disclosure of age on signup
+On signup form, add date of birth or a confirmation box that says you agree you
+are over 13 or have a parent or guardian who consents to the privacy policy.
+
+If user is under 13, ask for parent's email and send an email requesting consent
+of data collection, clearly outlining what data is collected and why. Include a 
+link that when clicked logs in the database that consent was given, then allow
+account creation. Also include a link that rejects it and blocks this attempt
+to create an account.
+
+**Status:** Todo
+
+### 9.2. Require all existing users to provide their age
+On all users' next visit to this site, if they have not verified their age, take
+them to a form asking their age. If they are under 13, ask for a parent or
+guardian's email and disable the account until consent is given.
+
+**Status:** Todo
+
+### 9.3. Do not store DOB of users over 13
+Store date of birth only as long as the user is under 13. Delete it as
+soon as they turn 13. Do not use DOB for any purpose other than determining
+if they are under 13 for legal compliance. Once users turn 13, flip a boolean
+in their user row that states they are now over 13.
+
+**Status:** Todo
+
+### 9.4. Update privacy policy and terms of use
+Prefer a legal expert to rewrite the whole thing, but at minimum, just keep it
+accurate and less vague.
 
 **Status:** Todo
