@@ -75,16 +75,29 @@ serve(async (req) => {
               <h2 style="margin: 0 0 16px; font-size: 18px; font-weight: 600; color: #ffffff;">
                 What Data We Collect
               </h2>
-              <ul style="margin: 0; padding-left: 24px; font-size: 14px; line-height: 1.8; color: #d1d5db;">
-                <li>Email address and date of birth</li>
-                <li>Username and profile information</li>
-                <li>Video viewing history and preferences</li>
-                <li>Comments, likes, and channel subscriptions</li>
-                <li>Device information and IP address</li>
-              </ul>
-              <p style="margin: 16px 0 0; font-size: 14px; line-height: 1.6; color: #9ca3af;">
-                We collect this data to provide our video streaming service, personalize content recommendations, and improve user experience. For full details, see our <a href="${baseUrl}/privacy-policy" style="color: #60a5fa; text-decoration: none;">Privacy Policy</a>.
+              <p style="margin: 0 0 12px; font-size: 14px; line-height: 1.6; color: #d1d5db;">
+                We collect the information you provide and certain technical and usage data automatically. Examples include:
               </p>
+              <ul style="margin: 0 0 8px; padding-left: 24px; font-size: 14px; line-height: 1.8; color: #d1d5db;">
+                <li><strong>Account & authentication:</strong> email address, password hash or authentication tokens (handled via our auth provider), account ID, username/display name, and account creation timestamps.</li>
+                <li><strong>Parent/child consent data:</strong> child email, parent email, date of birth, consent token and consent status (from pending account records) when parental consent is requested.</li>
+                <li><strong>Profile & preferences:</strong> avatar and banner pictures, bio/description, interests, preferences (theme/layout/algorithm settings), and notification preferences.</li>
+                <li><strong>Channels & creator data:</strong> channel metadata (channel name, handle, description, channel type, avatar/banner URLs, follower/video counts), studio information (company name, business email, team size), and creator links.</li>
+                <li><strong>Content & engagement:</strong> video metadata (titles, descriptions, thumbnails, tags, duration, is_ai/is_promotional flags), comments, comment/thread structure, likes/dislikes/stars, follower/subscription records, view counts, and watched-seconds (where available).</li>
+                <li><strong>Activity & usage data:</strong> pages and features visited, timestamps, session duration, rate-limit records (to prevent abuse), and arrays of liked/disliked/starred video and comment IDs stored on your account record.</li>
+                <li><strong>Device & technical data:</strong> IP address, browser type/version, operating system and device type, server logs, error/diagnostic logs, and other basic performance metrics collected automatically.</li>
+                <li><strong>Cookies & local storage:</strong> session cookies, authentication/session tokens, and local-storage preferences used to keep you logged in and store basic settings.</li>
+              </ul>
+
+              <p style="margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: #9ca3af;">
+                We use this information to operate the service (authentication, streaming, uploads), personalize and recommend content, secure the platform, and improve features. Some technical data may be processed by third-party service providers (for example: Supabase for auth/database, Bunny.net for content delivery, and Vercel for hosting). For full details, see our <a href="${baseUrl}/privacy-policy" style="color: #60a5fa; text-decoration: none;">Privacy Policy</a>.
+              </p>
+                <div style="margin-top: 16px; padding: 16px; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+                <h3 style="margin: 0 0 12px; font-size: 16px; font-weight: 600; color: #ffffff;">In Plain English</h3>
+                <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #d1d5db;">
+                  Simply put, we collect basic information like your child's email, birthday, username, and profile details. We also keep track of what videos they watch, the comments and likes they make, and which channels they follow. Additionally, we collect some information about the device they use and how they use the site. This data helps us make Stellicast work properly, recommend videos your child might like, and keep their account secure. We do not sell this information.
+                </p>
+              </div>
             </div>
 
             <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #d1d5db; text-align: center;">
