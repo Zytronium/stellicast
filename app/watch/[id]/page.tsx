@@ -10,6 +10,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await Promise.resolve(params);
   const { id } = resolvedParams;
 
+  if (id === 'pong') {
+
+    const title = `Pong - Stellicast`;
+    const description = `Pong on Stellicast`;
+
+    return {
+      title,
+      description
+    };
+  }
+
   try {
     // Fetch video data server-side for metadata
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
