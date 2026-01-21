@@ -306,6 +306,6 @@ in their user row that states they are now over 13.
 
 ### 9.4. Update privacy policy and terms of use
 Prefer a legal expert to rewrite the whole thing, but at minimum, just keep it
-accurate and less vauge.
+accurate and less vague.
 
 **Status:** Todo
