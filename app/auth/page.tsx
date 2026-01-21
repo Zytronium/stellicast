@@ -53,7 +53,15 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center text-foreground relative overflow-hidden">
+    <div className="flex flex-1 flex-col text-foreground relative overflow-hidden">
+      {/* Technical difficulties banner */}
+      <div className="w-full bg-destructive py-3 px-4 rounded-xl">
+        <p className="text-sm text-white text-center font-medium">
+          We are currently experiencing temporary technical difficulties with account creation. We are actively working on resolving the issue.
+        </p>
+      </div>
+
+      <div className="flex flex-1 items-center justify-center relative overflow-hidden">
       {/* Animated gradient blur background */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[500px] h-[500px] bg-gradient-to-r from-blue-600/30 via-purple-600/30 to-blue-600/30 rounded-full blur-3xl animate-pulse animation-duration-5000" />
@@ -155,6 +163,7 @@ export default function AuthPage() {
           </div>
         </form>
       </div>
+    </div>
     </div>
   );
 }
