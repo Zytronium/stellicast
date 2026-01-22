@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 export default async function ConsentRejectPage({
   searchParams,
@@ -6,7 +6,7 @@ export default async function ConsentRejectPage({
   searchParams: Promise<{ token?: string }>;
 }) {
   const params = await searchParams;
-  const token = params.token;
+  const token = params.token?.trim();
 
   if (!token) {
     return (
@@ -21,17 +21,39 @@ export default async function ConsentRejectPage({
     );
   }
 
-  const supabase = await createSupabaseServerClient();
+  // Use admin client to bypass RLS for this public operation
+  const supabase = createSupabaseAdminClient();
 
   try {
+    // Verify pending account exists before rejecting
+    const { data: pending } = await supabase
+      .from('pending_accounts')
+      .select('id')
+      .eq('consent_token', token)
+      .eq('consent_status', 'pending')
+      .maybeSingle();
+
+    if (!pending) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 to-black text-foreground">
+          <div className="max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+            <h1 className="text-2xl font-semibold text-destructive">Invalid or Expired</h1>
+            <p className="mt-4 text-muted-foreground">
+              This consent link is invalid or has already been used.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     // Update consent status to rejected
     const { error } = await supabase
       .from('pending_accounts')
       .update({ consent_status: 'rejected' })
-      .eq('consent_token', token)
-      .eq('consent_status', 'pending');
+      .eq('consent_token', token);
 
-    if (error) throw error;
+    if (error)
+      throw error;
 
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 to-black text-foreground">

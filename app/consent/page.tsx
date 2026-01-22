@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 export default async function ConsentPage({
   searchParams,
@@ -6,7 +6,7 @@ export default async function ConsentPage({
   searchParams: Promise<{ token?: string }>;
 }) {
   const params = await searchParams;
-  const token = params.token;
+  const token = params.token?.trim();
 
   if (!token) {
     return (
@@ -21,7 +21,8 @@ export default async function ConsentPage({
     );
   }
 
-  const supabase = await createSupabaseServerClient();
+  // Use admin client to bypass RLS for this public operation
+  const supabase = createSupabaseAdminClient();
 
   try {
     // Get pending account details
@@ -30,7 +31,7 @@ export default async function ConsentPage({
       .select('*')
       .eq('consent_token', token)
       .eq('consent_status', 'pending')
-      .single();
+      .maybeSingle();
 
     if (fetchError || !pending) {
       return (
@@ -51,7 +52,8 @@ export default async function ConsentPage({
       .update({ consent_status: 'approved' })
       .eq('consent_token', token);
 
-    if (updateError) throw updateError;
+    if (updateError)
+      throw updateError;
 
     // Send completion email to child
     const { error: emailError } = await supabase.functions.invoke('send-signup-completion', {
@@ -65,7 +67,6 @@ export default async function ConsentPage({
 
     if (emailError) {
       console.error('Failed to send completion email:', emailError);
-      // Don't throw - consent was approved, just notify parent to contact support
     }
 
     return (
@@ -93,7 +94,7 @@ export default async function ConsentPage({
             Thank you for approving the account creation request.
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            We've sent an email to <strong>{pending.child_email}</strong> with instructions to complete their signup and set a password.
+            We&apos;ve sent an email to <strong>{pending.child_email}</strong> with instructions to complete their signup and set a password.
           </p>
         </div>
       </div>
