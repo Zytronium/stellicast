@@ -121,7 +121,7 @@ export default function AuthPage() {
               </div>
               <h2 className="text-xl font-semibold text-card-foreground">Parental Consent Required</h2>
               <p className="text-sm text-muted-foreground">
-                We've sent an email to <strong>{parentEmail}</strong> with a consent request.
+                We&apos;ve sent an email to <strong>{parentEmail}</strong> with a consent request.
                 Your parent or guardian must approve before your account can be created.
               </p>
               <p className="text-xs text-muted-foreground">
@@ -149,7 +149,7 @@ export default function AuthPage() {
       {/* Technical difficulties banner */}
       <div className="w-full bg-destructive py-3 px-4 rounded-xl">
         <p className="text-sm text-white text-center font-medium">
-          We are currently experiencing temporary technical difficulties with account creation. We are actively working on resolving the issue.
+          We are currently experiencing temporary technical difficulties with child account activation. We are actively working on resolving the issue.
         </p>
       </div>
 
