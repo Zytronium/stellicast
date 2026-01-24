@@ -1,6 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
 
+// Generate random 8-character slug using a-z, A-Z, 0-9 (x2), _, -
+function generateSlug(): string {
+  // 0-9 appears twice to make it x2 more likely to show up in a slug due to there being 52 a-z characters
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
+  let slug = '';
+
+  for (let i = 0; i < 8; i++) {
+    slug += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return slug;
+}
+
+// Generate unique slug by checking against existing videos
+async function generateUniqueSlug(supabase: any): Promise<string> {
+  let slug = generateSlug();
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (attempts < maxAttempts) {
+    const { data, error } = await supabase
+      .from('videos')
+      .select('slug')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error)
+      throw error;
+
+    // If no video with this slug exists, we're good
+    if (!data) {
+      return slug;
+    }
+
+    // Conflict detected, generate a new slug
+    slug = generateSlug();
+    attempts++;
+  }
+
+  throw new Error('Failed to generate unique slug after multiple attempts');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
@@ -54,6 +95,9 @@ export async function POST(request: NextRequest) {
 
     const pullZone = process.env.BUNNY_PULL_ZONE_HOSTNAME;
 
+    // Generate unique slug for the video
+    const slug = await generateUniqueSlug(supabase);
+
     // Store video metadata
     const { data: newVideo, error: dbError } = await supabase
       .from('videos')
@@ -69,6 +113,7 @@ export async function POST(request: NextRequest) {
         is_ai: body.is_ai || false,
         is_promotional: body.is_promotional || false,
         tags: body.tags || [],
+        slug: slug,
       })
       .select()
       .single();
@@ -79,6 +124,7 @@ export async function POST(request: NextRequest) {
       success: true,
       guid,
       videoId: newVideo.id,
+      slug: newVideo.slug,
       libraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
       apiKey: process.env.BUNNY_STREAM_API_KEY,
     });
