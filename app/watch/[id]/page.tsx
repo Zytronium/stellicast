@@ -52,7 +52,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Check if video is private and user is not the owner
-  const isOwner = currentUserId && video.channels?.owner_id === currentUserId;
+  const channels = video.channels as any;
+  const channelOwnerId = Array.isArray(channels) ? channels[0]?.owner_id : channels?.owner_id;
+  const isOwner = currentUserId && channelOwnerId === currentUserId;
   if (video.visibility === 'private' && !isOwner) {
     return {
       title: 'Video Not Found - Stellicast',
@@ -162,7 +164,9 @@ export default async function WatchPage({ params }: Props) {
   // If found by slug, check visibility
   if (videoBySlug && !slugError) {
     // Check if video is private and user is not the owner
-    const isOwner = currentUserId && videoBySlug.channels?.owner_id === currentUserId;
+    const channels = videoBySlug.channels as any;
+    const channelOwnerId = Array.isArray(channels) ? channels[0]?.owner_id : channels?.owner_id;
+    const isOwner = currentUserId && channelOwnerId === currentUserId;
     if (videoBySlug.visibility === 'private' && !isOwner) {
       notFound();
     }
@@ -182,7 +186,9 @@ export default async function WatchPage({ params }: Props) {
   }
 
   // Check if video is private and user is not the owner
-  const isOwner = currentUserId && videoById.channels?.owner_id === currentUserId;
+  const channels = videoById.channels as any;
+  const channelOwnerId = Array.isArray(channels) ? channels[0]?.owner_id : channels?.owner_id;
+  const isOwner = currentUserId && channelOwnerId === currentUserId;
   if (videoById.visibility === 'private' && !isOwner) {
     notFound();
   }

@@ -274,6 +274,10 @@ export default function WatchPageClient({ params }: {
     let cleanupFn: (() => void) | undefined;
 
     async function loadData() {
+      if (!videoId)
+        return;
+
+      const currentVideoId = videoId;
       const resolvedParams = await Promise.resolve(params);
       const id = resolvedParams.id;
 
@@ -295,7 +299,7 @@ export default function WatchPageClient({ params }: {
         setLoading(true);
 
         // Use videoId for all fetches
-        const videoRes = await fetch(`/api/videos/${videoId}`, {
+        const videoRes = await fetch(`/api/videos/${currentVideoId}`, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
         });
@@ -350,8 +354,8 @@ export default function WatchPageClient({ params }: {
         document.title = `${videoObj.title} - Stellicast`;
 
         // Handle view counting using videoId
-        if (shouldCountView(videoId)) {
-          fetch(`/api/videos/${videoId}/view`, { method: 'POST' })
+        if (shouldCountView(currentVideoId)) {
+          fetch(`/api/videos/${currentVideoId}/view`, { method: 'POST' })
             .then(async res => {
               const data = await res.json();
               if (res.status === 429) {
@@ -370,7 +374,7 @@ export default function WatchPageClient({ params }: {
         if (allRes.ok) {
           const allData = await allRes.json();
           const videos = Array.isArray(allData.videos) ? allData.videos : [];
-          const filteredVideos = videos.filter((v: any) => v.id !== videoId);
+          const filteredVideos = videos.filter((v: any) => v.id !== currentVideoId);
 
           if (mounted) {
             setAllVideos(filteredVideos);
