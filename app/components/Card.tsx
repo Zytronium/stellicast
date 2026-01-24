@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { PlayIcon } from '@heroicons/react/24/solid';
 
 type CardProps = {
-  id: string;
+  slug: string;
   duration?: number | null;        // seconds
   title: string;
   creator_name: string;
@@ -35,7 +35,7 @@ function formatDate(date: string | Date): string {
 }
 
 export default function Card({
-  id,
+  slug,
   duration,
   title,
   creator_name,
@@ -48,7 +48,7 @@ export default function Card({
 
   return (
     <Link
-      href={`/watch/${id}`}
+      href={`/watch/${slug}`}
       className="group block overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md border-border bg-card"
     >
       <div className="relative aspect-video bg-muted">

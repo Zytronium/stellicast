@@ -147,7 +147,7 @@ export default async function ChannelPage({ params }: PageProps) {
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
           {videos?.map((video) => (
-            <Card key={video.id} id={video.id} duration={video.duration} title={video.title} creator_name={channel.display_name}
+            <Card key={video.id} slug={video.slug} duration={video.duration} title={video.title} creator_name={channel.display_name}
                   views={video.view_count} date={video.created_at} thumbnail_src={video.thumbnail_url} is_ai={video.is_ai} />
           ))}
         </div>

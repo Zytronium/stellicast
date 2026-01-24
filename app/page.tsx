@@ -61,7 +61,7 @@ export default function Home() {
           {videos.map((video) => (
             <Card
               key={video.id}
-              id={video.id}
+              slug={video.slug}
               duration={video.duration}
               title={video.title}
               creator_name={video.channels?.display_name || 'Unknown Creator'}
