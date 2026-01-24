@@ -843,15 +843,117 @@ export default function WatchPageClient({ params }: {
 
   if (loading || !authReady) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-muted-foreground">Loading...</div>
-          {retryCount > 0 && (
-            <div className="text-sm text-muted-foreground/70 mt-2">
+      <div className="flex flex-col lg:flex-row gap-6 max-w-[1800px] mx-auto px-4 animate-pulse">
+        {/* Main Content Skeleton */}
+        <div className="flex-1 min-w-0">
+          {/* Video Player Skeleton */}
+          <div className="relative bg-muted rounded-lg overflow-hidden aspect-video" />
+
+          {/* Video Info Skeleton */}
+          <div className="mt-4 space-y-3">
+            {/* Title Skeleton */}
+            <div className="h-7 bg-muted rounded-lg w-3/4" />
+
+            {/* Channel Info & Actions Skeleton */}
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
+              {/* Channel Info Skeleton */}
+              <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+                <div className="h-10 w-10 rounded-full bg-muted flex-shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-muted rounded w-32" />
+                  <div className="h-3 bg-muted rounded w-24" />
+                </div>
+                <div className="h-9 w-20 bg-muted rounded-lg" />
+              </div>
+
+              {/* Action Buttons Skeleton */}
+              <div className="flex flex-col sm:flex-row lg:flex lg:items-center gap-3 lg:gap-3">
+                <div className="flex items-center gap-3 rounded-xl border border-border bg-card/50 p-3 lg:p-0 lg:bg-transparent lg:border-0">
+                  <div className="h-20 w-24 bg-muted rounded-lg" />
+                  <div className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-16" />
+                    <div className="h-4 bg-muted rounded w-20" />
+                  </div>
+                  <div className="lg:hidden flex items-center gap-2">
+                    <div className="h-9 w-9 bg-muted rounded-full" />
+                    <div className="h-4 bg-muted rounded w-16" />
+                  </div>
+                </div>
+                <div className="hidden lg:flex items-center gap-2">
+                  <div className="h-8 w-8 bg-muted rounded-full" />
+                  <div className="h-4 bg-muted rounded w-16" />
+                </div>
+                <div className="h-11 w-full sm:w-24 bg-muted rounded-xl" />
+              </div>
+            </div>
+
+            {/* Description Skeleton */}
+            <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+              <div className="h-5 bg-muted rounded w-28" />
+              <div className="h-3 bg-muted rounded w-48" />
+              <div className="space-y-2">
+                <div className="h-4 bg-muted rounded w-full" />
+                <div className="h-4 bg-muted rounded w-5/6" />
+                <div className="h-4 bg-muted rounded w-4/6" />
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Comments Skeleton */}
+          <div className="lg:hidden mt-6">
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="h-6 bg-muted rounded w-32" />
+            </div>
+          </div>
+
+          {/* More Videos Skeleton */}
+          <div className="mt-8">
+            <div className="h-6 bg-muted rounded w-32 mb-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="space-y-2">
+                  <div className="aspect-video bg-muted rounded-lg" />
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Comments Sidebar Skeleton - Desktop Only */}
+        <div className="hidden lg:flex w-96 bg-card/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
+          <div className="h-6 bg-muted rounded w-32 mb-4" />
+          <div className="space-y-2 mb-4">
+            <div className="h-20 bg-muted rounded-lg" />
+            <div className="flex justify-end gap-2">
+              <div className="h-8 w-16 bg-muted rounded" />
+              <div className="h-8 w-20 bg-muted rounded" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <div className="h-8 w-8 rounded-full bg-muted flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-muted rounded w-24" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                    <div className="h-4 bg-muted rounded w-4/5" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {retryCount > 0 && (
+          <div className="fixed bottom-4 right-4 bg-card border border-border rounded-lg px-4 py-2 shadow-lg">
+            <div className="text-sm text-muted-foreground">
               Retry attempt {retryCount}/{maxRetries}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
