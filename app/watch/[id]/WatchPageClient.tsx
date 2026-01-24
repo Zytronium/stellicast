@@ -1018,8 +1018,8 @@ export default function WatchPageClient({ params }: {
           {/* Channel Info & Actions - Mobile Optimized */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
             {/* Channel Info */}
-            <div className="flex items-center justify-between sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-border bg-card p-3">
-              <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-border bg-card p-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Link
                   href={`/channel/${channelInfo.handle ?? ''}`}
                   className="grid h-10 w-10 place-items-center rounded-full bg-muted text-sm font-bold text-muted-foreground flex-shrink-0 overflow-hidden"
