@@ -96,6 +96,7 @@ export default function WatchPageClient({ params }: {
   params: { id: string } | Promise<{ id: string }>
 }) {
   const [video, setVideo] = useState<Video | null>(null);
+  const [videoId, setVideoId] = useState<string | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfo>({});
   const [isFollowing, setIsFollowing] = useState(false);
   const [upNext, setUpNext] = useState<Video[]>([]);
@@ -130,10 +131,10 @@ export default function WatchPageClient({ params }: {
 
   useEffect(() => {
     async function loadComments() {
-      if (!video) return;
+      if (!videoId) return;
 
       try {
-        const data = await fetchComments(video.id);
+        const data = await fetchComments(videoId);
         setComments(buildCommentTree(data.comments));
         setCommentCount(data.comments.length);
 
@@ -149,9 +150,9 @@ export default function WatchPageClient({ params }: {
     }
 
     loadComments();
-  }, [video]);
+  }, [videoId]);
 
-  // Separate auth initialization from data loading
+// Separate auth initialization from data loading
   useEffect(() => {
     let mounted = true;
 
@@ -173,21 +174,55 @@ export default function WatchPageClient({ params }: {
           return;
         }
 
-        // Resolve params and map "pong" -> UUID
+        // Use params instead of URL
         const resolvedParams = await Promise.resolve(params);
-        const rawId = resolvedParams.id;
-        const effectiveId = rawId === 'pong' ? PONG_UUID : rawId;
+        const id = resolvedParams.id;
 
-        // remember route was "pong" (used by UI)
-        if (mounted && rawId === 'pong') {
-          setVideo(prev => prev ? prev : null); // no-op placeholder if you want a state change elsewhere
+        // Determine video ID from id (which could be slug or UUID)
+        let effectiveId: string;
+        if (id === 'pong') {
+          effectiveId = PONG_UUID;
+          if (mounted) setIsPongRoute(true);
+        } else {
+          // Look up video by slug to get UUID
+          const { data: videoData, error: lookupError } = await supabase
+            .from('videos')
+            .select('id')
+            .eq('slug', id)
+            .single();
+
+          if (lookupError || !videoData) {
+            // Try by UUID as fallback
+            const { data: videoById, error: idError } = await supabase
+              .from('videos')
+              .select('id')
+              .eq('id', id)
+              .single();
+
+            if (idError || !videoById) {
+              // Video not found - set states and let the component handle 404
+              if (mounted) {
+                setAuthReady(true);
+                setLoading(false);
+                setVideoId(null);
+              }
+              return;
+            }
+            effectiveId = videoById.id;
+          } else {
+            effectiveId = videoData.id;
+          }
+        }
+
+        if (mounted) {
+          setVideoId(effectiveId);
         }
 
         if (session?.user) {
           setIsAuthenticated(true);
           setCurrentUserId(session.user.id);
 
-          // Fetch engagement state using effectiveId (UUID for pong)
+          // Fetch engagement state using effectiveId
           const [likeResult, dislikeResult, starResult] = await Promise.all([
             supabase
               .from('video_likes')
@@ -231,21 +266,18 @@ export default function WatchPageClient({ params }: {
     };
   }, [params]);
 
-  // Load video data only after auth is ready
+  // Load video data only after we have the video ID
   useEffect(() => {
-    if (!authReady) return;
+    if (!authReady || !videoId) return;
 
     let mounted = true;
     let cleanupFn: (() => void) | undefined;
 
     async function loadData() {
       const resolvedParams = await Promise.resolve(params);
-      const rawId = resolvedParams.id;
-      const effectiveId = rawId === 'pong' ? PONG_UUID : rawId;
-      if (rawId === 'pong' && mounted)
-        setIsPongRoute(true);
+      const id = resolvedParams.id;
 
-      if (rawId === 'pong') {
+      if (id === 'pong') {
         const handleKeyDown = (e: KeyboardEvent) => {
           if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
             e.preventDefault();
@@ -259,12 +291,11 @@ export default function WatchPageClient({ params }: {
         };
       }
 
-
       try {
         setLoading(true);
 
-        // use effectiveId for all fetches
-        const videoRes = await fetch(`/api/videos/${effectiveId}`, {
+        // Use videoId for all fetches
+        const videoRes = await fetch(`/api/videos/${videoId}`, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
         });
@@ -306,8 +337,8 @@ export default function WatchPageClient({ params }: {
         const channel: ChannelInfo = {
           id: videoData.channels?.id ?? videoData.channel_id,
           display_name: videoData.channels?.display_name ?? 'Unknown Creator',
-          video_count: videoData.channels?.video_count ?? videoData.channels?.video_count ?? 0,
-          follower_count: videoData.channels?.follower_count ?? videoData.channels?.follower_count ?? 0,
+          video_count: videoData.channels?.video_count ?? 0,
+          follower_count: videoData.channels?.follower_count ?? 0,
           handle: videoData.channels?.handle ?? videoData.channels?.slug ?? '',
           avatar_url: videoData.channels?.avatar_url ?? null,
         };
@@ -318,9 +349,9 @@ export default function WatchPageClient({ params }: {
         setChannelInfo(channel);
         document.title = `${videoObj.title} - Stellicast`;
 
-        // handle view counting using effectiveId
-        if (shouldCountView(effectiveId)) {
-          fetch(`/api/videos/${effectiveId}/view`, { method: 'POST' })
+        // Handle view counting using videoId
+        if (shouldCountView(videoId)) {
+          fetch(`/api/videos/${videoId}/view`, { method: 'POST' })
             .then(async res => {
               const data = await res.json();
               if (res.status === 429) {
@@ -334,12 +365,12 @@ export default function WatchPageClient({ params }: {
             .catch(err => console.error('Error incrementing view:', err));
         }
 
-        // Fetch related videos with effectiveId excluded
+        // Fetch related videos with videoId excluded
         const allRes = await fetch(`/api/videos`);
         if (allRes.ok) {
           const allData = await allRes.json();
           const videos = Array.isArray(allData.videos) ? allData.videos : [];
-          const filteredVideos = videos.filter((v: any) => v.id !== effectiveId);
+          const filteredVideos = videos.filter((v: any) => v.id !== videoId);
 
           if (mounted) {
             setAllVideos(filteredVideos);
@@ -347,8 +378,7 @@ export default function WatchPageClient({ params }: {
           }
         }
 
-        if (mounted)
-          setRetryCount(0);
+        if (mounted) setRetryCount(0);
       } catch (error) {
         console.error('Error loading video:', error);
 
@@ -370,22 +400,16 @@ export default function WatchPageClient({ params }: {
       }
     }
 
-    // call loadData and capture any cleanup function it resolves with
     loadData()
-      .then(fn => {
-        if (typeof fn === 'function') cleanupFn = fn;
-      })
       .catch(err => {
-        // log but don't block effect cleanup
         console.error('loadData error:', err);
       });
 
     return () => {
       mounted = false;
-      if (typeof cleanupFn === 'function')
-        cleanupFn();
+      if (typeof cleanupFn === 'function') cleanupFn();
     };
-  }, [authReady, params, retryCount]);
+  }, [authReady, videoId, params, retryCount]);
 
   useEffect(() => {
     if (!video) return;
@@ -422,9 +446,9 @@ export default function WatchPageClient({ params }: {
   };
 
   const refreshComments = async () => {
-    if (!video) return;
+    if (!videoId) return;
     try {
-      const data = await fetchComments(video.id);
+      const data = await fetchComments(videoId);
       setComments(buildCommentTree(data.comments));
       setCommentCount(data.comments.length);
 
@@ -438,7 +462,7 @@ export default function WatchPageClient({ params }: {
   };
 
   const handleCommentSubmit = async () => {
-    if (!newComment.trim() || !video) return;
+    if (!newComment.trim() || !videoId) return;
 
     if (!isAuthenticated) {
       alert('Please sign in to comment');
@@ -446,7 +470,7 @@ export default function WatchPageClient({ params }: {
     }
 
     try {
-      await postComment(video.id, newComment.trim());
+      await postComment(videoId, newComment.trim());
       setNewComment('');
       setShowCommentModal(false);
       await refreshComments();
@@ -461,11 +485,10 @@ export default function WatchPageClient({ params }: {
       return;
     }
 
-    if (!video || likeLoading)
-      return;
+    if (!video || !videoId || likeLoading) return;
 
     // Check if there's already a request in flight
-    if (interactionQueue.isRequestInFlight('like', video.id)) {
+    if (interactionQueue.isRequestInFlight('like', videoId)) {
       console.log('Like request already in flight, ignoring click');
       return;
     }
@@ -480,7 +503,7 @@ export default function WatchPageClient({ params }: {
 
     // Calculate new state (toggle like)
     const newLiked = !wasLiked;
-    const newDisliked = false; // Liking removes dislike
+    const newDisliked = false;
 
     // Calculate count changes
     let likesDelta = newLiked ? 1 : -1;
@@ -500,7 +523,7 @@ export default function WatchPageClient({ params }: {
     }
 
     const performLike = async () => {
-      const response = await fetch(`/api/videos/${video.id}/like`, {
+      const response = await fetch(`/api/videos/${videoId}/like`, {
         method: 'POST',
       });
 
@@ -516,9 +539,8 @@ export default function WatchPageClient({ params }: {
         throw new Error(data.error || 'Failed to like video');
       }
 
-      // Update with server truth (important!)
+      // Update with server truth
       setLiked(data.liked);
-      // RPC guarantees dislike removed when like is present
       if (data.liked) {
         setDisliked(false);
       }
@@ -529,9 +551,8 @@ export default function WatchPageClient({ params }: {
       } : null);
     };
 
-    // Register this request as in-flight
     const requestPromise = performLike();
-    interactionQueue.registerInFlight('like', video.id, requestPromise);
+    interactionQueue.registerInFlight('like', videoId, requestPromise);
 
     try {
       await requestPromise;
@@ -540,7 +561,7 @@ export default function WatchPageClient({ params }: {
         // Rate limited - queue for retry
         interactionQueue.queueForRetry(
           'like',
-          video.id,
+          videoId,
           performLike,
           (errorMsg) => {
             // Rollback on final error
@@ -554,7 +575,6 @@ export default function WatchPageClient({ params }: {
             showErrorToast(`Failed to like video: ${errorMsg}`);
           },
           () => {
-            // Success callback - state already updated in performLike
             console.log('Like action completed after retry');
           }
         );
@@ -573,7 +593,7 @@ export default function WatchPageClient({ params }: {
     } finally {
       setLikeLoading(false);
     }
-  }, [isAuthenticated, likeLoading, video, liked, disliked]);
+  }, [isAuthenticated, likeLoading, video, videoId, liked, disliked]);
 
   const handleDislikeClick = useCallback(async () => {
     if (!isAuthenticated) {
@@ -581,9 +601,9 @@ export default function WatchPageClient({ params }: {
       return;
     }
 
-    if (!video || dislikeLoading) return;
+    if (!video || !videoId || dislikeLoading) return;
 
-    if (interactionQueue.isRequestInFlight('dislike', video.id)) {
+    if (interactionQueue.isRequestInFlight('dislike', videoId)) {
       console.log('Dislike request already in flight, ignoring click');
       return;
     }
@@ -617,7 +637,7 @@ export default function WatchPageClient({ params }: {
     }
 
     const performDislike = async () => {
-      const response = await fetch(`/api/videos/${video.id}/dislike`, {
+      const response = await fetch(`/api/videos/${videoId}/dislike`, {
         method: 'POST',
       });
 
@@ -646,7 +666,7 @@ export default function WatchPageClient({ params }: {
     };
 
     const requestPromise = performDislike();
-    interactionQueue.registerInFlight('dislike', video.id, requestPromise);
+    interactionQueue.registerInFlight('dislike', videoId, requestPromise);
 
     try {
       await requestPromise;
@@ -655,7 +675,7 @@ export default function WatchPageClient({ params }: {
         // Rate limited - queue for retry
         interactionQueue.queueForRetry(
           'dislike',
-          video.id,
+          videoId,
           performDislike,
           (errorMsg) => {
             // Rollback on final error
@@ -687,7 +707,7 @@ export default function WatchPageClient({ params }: {
     } finally {
       setDislikeLoading(false);
     }
-  }, [isAuthenticated, dislikeLoading, video, liked, disliked]);
+  }, [isAuthenticated, dislikeLoading, video, videoId, liked, disliked]);
 
   const handleStarClick = useCallback(async () => {
     if (!isAuthenticated) {
@@ -701,10 +721,9 @@ export default function WatchPageClient({ params }: {
       return;
     }
 
-    if (!video || starLoading)
-      return;
+    if (!video || !videoId || starLoading) return;
 
-    if (interactionQueue.isRequestInFlight('star', video.id)) {
+    if (interactionQueue.isRequestInFlight('star', videoId)) {
       console.log('Star request already in flight, ignoring click');
       return;
     }
@@ -726,10 +745,9 @@ export default function WatchPageClient({ params }: {
     } : null);
 
     const performStar = async () => {
-      // Ensure seconds are sent as integer seconds
       const watchedSecs = Math.floor(watchedSeconds);
 
-      const response = await fetch(`/api/videos/${video.id}/star`, {
+      const response = await fetch(`/api/videos/${videoId}/star`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -764,7 +782,7 @@ export default function WatchPageClient({ params }: {
     };
 
     const requestPromise = performStar();
-    interactionQueue.registerInFlight('star', video.id, requestPromise);
+    interactionQueue.registerInFlight('star', videoId, requestPromise);
 
     try {
       await requestPromise;
@@ -773,7 +791,7 @@ export default function WatchPageClient({ params }: {
         // Rate limited - queue for retry
         interactionQueue.queueForRetry(
           'star',
-          video.id,
+          videoId,
           performStar,
           (errorMsg) => {
             // Rollback on final error
@@ -801,7 +819,7 @@ export default function WatchPageClient({ params }: {
     } finally {
       setStarLoading(false);
     }
-  }, [isAuthenticated, canStar, starLoading, video, starred, watchedSeconds]);
+  }, [isAuthenticated, canStar, starLoading, video, videoId, starred, watchedSeconds]);
 
   const handleShare = async () => {
     try {
@@ -833,13 +851,24 @@ export default function WatchPageClient({ params }: {
     );
   }
 
-  if (!video) {
+  // If auth is ready but we never got a videoId, show 404
+  if (!videoId) {
     notFound();
     return null;
   }
 
-  // Create a compatibility object for components (VideoPlayer and any legacy UI expecting previous keys).
-  // Casting to any keeps TypeScript from complaining if those components still expect the old shape.
+  if (!video) {
+    // Still loading video data (we have ID but not full video object yet)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-muted-foreground">Loading video...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Create a compatibility object for components (VideoPlayer and any legacy UI expecting previous keys)
   const playerVideo: any = {
     id: video.id,
     title: video.title,
@@ -863,35 +892,26 @@ export default function WatchPageClient({ params }: {
     <div className="flex flex-col lg:flex-row gap-6 max-w-[1800px] mx-auto px-4">
       {/* Main Content - Video and Info */}
       <div className="flex-1 min-w-0">
-
         {/* Video Player Or Canvas */}
-        {isPongRoute
-          ? (
-            <>
-              <canvas
-                className="relative bg-black rounded-lg overflow-hidden aspect-video"></canvas>
-              <Script src={'/script/secret.js'}></Script>
-            </>
-          )
-          : (
-            <VideoPlayer video={playerVideo}
-                         onWatchedTimeUpdate={handleWatchedTimeUpdate} />
-          )}
+        {isPongRoute ? (
+          <>
+            <canvas className="relative bg-black rounded-lg overflow-hidden aspect-video"></canvas>
+            <Script src={'/script/secret.js'}></Script>
+          </>
+        ) : (
+          <VideoPlayer video={playerVideo} onWatchedTimeUpdate={handleWatchedTimeUpdate} />
+        )}
 
         {/* Video Info */}
         <div className="mt-4 space-y-3">
           {/* Title */}
-          <h1
-            className="text-lg sm:text-xl lg:text-2xl font-semibold px-0 wrap-break-word max-w-[90vw]">{video.title}</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold px-0 wrap-break-word max-w-[90vw]">{video.title}</h1>
 
           {/* Channel Info & Actions - Mobile Optimized */}
-          <div
-            className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
             {/* Channel Info */}
-            <div
-              className="flex items-center justify-between sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-border bg-card p-3">
-              <div
-                className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial">
+            <div className="flex items-center justify-between sm:justify-start gap-3 lg:gap-4 rounded-2xl border border-border bg-card p-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-initial">
                 <Link
                   href={`/channel/${channelInfo.handle ?? ''}`}
                   className="grid h-10 w-10 place-items-center rounded-full bg-muted text-sm font-bold text-muted-foreground flex-shrink-0 overflow-hidden"
@@ -914,10 +934,8 @@ export default function WatchPageClient({ params }: {
                     {channelInfo.display_name ?? 'Unknown Creator'}
                   </Link>
                   <div className="text-xs text-muted-foreground">
-                    {channelInfo.video_count ?? 0} video
-                    {channelInfo.video_count === 1 ? "" : "s"} •{" "}
-                    {channelInfo.follower_count ?? 0} follower
-                    {channelInfo.follower_count === 1 ? "" : "s"}
+                    {channelInfo.video_count ?? 0} video{channelInfo.video_count === 1 ? "" : "s"} •{" "}
+                    {channelInfo.follower_count ?? 0} follower{channelInfo.follower_count === 1 ? "" : "s"}
                   </div>
                 </div>
               </div>
@@ -936,22 +954,18 @@ export default function WatchPageClient({ params }: {
             </div>
 
             {/* Action Buttons - Mobile Optimized */}
-            <div
-              className="flex flex-col sm:flex-row lg:flex lg:items-center gap-3 lg:gap-3">
+            <div className="flex flex-col sm:flex-row lg:flex lg:items-center gap-3 lg:gap-3">
               {/* Like/Dislike - Mobile takes full width */}
-              <div
-                className="flex items-center justify-between sm:justify-start gap-3 rounded-xl border border-border bg-card/50 p-3 lg:p-0 lg:bg-transparent lg:border-0">
+              <div className="flex items-center justify-between sm:justify-start gap-3 rounded-xl border border-border bg-card/50 p-3 lg:p-0 lg:bg-transparent lg:border-0">
                 <div className="flex items-center gap-2">
-                  <div
-                    className="flex flex-col lg:flex-col rounded-lg overflow-hidden border border-border">
+                  <div className="flex flex-col lg:flex-col rounded-lg overflow-hidden border border-border">
                     <button
                       onClick={handleLikeClick}
                       className={`flex items-center justify-center px-4 py-2.5 lg:px-3 lg:py-2 text-sm transition ${
                         liked ? 'bg-blue-600 text-white' : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
                       }`}
                     >
-                      <ThumbsUpIcon ref={likeIconRef}
-                                    className="w-5 h-5 lg:w-4 lg:h-4" />
+                      <ThumbsUpIcon ref={likeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
                     </button>
                     <div className="h-px bg-border"></div>
                     <button
@@ -960,20 +974,14 @@ export default function WatchPageClient({ params }: {
                         disliked ? 'bg-red-600 text-white' : 'bg-card text-card-foreground hover:bg-accent hover:text-accent-foreground'
                       }`}
                     >
-                      <ThumbsDownIcon ref={dislikeIconRef}
-                                      className="w-5 h-5 lg:w-4 lg:h-4" />
+                      <ThumbsDownIcon ref={dislikeIconRef} className="w-5 h-5 lg:w-4 lg:h-4" />
                     </button>
                   </div>
-                  <div
-                    className="flex flex-col text-sm lg:text-xs text-muted-foreground gap-3">
-                    <span
-                      className="whitespace-nowrap lg:hidden font-medium">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
-                    <span
-                      className="hidden lg:inline whitespace-nowrap">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
-                    <span
-                      className="whitespace-nowrap lg:hidden font-medium">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
-                    <span
-                      className="hidden lg:inline whitespace-nowrap">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
+                  <div className="flex flex-col text-sm lg:text-xs text-muted-foreground gap-3">
+                    <span className="whitespace-nowrap lg:hidden font-medium">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
+                    <span className="hidden lg:inline whitespace-nowrap">{video.likes} like{video.likes === 1 ? '' : 's'}</span>
+                    <span className="whitespace-nowrap lg:hidden font-medium">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
+                    <span className="hidden lg:inline whitespace-nowrap">{video.dislikes} dislike{video.dislikes === 1 ? '' : 's'}</span>
                   </div>
                 </div>
 
@@ -995,8 +1003,7 @@ export default function WatchPageClient({ params }: {
                     />
                   </button>
                   <div>
-                    <span
-                      className={`text-sm font-semibold ${starred ? 'text-warning' : canStar ? 'text-card-foreground' : 'text-muted-foreground'}`}>
+                    <span className={`text-sm font-semibold ${starred ? 'text-warning' : canStar ? 'text-card-foreground' : 'text-muted-foreground'}`}>
                       {video.stars} star{video.stars === 1 ? '' : 's'}
                     </span>
                   </div>
@@ -1020,8 +1027,7 @@ export default function WatchPageClient({ params }: {
                     fill={starred ? 'currentColor' : '#1c263a'}
                   />
                 </button>
-                <span
-                  className={`text-sm font-medium whitespace-nowrap ${starred ? 'text-warning' : canStar ? 'text-card-foreground' : 'text-muted-foreground'}`}>
+                <span className={`text-sm font-medium whitespace-nowrap ${starred ? 'text-warning' : canStar ? 'text-card-foreground' : 'text-muted-foreground'}`}>
                   {video.stars} star{video.stars === 1 ? '' : 's'}
                 </span>
               </div>
@@ -1036,8 +1042,7 @@ export default function WatchPageClient({ params }: {
                   <span className="text-sm font-medium">Share</span>
                 </button>
                 {showShareCopied && (
-                  <div
-                    className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
+                  <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-secondary text-secondary-foreground text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
                     Link copied!
                   </div>
                 )}
@@ -1048,11 +1053,9 @@ export default function WatchPageClient({ params }: {
           {/* Description */}
           <div className="rounded-2xl border border-border bg-card p-4">
             <details open className="group">
-              <summary
-                className="cursor-pointer list-none text-sm font-semibold text-card-foreground">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-card-foreground">
                 Description
-                <span
-                  className="ml-2 text-xs font-normal text-muted-foreground group-open:hidden">
+                <span className="ml-2 text-xs font-normal text-muted-foreground group-open:hidden">
                   (click to expand)
                 </span>
               </summary>
@@ -1063,8 +1066,7 @@ export default function WatchPageClient({ params }: {
                 </p>
                 <div className="text-sm leading-relaxed text-card-foreground">
                   {(video.description ?? '').split('\n').map((line, i) => (
-                    <p key={i}
-                       className={`${i === 0 ? '' : 'mt-3'} wrap-break-word max-w-[80vw]`}>
+                    <p key={i} className={`${i === 0 ? '' : 'mt-3'} wrap-break-word max-w-[80vw]`}>
                       {line}
                     </p>
                   ))}
@@ -1083,8 +1085,7 @@ export default function WatchPageClient({ params }: {
               className="w-full p-4 flex items-center justify-between hover:bg-accent/30 transition"
             >
               <div className="flex items-center gap-2">
-                <h2
-                  className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
+                <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
               </div>
               {mobileCommentsExpanded ? (
                 <ChevronUp className="w-5 h-5 text-muted-foreground" />
@@ -1124,9 +1125,7 @@ export default function WatchPageClient({ params }: {
 
                   <div className="space-y-1 max-h-[600px] overflow-y-auto">
                     {isLoadingComments ? (
-                      <p
-                        className="text-sm text-muted-foreground text-center py-8">Loading
-                                                                                   comments...</p>
+                      <p className="text-sm text-muted-foreground text-center py-8">Loading comments...</p>
                     ) : comments.length > 0 ? (
                       comments.map((comment) => (
                         <CommentComponent
@@ -1141,15 +1140,9 @@ export default function WatchPageClient({ params }: {
                         />
                       ))
                     ) : (
-                      <p
-                        className="text-sm text-muted-foreground text-center py-8">No
-                                                                                   comments
-                                                                                   yet.
-                                                                                   Be
-                                                                                   the
-                                                                                   first
-                                                                                   to
-                                                                                   comment!</p>
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        No comments yet. Be the first to comment!
+                      </p>
                     )}
                   </div>
                 </div>
@@ -1163,10 +1156,17 @@ export default function WatchPageClient({ params }: {
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {upNext.map((v: any) => (
-              <Card key={v.id} id={v.id} title={v.title} creator_name={v.creator}
-                    date={v.created_at}
-                    thumbnail_src={v.thumbnail_url} is_ai={v.is_ai}
-                    views={v.view_count} duration={v.duration} />
+              <Card
+                key={v.id}
+                id={v.id}
+                title={v.title}
+                creator_name={v.creator}
+                date={v.created_at}
+                thumbnail_src={v.thumbnail_url}
+                is_ai={v.is_ai}
+                views={v.view_count}
+                duration={v.duration}
+              />
             ))}
           </div>
           {upNext.length < allVideos.length && (
@@ -1183,11 +1183,9 @@ export default function WatchPageClient({ params }: {
       </div>
 
       {/* Comments Sidebar - Desktop Only */}
-      <div
-        className="hidden lg:flex w-96 bg-card/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
+      <div className="hidden lg:flex w-96 bg-card/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
         <div className="flex items-center justify-between mb-4">
-          <h2
-            className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
+          <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
         </div>
 
         <div className="mb-4">
@@ -1217,8 +1215,7 @@ export default function WatchPageClient({ params }: {
 
         <div className="flex-1 overflow-y-auto">
           {isLoadingComments ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Loading
-                                                                          comments...</p>
+            <p className="text-sm text-muted-foreground text-center py-8">Loading comments...</p>
           ) : comments.length > 0 ? (
             <div className="space-y-1">
               {comments.map((comment) => (
@@ -1235,20 +1232,17 @@ export default function WatchPageClient({ params }: {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">No comments
-                                                                          yet. Be the
-                                                                          first to
-                                                                          comment!</p>
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No comments yet. Be the first to comment!
+            </p>
           )}
         </div>
       </div>
 
       {/* Mobile Comment Modal */}
       {showCommentModal && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end lg:hidden">
-          <div
-            className="bg-card rounded-t-2xl w-full p-6 animate-slide-up border-t border-border">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end lg:hidden">
+          <div className="bg-card rounded-t-2xl w-full p-6 animate-slide-up border-t border-border">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Add Comment</h3>
               <button
