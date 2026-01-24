@@ -318,6 +318,7 @@ export default function WatchPageClient({ params }: {
 
         const videoObj: Video = {
           id: videoData.id,
+          slug: videoData.slug,
           title: videoData.title,
           description: videoData.description ?? '',
           thumbnail: videoData.thumbnail_url ?? videoData.thumbnail ?? '',
@@ -875,6 +876,7 @@ export default function WatchPageClient({ params }: {
   // Create a compatibility object for components (VideoPlayer and any legacy UI expecting previous keys)
   const playerVideo: any = {
     id: video.id,
+    slug: video.slug,
     title: video.title,
     description: video.description,
     thumbnail: video.thumbnail,
@@ -1162,7 +1164,7 @@ export default function WatchPageClient({ params }: {
             {upNext.map((v: any) => (
               <Card
                 key={v.id}
-                id={v.id}
+                slug={v.slug}
                 title={v.title}
                 creator_name={v.creator}
                 date={v.created_at}
