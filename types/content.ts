@@ -47,3 +47,30 @@ export interface Comment {
 }
 
 export type CommentWithChildren = Comment & { children?: CommentWithChildren[] };
+
+export interface SectorMember {
+  sector_id: string;
+  user_id: string;
+  roles: string[];
+  permissions: string[];
+  joined_at: Date;
+}
+
+export interface Sector {
+  id: string;              // A short ID for URL shortening that we might do in the future
+  slug: string;            // A URL-friendly unique slug for the sector (i.e. rc_planes instead of RC Planes)
+  name: string;            // A unique human-friendly name for the sector (i.e. RC Planes)
+  description?: string;    // An optional description for the sector (i.e. "The place to post videos of your RC planes")
+  icon?: string;           // Optional URL to the icon for this sector
+  member_count: number;    // Total number of members/followers of this sector
+  video_count: number;     // An array of videos associated with this sector
+  createdAt: Date;         // Timestamp of this sector's creation
+  updatedAt: Date;         // Timestamp of the last update to this sector aside from its videos
+}
+
+export interface SectorVideo {
+  video_id: string;
+  sector_id: string;
+  // added_at: Date; // When the video was added to the Sector, not when it was published. Potential future metric if videos can be added to Sectors after upload, which oculd be a useful feature.
+}
+
