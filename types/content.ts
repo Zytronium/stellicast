@@ -63,7 +63,7 @@ export interface SectorVideo {
 }
 
 export interface Sector {
-  id: string;               // A short ID for URL shortening that we might do in the future
+  id: string;               // A UUID that uniquely identifies the sector in the database
   slug: string;             // A URL-friendly unique slug for the sector (i.e. rc_planes instead of RC Planes)
   name: string;             // A unique human-friendly name for the sector (i.e. RC Planes)
   description?: string;     // An optional description for the sector (i.e. "The place to post videos of your RC planes")

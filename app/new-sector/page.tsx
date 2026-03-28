@@ -414,9 +414,17 @@ export default function NewSectorPage() {
     function validate(): boolean {
         const next: FormErrors = {};
 
-        if (!form.name.trim()) next.name = 'Sector name is required.';
-        if (!form.slug.trim()) next.slug = 'Sector slug is required.';
-        else if (!/^[a-z0-9_-]{1,24}$/.test(form.slug)) next.slug = 'Slug may only contain a–z, 0–9, _ and -.';
+        if (!form.name.trim())
+            next.name = 'Sector name is required.';
+        else if (form.name.toLowerCase() === 'all')
+            next.name = '"All" is a reserved name and cannot be used.';
+
+        if (!form.slug.trim())
+            next.slug = 'Sector slug is required.';
+        else if (!/^[a-z0-9_-]{1,24}$/.test(form.slug))
+            next.slug = 'Slug may only contain a–z, 0–9, _ and -.';
+        else if (form.slug.toLowerCase() === 'all')
+            next.slug = '"all" is a reserved slug and cannot be used.';
 
         if (form.minVideoLength >= form.maxVideoLength) {
             next.minVideoLength = 'Min length must be less than max length.';
