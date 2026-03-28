@@ -255,9 +255,33 @@ switcher.
 
 ## 7. Sectors
 
-### 7.1. Add sectors page
-Add a Sectors page that displays a unique layout showing many
-different sectors.
+### 7.1. Add sector creation page
+On the More page, add a button to create a new Sector. Then,
+create the page for users to create a new Sector. Users must
+have an account that is at least a week old and be older than
+13 to create a Sector. In the future, creating a Sector will
+also potentially require the user to have a premium paid tier.
+However, this will only happen if the website picks up real
+and significant traffic.
+
+**Status:** In Progress
+
+### 7.2. Add sectors page
+Add a Sectors page that displays a grid or list layout showing
+many different sectors. Sectors can be searched for or recommended.
+
+**Status:** Todo
+
+### 7.3. Add star map
+Add a unique galaxy-like map of every single sector. On sector 
+creation, users can optionally choose a location on this map,
+or may also opt to keep it hidden from the map for privacy. 
+Users can choose a location as far out as they want to keep
+their sector relatively inaccessible from the map but still
+visible and accessible on it, or can try to find a location
+close to the center to maximize visibility.
+
+**Status:** Todo
 
 **Status:** Todo
 
