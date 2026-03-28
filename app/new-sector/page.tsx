@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useRef, useCallback } from "react";
-import { Upload, X, Hash, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {Plus, Compass, Hash, Trash2, Loader2, AlertCircle, Upload} from "lucide-react";
 import Image from "next/image";
+import { createSupabaseBrowserClient } from "@/../lib/supabase-client";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -48,33 +50,27 @@ function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: stri
     );
 }
 
+function FieldError({ message }: { message?: string }) {
+    if (!message) return null;
+    return (
+        <div className="flex items-center gap-1.5 mt-1.5">
+            <AlertCircle className="w-3.5 h-3.5 text-destructive-foreground flex-shrink-0" />
+            <span className="text-xs text-destructive-foreground">{message}</span>
+        </div>
+    );
+}
+
 function Checkbox({
-                      label,
-                      hint,
-                      checked,
-                      onChange,
+                      label, hint, checked, onChange,
                   }: {
-    label: string;
-    hint?: string;
-    checked: boolean;
-    onChange: (v: boolean) => void;
+    label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void;
 }) {
     return (
         <label className="flex items-start gap-3 cursor-pointer group">
             <div className="mt-0.5 relative flex-shrink-0">
-                <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={e => onChange(e.target.checked)}
-                    className="sr-only"
-                />
-                <div
-                    className={`w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center
-            ${checked
-                        ? 'bg-primary border-primary'
-                        : 'bg-input border-border group-hover:border-muted-foreground'
-                    }`}
-                >
+                <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only" />
+                <div className={`w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center
+          ${checked ? 'bg-primary border-primary' : 'bg-input border-border group-hover:border-muted-foreground'}`}>
                     {checked && (
                         <svg className="w-2.5 h-2.5 text-primary-foreground" viewBox="0 0 10 10" fill="none">
                             <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -100,29 +96,19 @@ function SectionCard({ title, children }: { title: string; children: React.React
 }
 
 function TimeInput({
-                       label,
-                       hint,
-                       value,
-                       format,
-                       min,
-                       max,
-                       onChange,
+                       label, hint, value, format, min, max, onChange, error,
                    }: {
-    label: string;
-    hint?: string;
-    value: number;
-    format: 'mm:ss' | 'hh:mm:ss';
-    min: number;
-    max: number;
-    onChange: (seconds: number) => void;
+    label: string; hint?: string; value: number; format: 'mm:ss' | 'hh:mm:ss';
+    min: number; max: number; onChange: (seconds: number) => void; error?: string;
 }) {
-    const displayValue = format === 'mm:ss' ? formatMinSec(value) : formatHourMinSec(value);
-    const placeholder = format === 'mm:ss' ? '00:00' : '00:00:00';
+    const [raw, setRaw] = useState(format === 'mm:ss' ? formatMinSec(value) : formatHourMinSec(value));
 
-    function handleBlur(raw: string) {
+    function handleBlur() {
         const parsed = format === 'mm:ss' ? parseMinSec(raw) : parseHourMinSec(raw);
         if (!isNaN(parsed)) {
-            onChange(Math.min(max, Math.max(min, parsed)));
+            const clamped = Math.min(max, Math.max(min, parsed));
+            onChange(clamped);
+            setRaw(format === 'mm:ss' ? formatMinSec(clamped) : formatHourMinSec(clamped));
         }
     }
 
@@ -131,23 +117,66 @@ function TimeInput({
             <FieldLabel hint={hint}>{label}</FieldLabel>
             <input
                 type="text"
-                defaultValue={displayValue}
-                placeholder={placeholder}
-                onBlur={e => handleBlur(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition font-mono"
+                value={raw}
+                onChange={e => setRaw(e.target.value)}
+                onBlur={handleBlur}
+                placeholder={format === 'mm:ss' ? '00:00' : '00:00:00'}
+                className={`w-full px-3 py-2 rounded-lg bg-input border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition font-mono
+          ${error ? 'border-destructive' : 'border-border'}`}
             />
+            <FieldError message={error} />
         </div>
     );
 }
 
+// ─── Form State ───────────────────────────────────────────────────────────────
+
+interface FormState {
+    starMap: boolean;
+    privateAccess: boolean;
+    allowAI: boolean;
+    minVideoLength: number;
+    maxVideoLength: number;
+    iconFile: File | null;
+    iconPreview: string;
+    name: string;
+    slug: string;
+    description: string;
+    rules: string[];
+}
+
+interface FormErrors {
+    name?: string;
+    slug?: string;
+    icon?: string;
+    minVideoLength?: string;
+    maxVideoLength?: string;
+    submit?: string;
+}
+
+const defaultForm: FormState = {
+    starMap: true,
+    privateAccess: false,
+    allowAI: true,
+    minVideoLength: 1,
+    maxVideoLength: 28800,
+    iconFile: null,
+    iconPreview: '',
+    name: '',
+    slug: '',
+    description: '',
+    rules: [],
+};
+
 // ─── Column Components ────────────────────────────────────────────────────────
 
 function AdvancedOptionsColumn({
-                                   form,
-                                   setForm,
+                                   form, setForm, errors, setErrors,
                                }: {
     form: FormState;
     setForm: React.Dispatch<React.SetStateAction<FormState>>;
+    errors: FormErrors;
+    setErrors: React.Dispatch<React.SetStateAction<FormErrors>>;
 }) {
     return (
         <div className="flex flex-col gap-4">
@@ -180,7 +209,11 @@ function AdvancedOptionsColumn({
                     format="mm:ss"
                     min={0}
                     max={3600}
-                    onChange={v => setForm(f => ({ ...f, minVideoLength: v }))}
+                    error={errors.minVideoLength}
+                    onChange={v => {
+                        setForm(f => ({ ...f, minVideoLength: v }));
+                        if (v < form.maxVideoLength) setErrors(e => ({ ...e, minVideoLength: undefined }));
+                    }}
                 />
                 <TimeInput
                     label="Max Video Length"
@@ -189,7 +222,11 @@ function AdvancedOptionsColumn({
                     format="hh:mm:ss"
                     min={15}
                     max={43200}
-                    onChange={v => setForm(f => ({ ...f, maxVideoLength: v }))}
+                    error={errors.maxVideoLength}
+                    onChange={v => {
+                        setForm(f => ({ ...f, maxVideoLength: v }));
+                        if (v > form.minVideoLength) setErrors(e => ({ ...e, maxVideoLength: undefined }));
+                    }}
                 />
             </SectionCard>
         </div>
@@ -197,47 +234,52 @@ function AdvancedOptionsColumn({
 }
 
 function CustomizationColumn({
-                                 form,
-                                 setForm,
+                                 form, setForm, errors, setErrors,
                              }: {
     form: FormState;
     setForm: React.Dispatch<React.SetStateAction<FormState>>;
+    errors: FormErrors;
+    setErrors: React.Dispatch<React.SetStateAction<FormErrors>>;
 }) {
     const fileRef = useRef<HTMLInputElement>(null);
-    const [iconError, setIconError] = useState('');
     const [slugManual, setSlugManual] = useState(false);
 
     function handleIconChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
         if (file.size > 5 * 1024 * 1024) {
-            setIconError('Icon must be under 5 MB.');
+            setErrors(err => ({ ...err, icon: 'Icon must be under 5 MB.' }));
             return;
         }
-        setIconError('');
-        const url = URL.createObjectURL(file);
-        setForm(f => ({ ...f, iconFile: file, iconPreview: url }));
+        setErrors(err => ({ ...err, icon: undefined }));
+        const reader = new FileReader();
+        reader.onload = ev => {
+            if (typeof ev.target?.result === 'string') {
+                setForm(f => ({ ...f, iconFile: file, iconPreview: ev.target!.result as string }));
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
     function handleNameChange(v: string) {
-        setForm(f => ({
-            ...f,
-            name: v.slice(0, 32),
-            slug: slugManual ? f.slug : slugify(v),
-        }));
+        const name = v.slice(0, 32);
+        setForm(f => ({ ...f, name, slug: slugManual ? f.slug : slugify(name) }));
+        if (v.trim()) setErrors(e => ({ ...e, name: undefined }));
     }
 
     function handleSlugChange(v: string) {
         setSlugManual(true);
-        setForm(f => ({ ...f, slug: v.replace(/[^a-z0-9_-]/g, '').slice(0, 24) }));
+        const slug = v.replace(/[^a-z0-9_-]/g, '').slice(0, 24);
+        setForm(f => ({ ...f, slug }));
+        if (slug) setErrors(e => ({ ...e, slug: undefined }));
     }
 
     return (
         <div className="flex flex-col gap-4">
             <SectionCard title="Identity">
-                {/* Icon upload */}
+                {/* Icon */}
                 <div>
-                    <FieldLabel hint="Optional. Max 5 MB. Square images work best.">Sector Icon</FieldLabel>
+                    <FieldLabel hint="Optional · Max 5 MB · Square images work best">Sector Icon</FieldLabel>
                     <div className="flex items-center gap-4">
                         <button
                             type="button"
@@ -251,26 +293,18 @@ function CustomizationColumn({
                             )}
                         </button>
                         <div className="flex flex-col gap-1">
-                            <button
-                                type="button"
-                                onClick={() => fileRef.current?.click()}
-                                className="text-xs font-semibold text-primary hover:underline text-left"
-                            >
+                            <button type="button" onClick={() => fileRef.current?.click()} className="text-xs font-semibold text-primary hover:underline text-left">
                                 {form.iconPreview ? 'Change icon' : 'Upload icon'}
                             </button>
                             {form.iconPreview && (
-                                <button
-                                    type="button"
-                                    onClick={() => setForm(f => ({ ...f, iconFile: null, iconPreview: '' }))}
-                                    className="text-xs text-muted-foreground hover:text-destructive-foreground transition text-left"
-                                >
+                                <button type="button" onClick={() => setForm(f => ({ ...f, iconFile: null, iconPreview: '' }))} className="text-xs text-muted-foreground hover:text-destructive-foreground transition text-left">
                                     Remove
                                 </button>
                             )}
-                            {iconError && <span className="text-xs text-destructive-foreground">{iconError}</span>}
                         </div>
                     </div>
                     <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleIconChange} />
+                    <FieldError message={errors.icon} />
                 </div>
 
                 {/* Name */}
@@ -282,8 +316,10 @@ function CustomizationColumn({
                         onChange={e => handleNameChange(e.target.value)}
                         placeholder="e.g. RC Planes"
                         maxLength={32}
-                        className="w-full px-3 py-2 rounded-lg bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition"
+                        className={`w-full px-3 py-2 rounded-lg bg-input border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition
+              ${errors.name ? 'border-destructive' : 'border-border'}`}
                     />
+                    <FieldError message={errors.name} />
                 </div>
 
                 {/* Slug */}
@@ -297,22 +333,18 @@ function CustomizationColumn({
                             onChange={e => handleSlugChange(e.target.value)}
                             placeholder="rc_planes"
                             maxLength={24}
-                            className="w-full pl-7 pr-3 py-2 rounded-lg bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition font-mono"
+                            className={`w-full pl-8 pr-3 py-2 rounded-lg bg-input border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition font-mono
+                ${errors.slug ? 'border-destructive' : 'border-border'}`}
                         />
                     </div>
+                    <FieldError message={errors.slug} />
                 </div>
             </SectionCard>
         </div>
     );
 }
 
-function DescriptionColumn({
-                               form,
-                               setForm,
-                           }: {
-    form: FormState;
-    setForm: React.Dispatch<React.SetStateAction<FormState>>;
-}) {
+function DescriptionColumn({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
     return (
         <div className="flex flex-col gap-4">
             <SectionCard title="About">
@@ -331,32 +363,18 @@ function DescriptionColumn({
     );
 }
 
-function RulesSection({
-                          rules,
-                          setRules,
-                      }: {
-    rules: string[];
-    setRules: (r: string[]) => void;
-}) {
+function RulesSection({ rules, setRules }: { rules: string[]; setRules: (r: string[]) => void }) {
     function updateRule(i: number, value: string) {
         const next = [...rules];
         next[i] = value;
         setRules(next);
     }
-
-    function removeRule(i: number) {
-        setRules(rules.filter((_, idx) => idx !== i));
-    }
-
-    function addRule() {
-        if (rules.length < 20) setRules([...rules, '']);
-    }
+    function removeRule(i: number) { setRules(rules.filter((_, idx) => idx !== i)); }
+    function addRule() { if (rules.length < 20) setRules([...rules, '']); }
 
     return (
-        <SectionCard title={`Sector Rules  ·  ${rules.length}/20`}>
-            <p className="text-xs text-muted-foreground -mt-2">
-                Rules are shown to members and help moderators make consistent decisions.
-            </p>
+        <SectionCard title={`Sector Rules · ${rules.length}/20`}>
+            <p className="text-xs text-muted-foreground -mt-2">Rules are shown to members and help moderators make consistent decisions.</p>
             <div className="flex flex-col gap-2">
                 {rules.map((rule, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -368,21 +386,13 @@ function RulesSection({
                             placeholder={`Rule ${i + 1}`}
                             className="flex-1 px-3 py-2 rounded-lg bg-input border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition"
                         />
-                        <button
-                            type="button"
-                            onClick={() => removeRule(i)}
-                            className="text-muted-foreground hover:text-destructive-foreground transition p-1 rounded"
-                        >
+                        <button type="button" onClick={() => removeRule(i)} className="text-muted-foreground hover:text-destructive-foreground transition p-1 rounded">
                             <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                 ))}
                 {rules.length < 20 && (
-                    <button
-                        type="button"
-                        onClick={addRule}
-                        className="flex items-center gap-2 text-xs text-primary hover:underline mt-1 self-start"
-                    >
+                    <button type="button" onClick={addRule} className="flex items-center gap-2 text-xs text-primary hover:underline mt-1 self-start">
                         <Plus className="w-3.5 h-3.5" /> Add rule
                     </button>
                 )}
@@ -391,82 +401,151 @@ function RulesSection({
     );
 }
 
-// ─── Form State ───────────────────────────────────────────────────────────────
-
-interface FormState {
-    starMap: boolean;
-    privateAccess: boolean;
-    allowAI: boolean;
-    minVideoLength: number;  // seconds
-    maxVideoLength: number;  // seconds
-    iconFile: File | null;
-    iconPreview: string;
-    name: string;
-    slug: string;
-    description: string;
-    rules: string[];
-}
-
-const defaultForm: FormState = {
-    starMap: true,
-    privateAccess: false,
-    allowAI: true,
-    minVideoLength: 1,
-    maxVideoLength: 28800, // 8 hours
-    iconFile: null,
-    iconPreview: '',
-    name: '',
-    slug: '',
-    description: '',
-    rules: [],
-};
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NewSectorPage() {
-    const [form, setForm] = useState<FormState>(defaultForm);
+    const router = useRouter();
+    const supabase = createSupabaseBrowserClient();
 
-    function handleSubmit() {
-        // TODO: wire up to Supabase
-        console.log(form);
+    const [form, setForm] = useState<FormState>(defaultForm);
+    const [errors, setErrors] = useState<FormErrors>({});
+    const [submitting, setSubmitting] = useState(false);
+
+    function validate(): boolean {
+        const next: FormErrors = {};
+
+        if (!form.name.trim()) next.name = 'Sector name is required.';
+        if (!form.slug.trim()) next.slug = 'Sector slug is required.';
+        else if (!/^[a-z0-9_-]{1,24}$/.test(form.slug)) next.slug = 'Slug may only contain a–z, 0–9, _ and -.';
+
+        if (form.minVideoLength >= form.maxVideoLength) {
+            next.minVideoLength = 'Min length must be less than max length.';
+            next.maxVideoLength = 'Max length must be greater than min length.';
+        }
+
+        setErrors(next);
+        return Object.keys(next).length === 0;
     }
+
+    async function handleSubmit() {
+        if (!validate()) return;
+        setSubmitting(true);
+        setErrors({});
+
+        try {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) {
+                router.push('/auth');
+                return;
+            }
+
+            // 1. Upload icon if one was chosen
+            let iconUrl: string | null = null;
+            if (form.iconFile) {
+                const ext = form.iconFile.name.split('.').pop();
+                const filePath = `sectors/icon-${Date.now()}.${ext}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('sector-images')
+                    .upload(filePath, form.iconFile);
+                if (uploadError) throw new Error(`Icon upload failed: ${uploadError.message}`);
+                const { data: { publicUrl } } = supabase.storage.from('sector-images').getPublicUrl(filePath);
+                iconUrl = publicUrl;
+            }
+
+            // 2. Insert the sector
+            const { data: sector, error: sectorError } = await supabase
+                .from('sectors')
+                .insert({
+                    slug: form.slug,
+                    name: form.name.trim(),
+                    description: form.description.trim() || null,
+                    icon: iconUrl,
+                    star_map: form.starMap,
+                    private_access: form.privateAccess,
+                    allow_ai: form.allowAI,
+                    min_video_length: form.minVideoLength,
+                    max_video_length: form.maxVideoLength,
+                    rules: form.rules.filter(r => r.trim() !== ''),
+                })
+                .select('id, slug')
+                .single();
+
+            if (sectorError) {
+                if (sectorError.message.includes('duplicate key') && sectorError.message.includes('slug')) {
+                    setErrors({ slug: 'This slug is already taken. Try another.' });
+                    return;
+                }
+                if (sectorError.message.includes('duplicate key') && sectorError.message.includes('name')) {
+                    setErrors({ name: 'A Sector with this name already exists.' });
+                    return;
+                }
+                throw sectorError;
+            }
+
+            // 3. Add the creator as owner in sector_members
+            const { error: memberError } = await supabase
+                .from('sector_members')
+                .insert({
+                    sector_id: sector.id,
+                    user_id: authUser.id,
+                    roles: ['owner'],
+                    permissions: [],
+                });
+            if (memberError) throw memberError;
+
+            // 4. Redirect to the new sector
+            router.push(`/s/${sector.slug}`);
+
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+            setErrors(e => ({ ...e, submit: message }));
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    const canSubmit = form.name.trim() && form.slug.trim() && !submitting;
 
     return (
         <div className="flex flex-col gap-8 py-6 animate-[fade-in-up_0.5s_ease-out_forwards]">
-
-            {/* Page header */}
             <div className="flex flex-col gap-1">
                 <h1 className="text-3xl font-bold text-foreground tracking-tight">Found a Sector</h1>
-                <p className="text-sm text-muted-foreground">
-                    Set up your community. You can change these settings later.
-                </p>
+                <p className="text-sm text-muted-foreground">Set up your community. You can change these settings later.</p>
             </div>
             <hr className="border-border -mt-4" />
 
-            {/* 3-column grid on desktop, stacked on mobile */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <AdvancedOptionsColumn form={form} setForm={setForm} />
-                <CustomizationColumn form={form} setForm={setForm} />
+                <AdvancedOptionsColumn form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+                <CustomizationColumn form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
                 <DescriptionColumn form={form} setForm={setForm} />
             </div>
 
-            {/* Rules — spans middle + right on desktop */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="hidden lg:block" aria-hidden /> {/* spacer for left column */}
+                <div className="hidden lg:block" aria-hidden />
                 <div className="lg:col-span-2">
                     <RulesSection rules={form.rules} setRules={r => setForm(f => ({ ...f, rules: r }))} />
                 </div>
             </div>
 
-            {/* Submit */}
+            {errors.submit && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive-foreground text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {errors.submit}
+                </div>
+            )}
+
             <div className="flex justify-end">
                 <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={!form.name || !form.slug}
-                    className="px-8 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                    disabled={!canSubmit}
+                    className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
                 >
-                    Create Sector
+                    {submitting ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Creating…</>
+                    ) : (
+                        <><Plus className="w-4 h-4" /> Create Sector</>
+                    )}
                 </button>
             </div>
         </div>
