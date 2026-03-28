@@ -44,7 +44,7 @@ export default function Card({
   thumbnail_src,
   is_ai,
 }: CardProps) {
-  const [imgSrc, setImgSrc] = useState(thumbnail_src);
+  const [imgSrc, setImgSrc] = useState(thumbnail_src || '/Stellicast404Thumbnail.png');
 
   return (
     <Link

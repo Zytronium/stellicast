@@ -317,7 +317,7 @@ function CustomizationColumn({
                         placeholder="e.g. RC Planes"
                         maxLength={32}
                         className={`w-full px-3 py-2 rounded-lg bg-input border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition
-              ${errors.name ? 'border-destructive' : 'border-border'}`}
+                        ${errors.name ? 'border-destructive' : 'border-border'}`}
                     />
                     <FieldError message={errors.name} />
                 </div>
@@ -334,7 +334,7 @@ function CustomizationColumn({
                             placeholder="rc_planes"
                             maxLength={24}
                             className={`w-full pl-8 pr-3 py-2 rounded-lg bg-input border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition font-mono
-                ${errors.slug ? 'border-destructive' : 'border-border'}`}
+                            ${errors.slug ? 'border-destructive' : 'border-border'}`}
                         />
                     </div>
                     <FieldError message={errors.slug} />
