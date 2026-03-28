@@ -1,7 +1,7 @@
-import Home from "@/page";
+import UnderConstruction from "@/components/UnderConstruction";
 
 export default function ExplorePage() {
   return (
-    <Home/> // for now, just repeat home page
+    <UnderConstruction/>
   );
 }

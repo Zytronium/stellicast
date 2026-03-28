@@ -283,8 +283,6 @@ close to the center to maximize visibility.
 
 **Status:** Todo
 
-**Status:** Todo
-
 ## 8. Admin Panel
 
 ### 8.1. Add admin panel

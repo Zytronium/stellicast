@@ -73,4 +73,3 @@ export interface SectorVideo {
   sector_id: string;
   // added_at: Date; // When the video was added to the Sector, not when it was published. Potential future metric if videos can be added to Sectors after upload, which oculd be a useful feature.
 }
-
