@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Card from '@/components/Card';
 import SectorJoinButton from '@/components/SectorJoinButton';
+import Link from "next/link";
 
 type PageProps = {
     params: Promise<{ id: string }>;
@@ -210,11 +211,12 @@ export default async function SectorPage({ params }: PageProps) {
                     </div>
 
                     {/* Rules Section */}
-                    {sector.rules && sector.rules.length > 0 && (
-                        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                            <h2 className="text-lg font-semibold text-foreground">
-                                Sector Rules
-                            </h2>
+                    <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                        <h2 className="text-lg font-semibold text-foreground">
+                            Sector Rules
+                        </h2>
+
+                        {sector.rules && sector.rules.length > 0 ? (
                             <ol className="space-y-2 text-sm text-card-foreground">
                                 {sector.rules.map((rule: string, index: number) => (
                                     <li key={index} className="flex gap-2">
@@ -225,8 +227,16 @@ export default async function SectorPage({ params }: PageProps) {
                                     </li>
                                 ))}
                             </ol>
-                        </div>
-                    )}
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                This sector has no rules
+                            </p>
+                        )}
+                        <hr/>
+                        <p className="text-xs text-muted-foreground">
+                            * Remember to follow <Link href="/rules" className="text-primary underline">site-wide rules</Link> as well!
+                        </p>
+                    </div>
                 </div>
             </aside>
         </div>
