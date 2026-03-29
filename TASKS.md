@@ -264,15 +264,20 @@ also potentially require the user to have a premium paid tier.
 However, this will only happen if the website picks up real
 and significant traffic.
 
-**Status:** In Progress
+**Status:** Done
 
-### 7.2. Add sectors page
-Add a Sectors page that displays a grid or list layout showing
+### 7.2. Add sectors selection to upload page
+Allow users to select one or more sectors when uploading a video. Default to s/misc.
+
+**Status:** Todo
+
+### 7.3. Add sectors page
+Add a Sectors page (/explore) that displays a grid or list layout showing
 many different sectors. Sectors can be searched for or recommended.
 
 **Status:** Todo
 
-### 7.3. Add star map
+### 7.4. Add star map
 Add a unique galaxy-like map of every single sector. On sector 
 creation, users can optionally choose a location on this map,
 or may also opt to keep it hidden from the map for privacy. 
@@ -280,6 +285,19 @@ Users can choose a location as far out as they want to keep
 their sector relatively inaccessible from the map but still
 visible and accessible on it, or can try to find a location
 close to the center to maximize visibility.
+
+**Status:** Todo
+
+### 7.5. Cleanup
+Clean up some stuff:
+- Remove videos from video-sector join tables on deletion
+- Remove unlisted and private videos from sector pages
+- Allow adding videos on s/misc to new sectors after upload (only for videos on s/misc)
+- Add "Videos appear on home feed" checkbox to sector creation page
+- Enforce sector options like "allow/disallow AI content" or "min & max duration"
+- Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
+- Allow sector owners to manage member roles and permissions
+- Display what sector videos are in on channel pages and manage pages
 
 **Status:** Todo
 

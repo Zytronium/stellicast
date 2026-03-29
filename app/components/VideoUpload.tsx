@@ -6,6 +6,8 @@ import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import VideoPlayer from '@/components/VideoPlayer';
+import SectorSelector from '@/components/SectorSelector';
+import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
 type VideoPreview = {
   file: File;
@@ -15,8 +17,19 @@ type VideoPreview = {
 };
 
 export default function VideoUpload({ channelId }: { channelId?: string }) {
+  interface Sector {
+    id: string;
+    slug: string;
+    name: string;
+    icon: string | null;
+  }
+
+  const supabaseRef = useRef(createSupabaseBrowserClient());
+  const supabase = supabaseRef.current;
+
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
 
   const [videoPreview, setVideoPreview] = useState<VideoPreview | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -34,6 +47,9 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
 
   const [tags, setTags] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
+
+  const [selectedSectors, setSelectedSectors] = useState<Sector[]>([]);
+  const [isTest, setIsTest] = useState(false);
 
   const addTag = (tagText: string) => {
     const trimmed = tagText.trim();
@@ -142,7 +158,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
   const startUploadFlow = async (file: File, durationSeconds: number) => {
     if (!channelId) {
       alert('Please select a channel before uploading.');
-      return false;
+      return { success: false, videoId: null };
     }
 
     setUploading(true);
@@ -209,7 +225,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         }).catch(err => console.error('Failed to patch metadata after upload', err));
       }
 
-      return true;
+      return { success: true, videoId: id ?? null };
     } catch (err: any) {
       console.error('Upload flow error', err);
       alert(err?.message || 'Upload failed. Please try again.');
@@ -218,7 +234,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       setUploadStage('');
       uploadTargetRef.current = null;
       setVideoId(null);
-      return false;
+      return { success: false, videoId: null };
     }
   };
 
@@ -281,16 +297,19 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     }
 
     // Start upload when publish is clicked
-    const uploadSuccess = await startUploadFlow(videoPreview.file, videoPreview.duration);
+    const { success, videoId: uploadedId } = await startUploadFlow(videoPreview.file, videoPreview.duration);
 
-    if (!uploadSuccess) {
-      return;
+    if (!success || !uploadedId) return;
+
+    // Link video to selected sectors
+    if (selectedSectors.length > 0) {
+      const { error: sectorError } = await supabase
+          .from('sector_videos')
+          .insert(selectedSectors.map(s => ({ sector_id: s.id, video_id: uploadedId })));
+      if (sectorError) console.error('Failed to link sectors:', sectorError);
     }
 
-    // Navigate to watch page after successful upload
-    if (videoId) {
-      router.push(`/watch/${videoId}`);
-    }
+    router.push(`/watch/${uploadedId}`);
   };
 
   useEffect(() => {
@@ -303,6 +322,15 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     <div className="space-y-6">
       {/* Metadata form - always visible */}
       <div className="space-y-4">
+
+
+        <SectorSelector
+            selectedSectors={selectedSectors}
+            onChange={setSelectedSectors}
+            isTest={isTest}
+            onIsTestChange={setIsTest}
+        />
+
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-1.5">Video Title</label>
           <input
