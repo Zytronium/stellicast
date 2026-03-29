@@ -1,4 +1,3 @@
-// app/s/[id]/page.tsx
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -73,10 +72,32 @@ export default async function SectorPage({ params }: PageProps) {
         }
     }
 
+    // Calculate sector age
+    const sectorCreatedDate = new Date(sector.created_at);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - sectorCreatedDate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffYears = Math.floor(diffDays / 365);
+    const diffMonths = Math.floor((diffDays % 365) / 30);
+    const remainingDays = diffDays % 30;
+
+    let sectorAge = '';
+    if (diffYears > 0) {
+        sectorAge = `${diffYears} year${diffYears !== 1 ? 's' : ''}`;
+        if (diffMonths > 0) sectorAge += `, ${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
+    } else if (diffMonths > 0) {
+        sectorAge = `${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
+        if (remainingDays > 0) sectorAge += `, ${remainingDays} day${remainingDays !== 1 ? 's' : ''}`;
+    } else {
+        sectorAge = `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+    }
+
     return (
-        <div className="space-y-8">
-            {/* ── Sector Header ── */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div className="flex gap-8">
+            {/* Main Content */}
+            <div className="flex-1 space-y-8">
+                {/* ── Sector Header ── */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
                 {/* Icon */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center border border-border">
                     {sector.icon ? (
@@ -117,17 +138,6 @@ export default async function SectorPage({ params }: PageProps) {
                             {sector.description}
                         </p>
                     )}
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground pt-0.5">
-                        <span>{sector.member_count.toLocaleString()} member{sector.member_count !== 1 ? 's' : ''}</span>
-                        <span className="text-border">•</span>
-                        <span>{sector.video_count.toLocaleString()} video{sector.video_count !== 1 ? 's' : ''}</span>
-                        {memberRole && (
-                            <>
-                                <span className="text-border">•</span>
-                                <span className="capitalize text-primary">{memberRole}</span>
-                            </>
-                        )}
-                    </div>
                 </div>
 
                 {/* Join / Leave */}
@@ -139,34 +149,86 @@ export default async function SectorPage({ params }: PageProps) {
                         memberRole={memberRole}
                     />
                 )}
+                </div>
+
+                <hr className="border-border"/>
+
+                {/* ── Videos ── */}
+                {videos.length > 0 ? (
+                    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {videos.map(video => (
+                            <Card
+                                key={video.id}
+                                slug={video.slug}
+                                duration={video.duration}
+                                title={video.title}
+                                creator_name={video.channels?.display_name || 'Unknown Creator'}
+                                views={video.view_count}
+                                date={video.created_at}
+                                thumbnail_src={video.thumbnail_url ?? '/Stellicast404Thumbnail.png'}
+                                is_ai={video.is_ai}
+                            />
+                        ))}
+                    </section>
+                ) : (
+                    <div className="py-20 text-center">
+                        <p className="text-muted-foreground text-sm">
+                            No videos in this Sector yet. Be the first to post!
+                        </p>
+                    </div>
+                )}
             </div>
 
-            <hr className="border-border" />
+            {/* Sidebar */}
+            <aside className="hidden lg:block w-80 flex-shrink-0">
+                <div className="sticky top-4 space-y-6">
+                    {/* Statistics Section */}
+                    <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                        <h2 className="text-lg font-semibold text-foreground">
+                            Statistics
+                        </h2>
+                        <div className="space-y-2 text-sm text-card-foreground">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Members:</span>
+                                <span className="font-medium">{sector.member_count.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Videos:</span>
+                                <span className="font-medium">{sector.video_count.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Age:</span>
+                                <span className="font-medium">{sectorAge}</span>
+                            </div>
+                            {memberRole && (
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Your Role:</span>
+                                    <span className="font-medium capitalize text-primary">{memberRole}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
-            {/* ── Videos ── */}
-            {videos.length > 0 ? (
-                <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {videos.map(video => (
-                        <Card
-                            key={video.id}
-                            slug={video.slug}
-                            duration={video.duration}
-                            title={video.title}
-                            creator_name={video.channels?.display_name || 'Unknown Creator'}
-                            views={video.view_count}
-                            date={video.created_at}
-                            thumbnail_src={video.thumbnail_url ?? '/Stellicast404Thumbnail.png'}
-                            is_ai={video.is_ai}
-                        />
-                    ))}
-                </section>
-            ) : (
-                <div className="py-20 text-center">
-                    <p className="text-muted-foreground text-sm">
-                        No videos in this Sector yet. Be the first to post!
-                    </p>
+                    {/* Rules Section */}
+                    {sector.rules && sector.rules.length > 0 && (
+                        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                            <h2 className="text-lg font-semibold text-foreground">
+                                Sector Rules
+                            </h2>
+                            <ol className="space-y-2 text-sm text-card-foreground">
+                                {sector.rules.map((rule: string, index: number) => (
+                                    <li key={index} className="flex gap-2">
+                                        <span className="font-semibold text-muted-foreground flex-shrink-0">
+                                            {index + 1}.
+                                        </span>
+                                        <span className="leading-relaxed">{rule}</span>
+                                    </li>
+                                ))}
+                            </ol>
+                        </div>
+                    )}
                 </div>
-            )}
+            </aside>
         </div>
     );
 }

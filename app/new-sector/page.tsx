@@ -134,6 +134,7 @@ function TimeInput({
 interface FormState {
     starMap: boolean;
     privateAccess: boolean;
+    open_posting: boolean;
     allowAI: boolean;
     minVideoLength: number;
     maxVideoLength: number;
@@ -157,6 +158,7 @@ interface FormErrors {
 const defaultForm: FormState = {
     starMap: true,
     privateAccess: false,
+    open_posting: true,
     allowAI: true,
     minVideoLength: 1,
     maxVideoLength: 28800,
@@ -180,7 +182,7 @@ function AdvancedOptionsColumn({
 }) {
     return (
         <div className="flex flex-col gap-4">
-            <SectionCard title="Privacy">
+            <SectionCard title="Privacy & Access">
                 <Checkbox
                     label="Appear on Star Map"
                     hint="Allow this Sector to be discovered by anyone browsing Stellicast."
@@ -192,6 +194,12 @@ function AdvancedOptionsColumn({
                     hint="Only approved members can join and view content."
                     checked={form.privateAccess}
                     onChange={v => setForm(f => ({ ...f, privateAccess: v }))}
+                />
+                <Checkbox
+                    label="Open Posting"
+                    hint="Allow anyone to post videos, not just members." // 👈 add this
+                    checked={form.open_posting}
+                    onChange={v => setForm(f => ({ ...f, open_posting: v }))}
                 />
             </SectionCard>
 
@@ -470,6 +478,7 @@ export default function NewSectorPage() {
                     icon: iconUrl,
                     star_map: form.starMap,
                     private_access: form.privateAccess,
+                    open_posting: form.open_posting,
                     allow_ai: form.allowAI,
                     min_video_length: form.minVideoLength,
                     max_video_length: form.maxVideoLength,
