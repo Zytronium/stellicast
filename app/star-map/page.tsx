@@ -242,7 +242,7 @@ export default function StarMapPage() {
             .from('sectors')
             .select('id, slug, name, description, icon, member_count, video_count, galaxy_x, galaxy_y')
             .eq('star_map', true)
-            .then(({ data }) => {
+            .then(({ data }: { data: SectorData[] | null }) => {
                 setRawSectors((data ?? []) as SectorData[]);
                 setLoading(false);
             });
