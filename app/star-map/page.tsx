@@ -422,12 +422,15 @@ export default function StarMapPage() {
                 if (Math.abs(e.clientX - drag.startX) + Math.abs(e.clientY - drag.startY) > 4) drag.moved = true;
 
                 if (drag.button === 0) {
-                    // Pan in XZ plane aligned to camera azimuth
-                    const spd = camState.distance * 0.0013;
-                    const ax  = Math.sin(camState.azimuth);
-                    const az  = Math.cos(camState.azimuth);
-                    camState.target.x -= (dx * az  - dy * ax) * spd;
-                    camState.target.z -= (dx * (-ax) - dy * (-az)) * spd;
+                    // Pan in XZ plane aligned to camera azimuth.
+                    // Camera right in XZ  = ( cos az,  0, -sin az )
+                    // Camera forward in XZ = ( -sin az, 0, -cos az )
+                    // Grab-drag: target moves opposite to camera motion so world follows cursor.
+                    const spd   = camState.distance * 0.0013;
+                    const sinAz = Math.sin(camState.azimuth);
+                    const cosAz = Math.cos(camState.azimuth);
+                    camState.target.x -= ( dx * cosAz + dy * sinAz) * spd;
+                    camState.target.z -= (-dx * sinAz + dy * cosAz) * spd;
                 } else {
                     // Rotate + pitch
                     camState.azimuth   -= dx * 0.006;
