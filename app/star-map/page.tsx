@@ -32,7 +32,6 @@ interface PlacedSector extends SectorData {
 const COORD_SCALE   = 200;   // galaxy unit → world unit
 const MIN_RADIUS    = 30;
 const MAX_RADIUS    = 180;
-const MAX_MEMBERS   = 100;
 const MIN_GAP       = 50;
 const ELEVATION_MIN = 0.18;  // ~10° from horizontal
 const ELEVATION_MAX = 1.20;  // ~69°
@@ -49,8 +48,8 @@ function lcg(s: number) {
     };
 }
 
-function computeRadius(members: number) {
-    const t = Math.min(members, MAX_MEMBERS) / MAX_MEMBERS;
+function computeRadius(members: number, maxMembers: number) {
+    const t = Math.min(members, maxMembers) / maxMembers;
     return MIN_RADIUS + t * (MAX_RADIUS - MIN_RADIUS);
 }
 
@@ -292,12 +291,13 @@ export default function StarMapPage() {
             scene.add(makeStarPoints(THREE, 500,  6000,  4.2, 0.90));
 
             // ── Process sectors ────────────────────────────────────────────────────
+            const maxMembers = Math.max(5, ...rawSectors.map(s => s.member_count));
             const placed = resolveOverlaps(
                 rawSectors.map(s => ({
                     ...s,
                     wx:     s.galaxy_x * COORD_SCALE,
                     wz:     s.galaxy_y * COORD_SCALE,
-                    radius: computeRadius(s.member_count),
+                    radius: computeRadius(s.member_count, maxMembers),
                     hue:    slugToHue(s.slug),
                     seed:   slugToSeed(s.slug),
                 }))
