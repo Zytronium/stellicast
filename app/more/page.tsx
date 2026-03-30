@@ -15,16 +15,13 @@ function SectorsSection() {
                     <Plus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90"/>
                     Found a Sector
                 </Link>
-                <div
-                    className="flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-secondary border border-border text-sm font-semibold text-muted-foreground cursor-not-allowed select-none relative overflow-hidden"
-                    title="Coming soon"
+                <Link
+                    href="/star-map"
+                    className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
-                    <Compass className="w-4 h-4 opacity-50"/>
-                    <span className="opacity-50">Explore Sectors</span>
-                    <span className="absolute top-1.5 right-2 text-[7px] font-bold tracking-widest uppercase text-muted-foreground/60">
-                        Coming Soon!
-                    </span>
-                </div>
+                    <Compass className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180"/>
+                    Explore Sectors
+                </Link>
             </div>
         </Section>
     );
