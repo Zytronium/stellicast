@@ -16,7 +16,7 @@ users can access their account
 **Status:** Done
 
 ### 0.3. Account dropdown
-Show logged in user info in account dropdown when logged
+Show logged-in user info in account dropdown when logged
 in. Show a signin/signup button when not logged in.
 
 **Status:** Done
@@ -51,7 +51,7 @@ into a Studio channel.
 
 ### 0.8. Forced Studio conversion
 When a Creator meets certain criteria, they are required to
-fill out a short servey about their team, and depending on
+fill out a short survey about their team, and depending on
 the results, they must convert into a Studio channel.
 
 **Status:** Todo
@@ -75,7 +75,7 @@ Create a video upload page for channels to upload videos.
 **Status:** Done
 
 ### 1.2. Create video database
-Create a database to store videos and meta data about them.
+Create a database to store videos and metadata about them.
 
 **Status:** Done
 
@@ -142,7 +142,7 @@ Make the home feed load more videos as the user scrolls down.
 **Status:** Todo
 
 ### 3.6. Genre chips
-Either delete them or make them filter the home feed by genere
+Either delete them or make them filter the home feed by genre
 when clicked.
 
 **Status:** Todo
@@ -310,7 +310,7 @@ Clean up some stuff:
 ### 8.1. Add admin panel
 Add an admin panel page for the website to manage users, channels,
 videos, etc. It must display all data for each user and channel, 
-music email and password.
+minus email and password.
 
 **Status:** Todo
 
