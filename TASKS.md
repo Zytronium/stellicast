@@ -269,11 +269,12 @@ and significant traffic.
 ### 7.2. Add sectors selection to upload page
 Allow users to select one or more sectors when uploading a video. Default to s/misc.
 
-**Status:** Todo
+**Status:** Done
 
 ### 7.3. Add sectors page
-Add a Sectors page (/explore) that displays a grid or list layout showing
+Add a Sectors page (/sectors) that displays a grid or list layout showing
 many different sectors. Sectors can be searched for or recommended.
+Allow switching between grid view and star map view.
 
 **Status:** Todo
 
@@ -286,18 +287,21 @@ their sector relatively inaccessible from the map but still
 visible and accessible on it, or can try to find a location
 close to the center to maximize visibility.
 
-**Status:** Todo
+**Status:** Done
 
 ### 7.5. Cleanup
 Clean up some stuff:
-- Remove videos from video-sector join tables on deletion
 - Remove unlisted and private videos from sector pages
 - Allow adding videos on s/misc to new sectors after upload (only for videos on s/misc)
 - Add "Videos appear on home feed" checkbox to sector creation page
 - Enforce sector options like "allow/disallow AI content" or "min & max duration"
 - Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
 - Allow sector owners to manage member roles and permissions
-- Display what sector videos are in on channel pages and manage pages
+- Display what sector(s) videos are in on video cards
+- Display what sector(s) the video is in on the watch page
+- Allow managing sectors from a sector admin panel
+- Display sector mods on side panel on sector page
+- Add a 2nd tab to sector page on mobile that displays what's on the sidebar on desktop (rules, stats, etc.)
 
 **Status:** Todo
 
