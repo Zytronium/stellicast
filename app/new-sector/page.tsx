@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import {Plus, Compass, Hash, Trash2, Loader2, AlertCircle, Upload} from "lucide-react";
 import Image from "next/image";
 import { createSupabaseBrowserClient } from "@/../lib/supabase-client";
+import { PickedCoords } from "@/components/StarMapCore";
+import StarMapPicker from "@/components/StarMapPicker";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -416,6 +418,7 @@ export default function NewSectorPage() {
     const supabase = createSupabaseBrowserClient();
 
     const [form, setForm] = useState<FormState>(defaultForm);
+    const [location, setLocation] = useState<PickedCoords | null>(null);
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -472,17 +475,20 @@ export default function NewSectorPage() {
             const { data: sector, error: sectorError } = await supabase
                 .from('sectors')
                 .insert({
-                    slug: form.slug,
-                    name: form.name.trim(),
-                    description: form.description.trim() || null,
-                    icon: iconUrl,
-                    star_map: form.starMap,
-                    private_access: form.privateAccess,
-                    open_posting: form.open_posting,
-                    allow_ai: form.allowAI,
+                    slug:             form.slug,
+                    name:             form.name.trim(),
+                    description:      form.description.trim() || null,
+                    icon:             iconUrl,
+                    star_map:         form.starMap,
+                    private_access:   form.privateAccess,
+                    open_posting:     form.open_posting,
+                    allow_ai:         form.allowAI,
                     min_video_length: form.minVideoLength,
                     max_video_length: form.maxVideoLength,
-                    rules: form.rules.filter(r => r.trim() !== ''),
+                    rules:            form.rules.filter(r => r.trim() !== ''),
+                    // only written when the sector is on the star map and a spot was chosen
+                    galaxy_x: form.starMap ? (location?.galaxy_x ?? null) : null,
+                    galaxy_y: form.starMap ? (location?.galaxy_y ?? null) : null,
                 })
                 .select('id, slug')
                 .single();
@@ -543,6 +549,34 @@ export default function NewSectorPage() {
                     <RulesSection rules={form.rules} setRules={r => setForm(f => ({ ...f, rules: r }))} />
                 </div>
             </div>
+
+            {/* Star Map location picker — only shown when "Appear on Star Map" is checked */}
+            {form.starMap && (
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-0.5">
+                        <h3 className="text-sm font-semibold text-foreground">Star Map Location</h3>
+                        <p className="text-xs text-muted-foreground">
+                            Click an empty spot on the map to choose where your Sector appears.
+                            {!location && <span className="text-muted-foreground/60"> (Optional — we'll place it automatically if you skip this.)</span>}
+                        </p>
+                    </div>
+                    <StarMapPicker
+                        value={location}
+                        onChange={setLocation}
+                        previewName={form.name || 'New Sector'}
+                        height={660}
+                    />
+                    {location && (
+                        <button
+                            type="button"
+                            onClick={() => setLocation(null)}
+                            className="self-start text-xs text-muted-foreground hover:text-destructive-foreground transition"
+                        >
+                            Clear location
+                        </button>
+                    )}
+                </div>
+            )}
 
             {errors.submit && (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive-foreground text-sm">
