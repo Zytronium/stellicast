@@ -9,6 +9,18 @@ type PageProps = {
     params: Promise<{ id: string }>;
 };
 
+type SectorVideo = {
+    id: string;
+    slug: string;
+    title: string;
+    thumbnail_url: string | null;
+    duration: number | null;
+    view_count: number;
+    created_at: string;
+    is_ai: boolean;
+    channels: { display_name: string } | null;
+};
+
 export default async function SectorPage({ params }: PageProps) {
     const { id } = await params;
     const supabase = await createSupabaseServerClient();
@@ -23,38 +35,12 @@ export default async function SectorPage({ params }: PageProps) {
     if (error || !sector)
         notFound();
 
-    // Fetch videos in this sector with channel info
-    const { data: sectorVideos } = await supabase
-        .from('sector_videos')
-        .select(`
-    video:videos (
-      id,
-      slug,
-      title,
-      thumbnail_url,
-      duration,
-      view_count,
-      created_at,
-      is_ai,
-      channels ( display_name )
-    )
-  `)
-        .eq('sector_id', sector.id);
-
-    const videos = (sectorVideos ?? [])
-        .map(row => row.video as unknown as {
-            id: string;
-            slug: string;
-            title: string;
-            thumbnail_url: string | null;
-            duration: number | null;
-            view_count: number;
-            created_at: string;
-            is_ai: boolean;
-            channels: { display_name: string } | null;
-        } | null)
-        .filter((v): v is NonNullable<typeof v> => !!v && !!v.slug)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    // Fetch sector videos via API route
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/videos?sectors=${encodeURIComponent(id.toLowerCase())}`, {
+        cache: 'no-store',
+    });
+    const { videos } = await res.json() as { videos: SectorVideo[] };
 
     // Get current user for join state
     const { data: { user: authUser } } = await supabase.auth.getUser();
