@@ -230,7 +230,13 @@ export default function StarMapPage() {
 
     const [rawSectors, setRawSectors] = useState<SectorData[]>([]);
     const [loading,    setLoading]    = useState(true);
-    const [popup, setPopup] = useState<{ sector: PlacedSector; sx: number; sy: number } | null>(null);
+    const [popup,      setPopup]      = useState<{ sector: PlacedSector; sx: number; sy: number } | null>(null);
+    const [isMobile,   setIsMobile]   = useState(false);
+
+    // Detect touch device once on mount
+    useEffect(() => {
+        setIsMobile(navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches);
+    }, []);
 
     // Zoom state — written from the component, read from the animation loop
     const zoomStateRef = useRef<{ sector: PlacedSector; cb: () => void } | null>(null);
@@ -478,6 +484,106 @@ export default function StarMapPage() {
             window.addEventListener('pointerup',   onUp);
             cv.addEventListener('wheel', onWheel, { passive: false });
 
+            // ── Touch controls (mobile) ────────────────────────────────────────────
+            let onTouchStart: ((e: TouchEvent) => void) | null = null;
+            let onTouchMove:  ((e: TouchEvent) => void) | null = null;
+            let onTouchEnd:   ((e: TouchEvent) => void) | null = null;
+
+            const mobile = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+            if (mobile) {
+                let lastPinchDist = 0;
+                let lastPinchMid  = { x: 0, y: 0 };
+
+                onTouchStart = (e: TouchEvent) => {
+                    // preventDefault suppresses pointer events so they don't double-fire
+                    e.preventDefault();
+                    lastPinchDist = 0;
+                    if (e.touches.length === 1) {
+                        const t = e.touches[0];
+                        drag = { button: 0, startX: t.clientX, startY: t.clientY, lastX: t.clientX, lastY: t.clientY, moved: false };
+                    } else {
+                        drag = null;
+                    }
+                };
+
+                onTouchMove = (e: TouchEvent) => {
+                    e.preventDefault();
+                    if (zoomStateRef.current) return;
+
+                    if (e.touches.length === 1 && drag) {
+                        const t  = e.touches[0];
+                        const dx = t.clientX - drag.lastX;
+                        const dy = t.clientY - drag.lastY;
+                        if (Math.abs(t.clientX - drag.startX) + Math.abs(t.clientY - drag.startY) > 4) drag.moved = true;
+                        const spd   = camState.distance * 0.0013;
+                        const sinAz = Math.sin(camState.azimuth);
+                        const cosAz = Math.cos(camState.azimuth);
+                        camState.target.x -= ( dx * cosAz + dy * sinAz) * spd;
+                        camState.target.z -= (-dx * sinAz + dy * cosAz) * spd;
+                        drag.lastX = t.clientX;
+                        drag.lastY = t.clientY;
+                        updateCamera(THREE, camera, camState);
+                    } else if (e.touches.length === 2) {
+                        drag = null;
+                        const t1   = e.touches[0], t2 = e.touches[1];
+                        const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                        const midX = (t1.clientX + t2.clientX) / 2;
+                        const midY = (t1.clientY + t2.clientY) / 2;
+
+                        if (lastPinchDist > 0) {
+                            // Pinch → zoom
+                            camState.distance = Math.max(DIST_MIN, Math.min(DIST_MAX, camState.distance * (lastPinchDist / dist)));
+                            // Two-finger drag → rotate + pitch
+                            const dmx = midX - lastPinchMid.x;
+                            const dmy = midY - lastPinchMid.y;
+                            camState.azimuth   -= dmx * 0.006;
+                            camState.elevation  = Math.max(ELEVATION_MIN, Math.min(ELEVATION_MAX, camState.elevation - dmy * 0.005));
+                        }
+                        lastPinchDist = dist;
+                        lastPinchMid  = { x: midX, y: midY };
+                        updateCamera(THREE, camera, camState);
+                    }
+                };
+
+                onTouchEnd = (e: TouchEvent) => {
+                    if (e.touches.length < 2) lastPinchDist = 0;
+
+                    if (e.touches.length === 0) {
+                        // Tap: raycast if finger didn't move
+                        if (drag && !drag.moved) {
+                            const t    = e.changedTouches[0];
+                            const rect = cv.getBoundingClientRect();
+                            const ndc  = new THREE.Vector2(
+                                ((t.clientX - rect.left) / rect.width)  * 2 - 1,
+                                -((t.clientY - rect.top)  / rect.height) * 2 + 1,
+                            );
+                            const ray  = new THREE.Raycaster();
+                            ray.setFromCamera(ndc, camera);
+                            const hits = ray.intersectObjects(sectorMeshes);
+                            if (hits.length > 0) {
+                                const s = meshToSector.get(hits[0].object.uuid)!;
+                                setPopup({
+                                    sector: s,
+                                    sx: t.clientX - el.getBoundingClientRect().left,
+                                    sy: t.clientY - el.getBoundingClientRect().top,
+                                });
+                            } else {
+                                setPopup(null);
+                            }
+                        }
+                        drag = null;
+                    } else if (e.touches.length === 1) {
+                        // Lifted one finger — resume single-touch pan from current position
+                        const t = e.touches[0];
+                        drag = { button: 0, startX: t.clientX, startY: t.clientY, lastX: t.clientX, lastY: t.clientY, moved: false };
+                    }
+                };
+
+                cv.addEventListener('touchstart', onTouchStart, { passive: false });
+                cv.addEventListener('touchmove',  onTouchMove,  { passive: false });
+                cv.addEventListener('touchend',   onTouchEnd,   { passive: false });
+            }
+
             // ── Resize ────────────────────────────────────────────────────────────
             const onResize = () => {
                 const nw = el.clientWidth, nh = el.clientHeight;
@@ -493,6 +599,9 @@ export default function StarMapPage() {
                 window.removeEventListener('pointermove', onMove);
                 window.removeEventListener('pointerup',   onUp);
                 window.removeEventListener('resize',      onResize);
+                if (onTouchStart) cv.removeEventListener('touchstart', onTouchStart);
+                if (onTouchMove)  cv.removeEventListener('touchmove',  onTouchMove);
+                if (onTouchEnd)   cv.removeEventListener('touchend',   onTouchEnd);
                 renderer.dispose();
                 if (el.contains(cv)) el.removeChild(cv);
             };
@@ -513,8 +622,8 @@ export default function StarMapPage() {
 
     return (
         // fixed, below the 64px TopBar, full bleed
-        <div ref={mountRef} className="fixed inset-0 overflow-hidden" style={{ top: 64 }}>
-            {loading && (
+        <div ref={mountRef} className="fixed inset-0 overflow-hidden" style={{top: 64}}>
+        {loading && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#020203]">
                     <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                     <p className="text-sm text-muted-foreground tracking-wide">Loading Star Map…</p>
@@ -523,14 +632,24 @@ export default function StarMapPage() {
 
             {/* Controls hint */}
             {!loading && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-xs text-white/50 pointer-events-none select-none">
-                    <span>Left drag — pan</span>
-                    <span className="text-white/20">·</span>
-                    <span>Right drag — rotate</span>
-                    <span className="text-white/20">·</span>
-                    <span>Scroll — zoom</span>
-                    <span className="text-white/20">·</span>
-                    <span>Click sector — details</span>
+                <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-${isMobile ? "col" : "row"} items-center mb-16 md:mb-0 gap-${isMobile ? "0 items-start" : "4"} px-4 py-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-xs text-white/50 pointer-events-none select-none`}>
+                    {isMobile ? (
+                        <>
+                            <span>Drag — pan</span>
+                            <span>Two fingers — rotate &amp; zoom</span>
+                            <span>Tap sector — details</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>Left drag — pan</span>
+                            <span className="text-white/20">·</span>
+                            <span>Right drag — rotate</span>
+                            <span className="text-white/20">·</span>
+                            <span>Scroll — zoom</span>
+                            <span className="text-white/20">·</span>
+                            <span>Click sector — details</span>
+                        </>
+                    )}
                 </div>
             )}
 
