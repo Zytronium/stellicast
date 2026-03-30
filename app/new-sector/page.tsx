@@ -543,40 +543,43 @@ export default function NewSectorPage() {
                 <DescriptionColumn form={form} setForm={setForm} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="hidden lg:block" aria-hidden />
+            {/* Star Map + Rules — side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+                {/* Left + Middle: Star Map (or spacer when hidden) */}
                 <div className="lg:col-span-2">
+                    {form.starMap && (
+                        <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-0.5">
+                                <h3 className="text-sm font-semibold text-foreground">Star Map Location</h3>
+                                <p className="text-xs text-muted-foreground">
+                                    Click an empty spot on the map to choose where your Sector appears.
+                                    {!location && <span className="text-muted-foreground/60"> (Optional — we'll place it automatically if you skip this.)</span>}
+                                </p>
+                            </div>
+                            <StarMapPicker
+                                value={location}
+                                onChange={setLocation}
+                                previewName={form.name || 'New Sector'}
+                                height={660}
+                            />
+                            {location && (
+                                <button
+                                    type="button"
+                                    onClick={() => setLocation(null)}
+                                    className="self-start text-xs text-muted-foreground hover:text-destructive-foreground transition"
+                                >
+                                    Clear location
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right: Rules */}
+                <div className="pt-0 lg:pt-12">
                     <RulesSection rules={form.rules} setRules={r => setForm(f => ({ ...f, rules: r }))} />
                 </div>
             </div>
-
-            {/* Star Map location picker — only shown when "Appear on Star Map" is checked */}
-            {form.starMap && (
-                <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-0.5">
-                        <h3 className="text-sm font-semibold text-foreground">Star Map Location</h3>
-                        <p className="text-xs text-muted-foreground">
-                            Click an empty spot on the map to choose where your Sector appears.
-                            {!location && <span className="text-muted-foreground/60"> (Optional — we'll place it automatically if you skip this.)</span>}
-                        </p>
-                    </div>
-                    <StarMapPicker
-                        value={location}
-                        onChange={setLocation}
-                        previewName={form.name || 'New Sector'}
-                        height={660}
-                    />
-                    {location && (
-                        <button
-                            type="button"
-                            onClick={() => setLocation(null)}
-                            className="self-start text-xs text-muted-foreground hover:text-destructive-foreground transition"
-                        >
-                            Clear location
-                        </button>
-                    )}
-                </div>
-            )}
 
             {errors.submit && (
                 <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive-foreground text-sm">
