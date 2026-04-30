@@ -291,9 +291,6 @@ close to the center to maximize visibility.
 
 ### 7.5. Cleanup
 Clean up some stuff:
-- Remove unlisted and private videos from sector pages
-- Allow adding videos on s/misc to new sectors after upload (only for videos on s/misc)
-- Add "Videos appear on home feed" checkbox to sector creation page
 - Enforce sector options like "allow/disallow AI content" or "min & max duration"
 - Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
 - Allow sector owners to manage member roles and permissions
