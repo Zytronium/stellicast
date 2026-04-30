@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Card from './components/Card';
 
-const chips = ['All', 'Tech', 'Gaming', 'Music', 'Science', 'Podcasts', 'Live', 'New'];
+// Hardcoded chips for now; will map to sectors s/all, user feed, s/science, s/news, s/gaming, s/music, and recently uploaded
+const chips = ['All', 'For You', 'Science & Tech', 'News', 'Gaming', 'Music', 'New'];
 
 export default function Home() {
   const [videos, setVideos] = useState<any[]>([]);

@@ -21,32 +21,60 @@ type SectorVideo = {
     channels: { display_name: string } | null;
 };
 
+const ALL_SECTOR = {
+    id: null,
+    slug: 'all',
+    name: 'All',
+    description: 'All videos across every sector.',
+    icon: null,
+    star_map: true,
+    private_access: false,
+    rules: [
+        "Do not break the law.",
+        "Do not upload harmful, abusive, or explicit content.",
+        "Do not exploit or harm others.",
+        "Do not compromise security or integrity by attempting to trick users into giving their login information or disributing harmful code.",
+        "Do not circumvent technical measures or spam content to burden our systems.",
+        "Do not misuse AI content or misrepresent it as entirely human-made.",
+    ],
+    member_count: null,
+    video_count: null,
+    created_at: null,
+};
+
 export default async function SectorPage({ params }: PageProps) {
     const { id } = await params;
     const supabase = await createSupabaseServerClient();
+    const isAll = id.toLowerCase() === "all";
+    let sector;
 
-    // Fetch sector
-    const { data: sector, error } = await supabase
-        .from('sectors')
-        .select('*')
-        .eq('slug', id.toLowerCase())
-        .single();
+    if (isAll) {
+        sector = ALL_SECTOR;
+    } else {
+        // Fetch sector
+        const {data, error} = await supabase
+            .from('sectors')
+            .select('*')
+            .eq('slug', id.toLowerCase())
+            .single();
 
-    if (error || !sector)
-        notFound();
+        if (error || !data)
+            notFound();
+
+        sector = data;
+    }
 
     // Fetch sector videos via API route
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/videos?sectors=${encodeURIComponent(id.toLowerCase())}`, {
-        cache: 'no-store',
-    });
+    const fullUrl = `${baseUrl}/api/videos${!isAll ? `?sectors=${encodeURIComponent(id.toLowerCase())}` : ""}`;
+    const res = await fetch(fullUrl, { cache: 'no-store' });
     const { videos } = await res.json() as { videos: SectorVideo[] };
 
     // Get current user for join state
     const { data: { user: authUser } } = await supabase.auth.getUser();
     let isMember = false;
     let memberRole: string | null = null;
-    if (authUser) {
+    if (authUser && !isAll) {
         const { data: membership } = await supabase
             .from('sector_members')
             .select('roles')
@@ -60,6 +88,8 @@ export default async function SectorPage({ params }: PageProps) {
     }
 
     // Calculate sector age
+    let sectorAge = '';
+    if (sector.created_at) {
     const sectorCreatedDate = new Date(sector.created_at);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - sectorCreatedDate.getTime());
@@ -68,7 +98,6 @@ export default async function SectorPage({ params }: PageProps) {
     const diffMonths = Math.floor((diffDays % 365) / 30);
     const remainingDays = diffDays % 30;
 
-    let sectorAge = '';
     if (diffYears > 0) {
         sectorAge = `${diffYears} year${diffYears !== 1 ? 's' : ''}`;
         if (diffMonths > 0) sectorAge += `, ${diffMonths} month${diffMonths !== 1 ? 's' : ''}`;
@@ -77,6 +106,7 @@ export default async function SectorPage({ params }: PageProps) {
         if (remainingDays > 0) sectorAge += `, ${remainingDays} day${remainingDays !== 1 ? 's' : ''}`;
     } else {
         sectorAge = `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+    }
     }
 
     return (
@@ -127,8 +157,8 @@ export default async function SectorPage({ params }: PageProps) {
                     )}
                 </div>
 
-                {/* Join / Leave */}
-                {authUser && (
+                {/* Join / Leave; not shown for s/all */}
+                {authUser && !isAll && (
                     <SectorJoinButton
                         sectorId={sector.id}
                         userId={authUser.id}
@@ -175,18 +205,26 @@ export default async function SectorPage({ params }: PageProps) {
                             Statistics
                         </h2>
                         <div className="space-y-2 text-sm text-card-foreground">
+                            {sector.member_count !== null && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Members:</span>
                                 <span className="font-medium">{sector.member_count.toLocaleString()}</span>
                             </div>
+                            )}
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Videos:</span>
-                                <span className="font-medium">{sector.video_count.toLocaleString()}</span>
+                                <span className="font-medium">
+                                    {sector.video_count !== null
+                                        ? sector.video_count.toLocaleString()
+                                        : videos.length.toLocaleString()}
+                                </span>
                             </div>
+                            {sectorAge && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Age:</span>
                                 <span className="font-medium">{sectorAge}</span>
                             </div>
+                            )}
                             {memberRole && (
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Your Role:</span>
@@ -219,9 +257,16 @@ export default async function SectorPage({ params }: PageProps) {
                             </p>
                         )}
                         <hr/>
-                        <p className="text-xs text-muted-foreground">
-                            * Remember to follow <Link href="/rules" className="text-primary underline">site-wide rules</Link> as well!
-                        </p>
+                        {isAll && (
+                            <p className="text-xs text-muted-foreground">
+                                For more details, read the <Link href="/rules" className="text-primary underline">full site-wide rules</Link>.
+                            </p>
+                        )}
+                        {!isAll && (
+                            <p className="text-xs text-muted-foreground">
+                                * Remember to follow <Link href="/rules" className="text-primary underline">site-wide rules</Link> as well!
+                            </p>
+                        )}
                     </div>
                 </div>
             </aside>
