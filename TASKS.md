@@ -16,7 +16,7 @@ users can access their account
 **Status:** Done
 
 ### 0.3. Account dropdown
-Show logged in user info in account dropdown when logged
+Show logged-in user info in account dropdown when logged
 in. Show a signin/signup button when not logged in.
 
 **Status:** Done
@@ -51,7 +51,7 @@ into a Studio channel.
 
 ### 0.8. Forced Studio conversion
 When a Creator meets certain criteria, they are required to
-fill out a short servey about their team, and depending on
+fill out a short survey about their team, and depending on
 the results, they must convert into a Studio channel.
 
 **Status:** Todo
@@ -75,7 +75,7 @@ Create a video upload page for channels to upload videos.
 **Status:** Done
 
 ### 1.2. Create video database
-Create a database to store videos and meta data about them.
+Create a database to store videos and metadata about them.
 
 **Status:** Done
 
@@ -142,7 +142,7 @@ Make the home feed load more videos as the user scrolls down.
 **Status:** Todo
 
 ### 3.6. Genre chips
-Either delete them or make them filter the home feed by genere
+Either delete them or make them filter the home feed by genre
 when clicked.
 
 **Status:** Todo
@@ -264,15 +264,21 @@ also potentially require the user to have a premium paid tier.
 However, this will only happen if the website picks up real
 and significant traffic.
 
-**Status:** In Progress
+**Status:** Done
 
-### 7.2. Add sectors page
-Add a Sectors page that displays a grid or list layout showing
+### 7.2. Add sectors selection to upload page
+Allow users to select one or more sectors when uploading a video. Default to s/misc.
+
+**Status:** Done
+
+### 7.3. Add sectors page
+Add a Sectors page (/sectors) that displays a grid or list layout showing
 many different sectors. Sectors can be searched for or recommended.
+Allow switching between grid view and star map view.
 
 **Status:** Todo
 
-### 7.3. Add star map
+### 7.4. Add star map
 Add a unique galaxy-like map of every single sector. On sector 
 creation, users can optionally choose a location on this map,
 or may also opt to keep it hidden from the map for privacy. 
@@ -281,7 +287,18 @@ their sector relatively inaccessible from the map but still
 visible and accessible on it, or can try to find a location
 close to the center to maximize visibility.
 
-**Status:** Todo
+**Status:** Done
+
+### 7.5. Cleanup
+Clean up some stuff:
+- Enforce sector options like "allow/disallow AI content" or "min & max duration"
+- Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
+- Allow sector owners to manage member roles and permissions
+- Display what sector(s) videos are in on video cards
+- Display what sector(s) the video is in on the watch page
+- Allow managing sectors from a sector admin panel
+- Display sector mods on side panel on sector page
+- Add a 2nd tab to sector page on mobile that displays what's on the sidebar on desktop (rules, stats, etc.)
 
 **Status:** Todo
 
@@ -290,7 +307,7 @@ close to the center to maximize visibility.
 ### 8.1. Add admin panel
 Add an admin panel page for the website to manage users, channels,
 videos, etc. It must display all data for each user and channel, 
-music email and password.
+minus email and password.
 
 **Status:** Todo
 

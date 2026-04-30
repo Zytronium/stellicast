@@ -56,21 +56,26 @@ export interface SectorMember {
   joined_at: Date;
 }
 
-export interface Sector {
-  id: string;              // A short ID for URL shortening that we might do in the future
-  slug: string;            // A URL-friendly unique slug for the sector (i.e. rc_planes instead of RC Planes)
-  name: string;            // A unique human-friendly name for the sector (i.e. RC Planes)
-  description?: string;    // An optional description for the sector (i.e. "The place to post videos of your RC planes")
-  icon?: string;           // Optional URL to the icon for this sector
-  member_count: number;    // Total number of members/followers of this sector
-  video_count: number;     // An array of videos associated with this sector
-  createdAt: Date;         // Timestamp of this sector's creation
-  updatedAt: Date;         // Timestamp of the last update to this sector aside from its videos
-}
-
 export interface SectorVideo {
   video_id: string;
   sector_id: string;
   // added_at: Date; // When the video was added to the Sector, not when it was published. Potential future metric if videos can be added to Sectors after upload, which oculd be a useful feature.
 }
 
+export interface Sector {
+  id: string;               // A UUID that uniquely identifies the sector in the database
+  slug: string;             // A URL-friendly unique slug for the sector (i.e. rc_planes instead of RC Planes)
+  name: string;             // A unique human-friendly name for the sector (i.e. RC Planes)
+  description?: string;     // An optional description for the sector (i.e. "The place to post videos of your RC planes")
+  icon?: string;            // Optional URL to the icon for this sector
+  member_count: number;     // Total number of members/followers of this sector
+  video_count: number;      // An array of videos associated with this sector
+  star_map: boolean;        // Whether this sector will appear publicly on the star map
+  private_access: boolean;  // Whether only approved members can join and upload/view content
+  allow_ai: boolean;        // Whether AI-generated content is allowed in this sector
+  min_video_length: number; // Minimum video length allowed in this sector
+  max_video_length: number; // Maximum video length allowed in this sector
+  rules: string[];          // Sector rules
+  createdAt: Date;          // Timestamp of this sector's creation
+  updatedAt: Date;          // Timestamp of the last update to this sector aside from its videos
+}

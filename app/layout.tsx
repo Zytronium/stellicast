@@ -13,9 +13,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [themeClass, setThemeClass] = useState<string>('');
   const pathname = usePathname();
-  const pathsWithFilters = ['/explore']; // and `/`
-  const pathsWithoutSidebar = ['/about', '/auth'];
-  const pathsWithoutPadding = ['/channel/', '/user/', '/profile'];
+  const pathsWithFilters = ['/explore', '/s']; // and `/`
+  const pathsWithoutSidebar = ['/about', '/auth', '/star-map'];
+  const pathsWithoutPadding = ['/channel/', '/user/', '/profile', '/star-map'];
   const pathsWithoutBottomNav: string[] = [];
 
   const showFilters = pathsWithFilters.some(path => pathname.startsWith(path)) || pathname === '/';
