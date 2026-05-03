@@ -60,7 +60,7 @@ export default function Home() {
       ) : videos.length > 0 ? (
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {videos.map((video) => {
-            const sectors = video.sector_videos?.map(sv => sv.sectors) ?? [];
+            const sectors = video.sector_videos?.map((sv: { sectors: any; }) => sv.sectors) ?? [];
             const primarySector = sectors[0]?.name ?? null;
             const extraCount = Math.max(0, sectors.length - 1);
 
