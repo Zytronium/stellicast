@@ -81,7 +81,7 @@ export default function Card({
               <span className="rounded-full bg-black/65 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
                 S/ {sector}
               </span>
-              {extraSectors && extraSectors > 0 && (
+              {!!extraSectors && extraSectors > 0 && (
                   <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
                   +{extraSectors}
                   </span>
