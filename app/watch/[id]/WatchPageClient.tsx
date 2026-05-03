@@ -1263,19 +1263,26 @@ export default function WatchPageClient({ params }: {
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upNext.map((v: any) => (
-              <Card
-                key={v.id}
-                slug={v.slug}
-                title={v.title}
-                creator_name={v.creator}
-                date={v.created_at}
-                thumbnail_src={v.thumbnail_url}
-                is_ai={v.is_ai}
-                views={v.view_count}
-                duration={v.duration}
-              />
-            ))}
+            {upNext.map((v: any) => {
+              const sectors = v.sector_videos?.map((sv: { sectors: any; }) => sv.sectors) ?? [];
+              const primarySector = sectors[0]?.name ?? null;
+              const extraCount = Math.max(0, sectors.length - 1);
+
+              return (
+                  <Card
+                      key={v.id}
+                      slug={v.slug}
+                      title={v.title}
+                      creator_name={v.creator}
+                      date={v.created_at}
+                      sector={primarySector !== "Miscellaneous" ? primarySector : null}
+                      extraSectors={extraCount}
+                      thumbnail_src={v.thumbnail_url}
+                      is_ai={v.is_ai}
+                      views={v.view_count}
+                      duration={v.duration}
+                  />)
+            })}
           </div>
           {upNext.length < allVideos.length && (
             <div className="flex justify-center mt-6">

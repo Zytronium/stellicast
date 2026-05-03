@@ -59,7 +59,12 @@ export default function Home() {
         </div>
       ) : videos.length > 0 ? (
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {videos.map((video) => (
+          {videos.map((video) => {
+            const sectors = video.sector_videos?.map((sv: { sectors: any; }) => sv.sectors) ?? [];
+            const primarySector = sectors[0]?.name ?? null;
+            const extraCount = Math.max(0, sectors.length - 1);
+
+            return (
             <Card
               key={video.id}
               slug={video.slug}
@@ -68,10 +73,12 @@ export default function Home() {
               creator_name={video.channels?.display_name || 'Unknown Creator'}
               views={video.view_count}
               date={video.created_at}
+              sector={primarySector !== "Miscellaneous" ? primarySector : null}
+              extraSectors={extraCount}
               thumbnail_src={video.thumbnail_url}
               is_ai={video.is_ai}
-            />
-          ))}
+            />);
+        })}
         </section>
       ) : (
         <div className="py-20 text-center">

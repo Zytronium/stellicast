@@ -12,6 +12,8 @@ type CardProps = {
   creator_name: string;
   views?: number | null;
   date: string | Date;            // ISO string or Date
+  sector?: string;
+  extraSectors?: number;
   thumbnail_src: string;
   is_ai: boolean;
 };
@@ -41,6 +43,8 @@ export default function Card({
   creator_name,
   views,
   date,
+  sector,
+  extraSectors,
   thumbnail_src,
   is_ai,
 }: CardProps) {
@@ -71,6 +75,19 @@ export default function Card({
         <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white">
           {formatDuration(duration)}
         </div>
+
+        {sector && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+              <span className="rounded-full bg-black/65 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                S/ {sector}
+              </span>
+              {!!extraSectors && extraSectors > 0 && (
+                  <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                  +{extraSectors}
+                  </span>
+              )}
+            </div>
+        )}
 
         <div
           className="pointer-events-none absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
