@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Card from "@/components/Card";
 import Link from 'next/link';
-import FollowButton from '@/components/FollowButton'; // Add this import
+import FollowButton from '@/components/FollowButton';
 
 type PageParams = {
   id: string;
@@ -30,7 +30,7 @@ export default async function ChannelPage({ params }: PageProps) {
 
   const { data: videos } = await supabase
     .from('videos')
-    .select('*')
+    .select('*, sector_videos(sectors(name, slug))')
     .eq('channel_id', channel.id)
     .eq('visibility', 'public')
     .order('created_at', { ascending: false });
@@ -146,10 +146,18 @@ export default async function ChannelPage({ params }: PageProps) {
         <hr className="border-border mt-2"/>
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
-          {videos?.map((video) => (
-            <Card key={video.id} slug={video.slug} duration={video.duration} title={video.title} creator_name={channel.display_name}
-                  views={video.view_count} date={video.created_at} thumbnail_src={video.thumbnail_url} is_ai={video.is_ai} />
-          ))}
+          {videos?.map((video) => {
+            const sectors = video.sector_videos?.map((sv: { sectors: any; }) => sv.sectors) ?? [];
+            const primarySector = sectors[0]?.name ?? null;
+            const extraCount = Math.max(0, sectors.length - 1);
+
+           return (
+               <Card key={video.id} slug={video.slug} duration={video.duration} title={video.title}
+                  creator_name={channel.display_name} views={video.view_count}
+                  sector={primarySector !== "Miscellaneous" ? primarySector : null} extraSectors={extraCount}
+                  date={video.created_at} thumbnail_src={video.thumbnail_url} is_ai={video.is_ai}/>
+           )
+          })}
         </div>
       </div>
     </div>

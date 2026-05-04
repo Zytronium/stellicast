@@ -125,6 +125,7 @@ export default function WatchPageClient({ params }: {
   const [userDislikedComments, setUserDislikedComments] = useState<string[]>([]);
   const [mobileCommentsExpanded, setMobileCommentsExpanded] = useState(false);
   const [isPongRoute, setIsPongRoute] = useState(false);
+  const [sectors, setSectors] = useState<{ name: string; slug?: string }[]>([]);
   const [authReady, setAuthReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
@@ -152,7 +153,7 @@ export default function WatchPageClient({ params }: {
     loadComments();
   }, [videoId]);
 
-// Separate auth initialization from data loading
+  // Separate auth initialization from data loading
   useEffect(() => {
     let mounted = true;
 
@@ -350,7 +351,13 @@ export default function WatchPageClient({ params }: {
 
         if (!mounted) return;
 
+        // Extract sectors from the join table
+        const sectorList = (videoData.sector_videos ?? [])
+          .map((sv: { sectors: { name: string; slug?: string } | null }) => sv.sectors)
+          .filter(Boolean) as { name: string; slug?: string }[];
+
         setVideo(videoObj);
+        setSectors(sectorList);
         setChannelInfo(channel);
         document.title = `${videoObj.title} - Stellicast`;
 
@@ -1014,6 +1021,22 @@ export default function WatchPageClient({ params }: {
         <div className="mt-4 space-y-3">
           {/* Title */}
           <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold px-0 wrap-break-word max-w-[90vw]">{video.title}</h1>
+
+          {/* Sectors */}
+          {sectors.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {sectors.map((sector) => (
+                <Link
+                  key={sector.slug}
+                  href={`/s/${sector.slug}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition border border-primary/20"
+                >
+                  <span className="text-primary/70">S/</span>
+                  {sector.name}
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Channel Info & Actions - Mobile Optimized */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
