@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Card from "@/components/Card";
 import Link from 'next/link';
-import FollowButton from '@/components/FollowButton'; // Add this import
+import FollowButton from '@/components/FollowButton';
 
 type PageParams = {
   id: string;

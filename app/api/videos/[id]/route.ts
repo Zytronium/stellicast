@@ -24,7 +24,10 @@ export async function GET(
           follower_count,
           video_count,
           owner_id
-        )
+        ),
+         sector_videos (
+         sectors(name, slug)
+         )
       `)
     .eq('id', id)
     .single();
