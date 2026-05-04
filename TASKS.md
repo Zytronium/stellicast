@@ -294,8 +294,6 @@ Clean up some stuff:
 - Enforce sector options like "allow/disallow AI content" or "min & max duration"
 - Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
 - Allow sector owners to manage member roles and permissions
-- Display what sector(s) videos are in on video cards
-- Display what sector(s) the video is in on the watch page
 - Allow managing sectors from a sector admin panel
 - Display sector mods on side panel on sector page
 - Add a 2nd tab to sector page on mobile that displays what's on the sidebar on desktop (rules, stats, etc.)
