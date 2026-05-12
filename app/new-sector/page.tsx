@@ -137,6 +137,7 @@ interface FormState {
     starMap: boolean;
     privateAccess: boolean;
     open_posting: boolean;
+    approval_for_posting: boolean;
     allowAI: boolean;
     minVideoLength: number;
     maxVideoLength: number;
@@ -161,6 +162,7 @@ const defaultForm: FormState = {
     starMap: true,
     privateAccess: false,
     open_posting: true,
+    approval_for_posting: false,
     allowAI: true,
     minVideoLength: 1,
     maxVideoLength: 28800,
@@ -199,9 +201,15 @@ function AdvancedOptionsColumn({
                 />
                 <Checkbox
                     label="Open Posting"
-                    hint="Allow anyone to post videos, not just members." // 👈 add this
+                    hint="Allow anyone to post videos, not just members."
                     checked={form.open_posting}
                     onChange={v => setForm(f => ({ ...f, open_posting: v }))}
+                />
+                <Checkbox
+                    label="Require Approval for Posting"
+                    hint="All posts not made by mods must be approved to be public."
+                    checked={form.approval_for_posting}
+                    onChange={v => setForm(f => ({ ...f, approval_for_posting: v }))}
                 />
             </SectionCard>
 
@@ -475,17 +483,18 @@ export default function NewSectorPage() {
             const { data: sector, error: sectorError } = await supabase
                 .from('sectors')
                 .insert({
-                    slug:             form.slug,
-                    name:             form.name.trim(),
-                    description:      form.description.trim() || null,
-                    icon:             iconUrl,
-                    star_map:         form.starMap,
-                    private_access:   form.privateAccess,
-                    open_posting:     form.open_posting,
-                    allow_ai:         form.allowAI,
-                    min_video_length: form.minVideoLength,
-                    max_video_length: form.maxVideoLength,
-                    rules:            form.rules.filter(r => r.trim() !== ''),
+                    slug:                 form.slug,
+                    name:                 form.name.trim(),
+                    description:          form.description.trim() || null,
+                    icon:                 iconUrl,
+                    star_map:             form.starMap,
+                    private_access:       form.privateAccess,
+                    open_posting:         form.open_posting,
+                    approval_for_posting: form.approval_for_posting,
+                    allow_ai:             form.allowAI,
+                    min_video_length:     form.minVideoLength,
+                    max_video_length:     form.maxVideoLength,
+                    rules:                form.rules.filter(r => r.trim() !== ''),
                     // only written when the sector is on the star map and a spot was chosen
                     galaxy_x: form.starMap ? (location?.galaxy_x ?? null) : null,
                     galaxy_y: form.starMap ? (location?.galaxy_y ?? null) : null,
