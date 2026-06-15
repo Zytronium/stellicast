@@ -4,6 +4,50 @@ import Image from 'next/image';
 import Card from '@/components/Card';
 import SectorJoinButton from '@/components/SectorJoinButton';
 import Link from "next/link";
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { id } = await params;
+    const isAll = id.toLowerCase() === 'all';
+
+    let name = 'All';
+    let description: string | null = 'All videos across every sector.';
+
+    if (!isAll) {
+        const supabase = await createSupabaseServerClient();
+        const { data, error } = await supabase
+            .from('sectors')
+            .select('name, description')
+            .eq('slug', id.toLowerCase())
+            .single();
+
+        if (error || !data) return { title: 'Not Found - Stellicast' };
+
+        name = data.name;
+        description = data.description ?? null;
+    }
+
+    const metaDescription = [
+        `Browse videos on the '${name}' sector on Stellicast.`,
+        description,
+    ].filter(Boolean).join(' ');
+
+    return {
+        title: `S/${name} - Stellicast`,
+        description: metaDescription,
+    };
+}
+
+function formatSectorDuration(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    const parts: string[] = [];
+    if (h > 0) parts.push(`${h}h`);
+    if (m > 0) parts.push(`${m}m`);
+    if (s > 0) parts.push(`${s}s`);
+    return parts.join(' ') || '0s';
+}
 
 type PageProps = {
     params: Promise<{ id: string }>;
@@ -198,7 +242,8 @@ export default async function SectorPage({ params }: PageProps) {
 
             {/* Sidebar */}
             <aside className="hidden lg:block w-80 flex-shrink-0">
-                <div className="sticky top-4 space-y-6">
+                <div className="sticky top-4 rounded-md overflow-hidden">
+                    <div className="space-y-6 max-h-[calc(100vh-64px-2rem)] overflow-y-auto">
                     {/* Statistics Section */}
                     <div className="rounded-lg border border-border bg-card p-4 space-y-3">
                         <h2 className="text-lg font-semibold text-foreground">
@@ -268,6 +313,61 @@ export default async function SectorPage({ params }: PageProps) {
                             </p>
                         )}
                     </div>
+
+                    {/* Upload Constraints Section */}
+                    {!isAll && (
+                        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                            <h2 className="text-lg font-semibold text-foreground">Upload Constraints</h2>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Allows AI Content</span>
+                                    <span className={`font-medium ${sector.allow_ai ? 'text-green-500' : 'text-destructive'}`}>
+                                        {sector.allow_ai ? 'Yes' : 'No'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Min Duration</span>
+                                    <span className="font-medium text-card-foreground">
+                                        {sector.min_video_length === 0 ? 'None' : formatSectorDuration(sector.min_video_length)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Max Duration</span>
+                                    <span className="font-medium text-card-foreground">
+                                        {formatSectorDuration(sector.max_video_length)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Privacy & Access Section */}
+                    {!isAll && (
+                        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                            <h2 className="text-lg font-semibold text-foreground">Privacy & Access</h2>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Appears on Star Map</span>
+                                    <span className={`font-medium ${sector.star_map ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                        {sector.star_map ? 'Yes' : 'No'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Anyone Can Post</span>
+                                    <span className={`font-medium ${sector.open_posting ? 'text-green-500' : 'text-destructive'}`}>
+                                        {sector.open_posting ? 'Yes' : 'No'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Approval Required</span>
+                                    <span className={`font-medium ${sector.approval_for_posting ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+                                        {sector.approval_for_posting ? 'Yes' : 'No'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
                 </div>
             </aside>
         </div>

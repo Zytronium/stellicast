@@ -1,3 +1,6 @@
+import { getPageMetadata } from '@/../lib/page-metadata';
+export const metadata = getPageMetadata('/rules');
+
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import fs from 'fs';
 import path from 'path';

@@ -1,15 +1,8 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import StarMapCore from '@/components/StarMapCore';
+import { getPageMetadata } from '@/../lib/page-metadata';
+import StarMapClient from './StarMapClient';
+
+export const metadata = getPageMetadata('/star-map');
 
 export default function StarMapPage() {
-    const router = useRouter();
-    return (
-        <div className="fixed inset-0 overflow-hidden">
-            <StarMapCore
-                mode="view"
-                onNavigate={(slug) => router.push(`/s/${slug}`)}
-            />
-        </div>
-    );
+  return <StarMapClient />;
 }
