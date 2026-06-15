@@ -16,20 +16,35 @@ type VideoPreview = {
   size: string;
 };
 
-export default function VideoUpload({ channelId }: { channelId?: string }) {
+// Must match SectorSelector's Sector interface (includes preference fields)
   interface Sector {
     id: string;
     slug: string;
     name: string;
     icon: string | null;
+  allow_ai: boolean;
+  min_video_length: number;
+  max_video_length: number;
   }
 
+function hasSectorViolation(sector: Sector, isAI: boolean, videoDuration?: number): boolean {
+  if (isAI && !sector.allow_ai)
+    return true;
+  if (videoDuration !== undefined) {
+    if (sector.min_video_length > 0 && videoDuration < sector.min_video_length)
+      return true;
+    if (videoDuration > sector.max_video_length)
+      return true;
+  }
+  return false;
+}
+
+export default function VideoUpload({ channelId }: { channelId?: string }) {
   const supabaseRef = useRef(createSupabaseBrowserClient());
   const supabase = supabaseRef.current;
 
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
 
   const [videoPreview, setVideoPreview] = useState<VideoPreview | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -50,6 +65,11 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
 
   const [selectedSectors, setSelectedSectors] = useState<Sector[]>([]);
   const [isTest, setIsTest] = useState(false);
+
+  // True if any selected sector has a violation given current isAI + video duration
+  const hasViolations = selectedSectors.some(s =>
+    hasSectorViolation(s, isAI, videoPreview?.duration)
+  );
 
   const addTag = (tagText: string) => {
     const trimmed = tagText.trim();
@@ -296,6 +316,11 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       return;
     }
 
+    if (hasViolations) {
+      alert('Please resolve the sector issues shown above before publishing.');
+      return;
+    }
+
     // Start upload when publish is clicked
     const { success, videoId: uploadedId } = await startUploadFlow(videoPreview.file, videoPreview.duration);
 
@@ -323,12 +348,13 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       {/* Metadata form - always visible */}
       <div className="space-y-4">
 
-
         <SectorSelector
             selectedSectors={selectedSectors}
             onChange={setSelectedSectors}
             isTest={isTest}
             onIsTestChange={setIsTest}
+            isAI={isAI}
+            videoDuration={videoPreview?.duration}
         />
 
         <div>
@@ -524,7 +550,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         </button>
         <button
           onClick={handlePublish}
-          disabled={uploading || uploadCompleted || !title.trim() || !channelId || !videoPreview}
+          disabled={uploading || uploadCompleted || !title.trim() || !channelId || !videoPreview || hasViolations}
           className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors"
         >
           {uploading ? `Uploading... ${Math.round(uploadProgress)}%` : uploadCompleted ? 'Published' : 'Publish Video'}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { PlusIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { PlusIcon, XMarkIcon, MagnifyingGlassIcon, ExclamationCircleIcon } from '@heroicons/react/20/solid';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
 interface Sector {
@@ -9,6 +9,15 @@ interface Sector {
     slug: string;
     name: string;
     icon: string | null;
+    allow_ai: boolean;
+    min_video_length: number;
+    max_video_length: number;
+}
+
+interface SectorViolation {
+    sectorId: string;
+    slug: string;
+    reason: string;
 }
 
 interface Props {
@@ -16,11 +25,35 @@ interface Props {
     onChange: (sectors: Sector[]) => void;
     isTest: boolean;
     onIsTestChange: (v: boolean) => void;
+    isAI: boolean;
+    videoDuration?: number;
 }
 
 const MAX_SECTORS = 5;
 
-export default function SectorSelector({ selectedSectors, onChange, isTest, onIsTestChange }: Props) {
+function formatDur(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function getViolations(sector: Sector, isAI: boolean, videoDuration?: number): string[] {
+    const v: string[] = [];
+    if (isAI && !sector.allow_ai) {
+        v.push('Does not allow AI-generated content');
+    }
+    if (videoDuration !== undefined) {
+        if (sector.min_video_length > 0 && videoDuration < sector.min_video_length) {
+            v.push(`Min duration is ${formatDur(sector.min_video_length)} (your video: ${formatDur(videoDuration)})`);
+        }
+        if (videoDuration > sector.max_video_length) {
+            v.push(`Max duration is ${formatDur(sector.max_video_length)} (your video: ${formatDur(videoDuration)})`);
+        }
+    }
+    return v;
+}
+
+export default function SectorSelector({ selectedSectors, onChange, isTest, onIsTestChange, isAI, videoDuration }: Props) {
     const supabase = createSupabaseBrowserClient();
     const [allSectors, setAllSectors] = useState<Sector[]>([]);
     const [miscSector, setMiscSector] = useState<Sector | null>(null);
@@ -35,7 +68,7 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
         async function fetchSectors() {
             const { data } = await supabase
                 .from('sectors')
-                .select('id, slug, name, icon')
+                .select('id, slug, name, icon, allow_ai, min_video_length, max_video_length')
                 .eq('private_access', false)
                 .order('name');
             if (data) {
@@ -107,12 +140,26 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
         if (s.slug === 'testing') return false; // never manually selectable
         // If a non-misc sector is selected, hide misc in dropdown
         if (s.slug === 'misc' && !isMiscOnly) return false;
+        // Hide sectors that don't allow AI when the AI checkbox is checked
+        if (isAI && !s.allow_ai) return false;
         if (!query) return true;
-        return s.name.toLowerCase().includes(query.toLowerCase()) ||
-            s.slug.toLowerCase().includes(query.toLowerCase());
+        return (
+            s.name.toLowerCase().includes(query.toLowerCase()) ||
+            s.slug.toLowerCase().includes(query.toLowerCase())
+        );
     });
 
     const canAdd = !isTest && selectedSectors.length < MAX_SECTORS;
+
+    // Compute violations across all selected sectors
+    const violations: SectorViolation[] = selectedSectors.flatMap(sector =>
+        getViolations(sector, isAI, videoDuration).map(reason => ({
+            sectorId: sector.id,
+            slug: sector.slug,
+            reason,
+        }))
+    );
+    const violatingSectorIds = new Set(violations.map(v => v.sectorId));
 
     return (
         <div className="space-y-2">
@@ -123,18 +170,25 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
                 {loading ? (
                     <div className="h-7 w-20 bg-muted rounded-lg animate-pulse" />
                 ) : (
-                    selectedSectors.map(sector => (
-                        <span
-                            key={sector.id}
-                            className={`inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg border text-sm font-medium transition-colors
-                ${sector.slug === 'misc'
-                                ? 'bg-muted/60 border-border text-muted-foreground'
-                                : sector.slug === 'testing'
-                                    ? 'bg-warning/10 border-warning/30 text-warning-foreground'
-                                    : 'bg-primary/10 border-primary/30 text-primary'
-                            }`}
-                        >
-              <span className="font-mono text-xs opacity-60">s/</span>{sector.slug}
+                    selectedSectors.map(sector => {
+                        const hasViolation = violatingSectorIds.has(sector.id);
+                        return (
+                            <span
+                                key={sector.id}
+                                className={`inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg border text-sm font-medium transition-colors
+                                    ${hasViolation
+                                        ? 'bg-destructive/10 border-destructive/40 text-destructive'
+                                        : sector.slug === 'misc'
+                                            ? 'bg-muted/60 border-border text-muted-foreground'
+                                            : sector.slug === 'testing'
+                                                ? 'bg-warning/10 border-warning/30 text-warning-foreground'
+                                                : 'bg-primary/10 border-primary/30 text-primary'
+                                    }`}
+                            >
+                                {hasViolation && (
+                                    <ExclamationCircleIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                                )}
+                            <span className="font-mono text-xs opacity-60">s/</span>{sector.slug}
                             {!isTest && (
                                 <button
                                     type="button"
@@ -146,7 +200,8 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
                                 </button>
                             )}
             </span>
-                    ))
+                        );
+                    })
                 )}
 
                 {/* Add button */}
@@ -182,7 +237,11 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
                                 {/* Results */}
                                 <div className="max-h-48 overflow-y-auto">
                                     {filtered.length === 0 ? (
-                                        <p className="text-xs text-muted-foreground text-center py-4">No sectors found</p>
+                                        <p className="text-xs text-muted-foreground text-center py-4">
+                                            {isAI && !query
+                                                ? 'No sectors found that allow AI content'
+                                                : 'No sectors found'}
+                                        </p>
                                     ) : (
                                         filtered.map(sector => (
                                             <button
@@ -210,6 +269,20 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
                     </div>
                 )}
             </div>
+
+            {/* Violation errors */}
+            {violations.length > 0 && (
+                <div className="space-y-1 pt-0.5">
+                    {violations.map((v, i) => (
+                        <p key={i} className="text-xs text-destructive flex items-start gap-1.5">
+                            <ExclamationCircleIcon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                            <span>
+                                <span className="font-mono">s/{v.slug}</span>: {v.reason}
+                            </span>
+                        </p>
+                    ))}
+                </div>
+            )}
 
             {/* Misc hint */}
             {isMiscOnly && !isTest && (
