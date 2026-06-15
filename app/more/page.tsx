@@ -1,3 +1,6 @@
+import { getPageMetadata } from '@/../lib/page-metadata';
+export const metadata = getPageMetadata('/more');
+
 import Link from "next/link";
 import {Plus, Compass} from "lucide-react";
 
