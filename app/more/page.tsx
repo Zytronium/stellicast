@@ -2,7 +2,7 @@ import { getPageMetadata } from '@/../lib/page-metadata';
 export const metadata = getPageMetadata('/more');
 
 import Link from "next/link";
-import {Plus, Compass} from "lucide-react";
+import {Plus, Compass, Grid} from "lucide-react";
 
 // ─── Section Components ───────────────────────────────────────────────────────
 
@@ -24,6 +24,13 @@ function SectorsSection() {
                 >
                     <Compass className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180"/>
                     Explore Sectors
+                </Link>
+                <Link
+                    href="/sectors"
+                    className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                >
+                    <Grid className="w-4 h-4 transition-transform duration-200 group-hover:scale-110"/>
+                    Browse Sectors
                 </Link>
             </div>
         </Section>

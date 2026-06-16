@@ -57,13 +57,17 @@ const metadataMap: Record<string, Metadata> = {
         title: "Rules | Stellicast",
         description: "Community rules and platform guidelines."
     },
+    "/sectors": {
+        title: "Sectors | Stellicast",
+        description: "Browse Stellicast sectors."
+    },
     "/settings": {
         title: "Settings | Stellicast",
         description: "Manage Stellicast settings and preferences."
     },
     "/star-map": {
         title: "Star Map | Stellicast",
-        description: "Explore the Stellicast sector map."
+        description: "Explore the interactive Stellicast sector map."
     },
     "/terms-of-use": {
         title: "Terms of Use | Stellicast",

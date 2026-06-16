@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import { Loader2 } from 'lucide-react';
 
@@ -10,12 +9,13 @@ interface Props {
     userId: string;
     isMember: boolean;
     memberRole: string | null;
+    onJoin?: () => void;
+    onLeave?: () => void;
 }
 
-export default function SectorJoinButton({ sectorId, userId, isMember, memberRole }: Props) {
+export default function SectorJoinButton({ sectorId, userId, isMember, memberRole, onJoin, onLeave }: Props) {
     const [member, setMember] = useState(isMember);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
     const supabase = createSupabaseBrowserClient();
 
     // Owners can't leave via this button — they'd orphan the sector
@@ -28,7 +28,7 @@ export default function SectorJoinButton({ sectorId, userId, isMember, memberRol
             .insert({ sector_id: sectorId, user_id: userId, roles: ['member'], permissions: [] });
         if (!error) {
             setMember(true);
-            router.refresh();
+            onJoin?.();
         }
         setLoading(false);
     }
@@ -42,7 +42,7 @@ export default function SectorJoinButton({ sectorId, userId, isMember, memberRol
             .eq('user_id', userId);
         if (!error) {
             setMember(false);
-            router.refresh();
+            onLeave?.();
         }
         setLoading(false);
     }
