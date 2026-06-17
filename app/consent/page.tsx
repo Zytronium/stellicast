@@ -1,3 +1,6 @@
+import { getPageMetadata } from '@/../lib/page-metadata';
+export const metadata = getPageMetadata('/consent');
+
 import { createSupabaseAdminClient } from '@/../lib/supabase-server';
 
 export default async function ConsentPage({

@@ -25,10 +25,10 @@ putting creators before corporations.
 
 # Project Status
 
-**Current Phase**: Early Development (Pre-Alpha)
+**Current Phase**: Early Development (Alpha)
 
 Stellicast is currently in active development by a solo developer with plans to 
-build a team in 2026. The platform is not yet full functional; there are no ads, 
+build a team in 2026. The platform is not yet fully functional; there are no ads, 
 playlists, or even report systems. However, these features are on the roadmap.
 
 **Honesty Check**: This is an ambitious project with significant challenges 
@@ -145,10 +145,16 @@ and improve infrastructure.
 
 ---
 
-## Contributors
+## The Team
+
+### Contributors
 
 - [Zytronium](https://github.com/Zytronium) - Creator & Lead Developer
 
+### Moderation
+- Zytronium
+- Hosm
+- more to come soon...
 ---
 
 ## License
@@ -162,7 +168,7 @@ Coming soon. Please don't copy this project without due credit.
 - **General Contact & Support**: contact@stellicast.com
 - **Legal Contact**: legal@stellicast.com
 
-> **Note**: Inboxes are not always monitored daily. Stellicast is a team of one individual developer, so please be patient and give up to 48 hours for a response.
+> **Note**: Inboxes are not always monitored daily. Stellicast is a team of one individual developer, so please be patient and give up to a week for a response.
 
 ---
 

@@ -1,3 +1,6 @@
+import { getPageMetadata } from '@/../lib/page-metadata';
+export const metadata = getPageMetadata('/profile');
+
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
 import { redirect } from 'next/navigation';
 import ProfilePageClient from './ProfilePageClient';

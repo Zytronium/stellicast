@@ -1,7 +1,10 @@
-import Home from "@/page";
+import { getPageMetadata } from '@/../lib/page-metadata';
+export const metadata = getPageMetadata('/explore');
+
+import UnderConstruction from "@/components/UnderConstruction";
 
 export default function ExplorePage() {
   return (
-    <Home/> // for now, just repeat home page
+    <UnderConstruction/>
   );
 }

@@ -125,6 +125,7 @@ export default function WatchPageClient({ params }: {
   const [userDislikedComments, setUserDislikedComments] = useState<string[]>([]);
   const [mobileCommentsExpanded, setMobileCommentsExpanded] = useState(false);
   const [isPongRoute, setIsPongRoute] = useState(false);
+  const [sectors, setSectors] = useState<{ name: string; slug?: string }[]>([]);
   const [authReady, setAuthReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
@@ -152,7 +153,7 @@ export default function WatchPageClient({ params }: {
     loadComments();
   }, [videoId]);
 
-// Separate auth initialization from data loading
+  // Separate auth initialization from data loading
   useEffect(() => {
     let mounted = true;
 
@@ -350,7 +351,13 @@ export default function WatchPageClient({ params }: {
 
         if (!mounted) return;
 
+        // Extract sectors from the join table
+        const sectorList = (videoData.sector_videos ?? [])
+          .map((sv: { sectors: { name: string; slug?: string } | null }) => sv.sectors)
+          .filter(Boolean) as { name: string; slug?: string }[];
+
         setVideo(videoObj);
+        setSectors(sectorList);
         setChannelInfo(channel);
         document.title = `${videoObj.title} - Stellicast`;
 
@@ -1015,6 +1022,22 @@ export default function WatchPageClient({ params }: {
           {/* Title */}
           <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold px-0 wrap-break-word max-w-[90vw]">{video.title}</h1>
 
+          {/* Sectors */}
+          {sectors.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {sectors.map((sector) => (
+                <Link
+                  key={sector.slug}
+                  href={`/s/${sector.slug}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition border border-primary/20"
+                >
+                  <span className="text-primary/70">S/</span>
+                  {sector.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
           {/* Channel Info & Actions - Mobile Optimized */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4 lg:justify-between">
             {/* Channel Info */}
@@ -1263,19 +1286,26 @@ export default function WatchPageClient({ params }: {
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">More Videos</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {upNext.map((v: any) => (
-              <Card
-                key={v.id}
-                slug={v.slug}
-                title={v.title}
-                creator_name={v.creator}
-                date={v.created_at}
-                thumbnail_src={v.thumbnail_url}
-                is_ai={v.is_ai}
-                views={v.view_count}
-                duration={v.duration}
-              />
-            ))}
+            {upNext.map((v: any) => {
+              const sectors = v.sector_videos?.map((sv: { sectors: any; }) => sv.sectors) ?? [];
+              const primarySector = sectors[0]?.name ?? null;
+              const extraCount = Math.max(0, sectors.length - 1);
+
+              return (
+                  <Card
+                      key={v.id}
+                      slug={v.slug}
+                      title={v.title}
+                      creator_name={v.creator}
+                      date={v.created_at}
+                      sector={primarySector !== "Miscellaneous" ? primarySector : null}
+                      extraSectors={extraCount}
+                      thumbnail_src={v.thumbnail_url}
+                      is_ai={v.is_ai}
+                      views={v.view_count}
+                      duration={v.duration}
+                  />)
+            })}
           </div>
           {upNext.length < allVideos.length && (
             <div className="flex justify-center mt-6">
