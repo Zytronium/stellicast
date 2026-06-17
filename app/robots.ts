@@ -5,7 +5,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/account'],
+      disallow: [
+        '/api/',
+        '/account',
+        '/settings',
+        '/profile',
+        '/complete-signup',
+        '/consent',
+        '/offline',
+      ],
     },
     sitemap: 'https://stellicast.com/sitemap.xml',
   }

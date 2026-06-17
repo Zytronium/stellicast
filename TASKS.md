@@ -291,8 +291,7 @@ close to the center to maximize visibility.
 
 ### 7.5. Cleanup
 Clean up some stuff:
-- Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
-- Display sector mods on side panel on sector page
+- Add a way for channels to to add, remove, or change sectors their video is in
 
 **Status:** Todo
 
