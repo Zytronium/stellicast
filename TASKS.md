@@ -295,6 +295,7 @@ Clean up some stuff:
 - Implement posting approval for sectors that require it
 - Display sector mods on side panel on sector page
 - Add a 2nd tab to sector page on mobile that displays what's on the sidebar on desktop (rules, stats, etc.)
+- Allow posting to profile only rather than to sectors
 
 **Status:** Todo
 
