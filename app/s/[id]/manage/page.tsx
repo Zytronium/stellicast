@@ -1,5 +1,5 @@
 /**
- * IMPORTANT — slug immutability is enforced at multiple layers:
+ * IMPORTANT: slug immutability is enforced at multiple layers:
  *
  * 1. UI (ManageSectorClient): the slug field is read-only; no edit controls are rendered.
  * 2. Client update payload: `slug` is intentionally omitted from every `.update()` call.
@@ -28,6 +28,7 @@
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
 import { notFound, redirect } from 'next/navigation';
 import ManageSectorClient from './ManageSectorClient';
+import type { SectorRole } from '@/../types';
 
 type PageProps = {
     params: Promise<{ id: string }>;
@@ -50,7 +51,7 @@ export default async function ManageSectorPage({ params }: PageProps) {
 
     if (error || !sector) notFound();
 
-    // Role check - must be owner or moderator
+    // Role check - must be owner, admin, or moderator
     const { data: membership } = await supabase
         .from('sector_members')
         .select('roles')
@@ -58,11 +59,10 @@ export default async function ManageSectorPage({ params }: PageProps) {
         .eq('user_id', user.id)
         .single();
 
-    const roles: string[] = membership?.roles ?? [];
-    const isOwner = roles.includes('owner');
-    const isMod = roles.includes('moderator');
+    const roles: SectorRole[] = membership?.roles ?? [];
+    const canManage = roles.some(r => ['owner', 'admin', 'moderator'].includes(r));
 
-    if (!isOwner && !isMod) redirect(`/s/${sector.slug}`);
+    if (!canManage) redirect(`/s/${sector.slug}`);
 
-    return <ManageSectorClient sector={sector} memberRole={isOwner ? 'owner' : 'moderator'} />;
+    return <ManageSectorClient sector={sector} memberRoles={roles} />;
 }

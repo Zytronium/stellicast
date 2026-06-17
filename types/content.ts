@@ -48,12 +48,42 @@ export interface Comment {
 
 export type CommentWithChildren = Comment & { children?: CommentWithChildren[] };
 
+export type SectorRole = 'owner' | 'admin' | 'moderator' | 'contributor' | 'member';
+
+export type SectorPermission =
+  | 'delete_sector'
+  | 'edit_sector_settings'
+  | 'manage_member_roles'
+  | 'ban_members'
+  | 'approve_posts'
+  | 'pin_posts'
+  | 'post_without_approval';
+
 export interface SectorMember {
   sector_id: string;
   user_id: string;
-  roles: string[];
-  permissions: string[];
+  roles: SectorRole[];
+  permissions: SectorPermission[];
   joined_at: Date;
+  // Join these from users table
+  username?: string;
+  display_name?: string;
+  avatar_url?: string;
+}
+
+export interface SectorBan {
+  id: string;
+  sector_id: string;
+  user_id: string;
+  banned_by_id: string;
+  ban_reason?: string;
+  banned_until?: Date; // null = permanent
+  created_at: Date;
+  // Join from users table
+  username?: string;
+  display_name?: string;
+  avatar_url?: string;
+  banned_by_username?: string;
 }
 
 export interface SectorVideo {

@@ -8,6 +8,8 @@ import { AlertCircle, Trash2, Plus, Upload, Loader2 } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PickedCoords } from '@/components/StarMapCore';
 import StarMapPicker from '@/components/StarMapPicker';
+import MembersTab from './MembersTab';
+import {SectorRole} from "@/../types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,7 +35,7 @@ interface Sector {
 
 interface Props {
     sector: Sector;
-    memberRole: 'owner' | 'moderator';
+    memberRoles: SectorRole[];
 }
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -605,10 +607,10 @@ function RulesTab({ sector, supabase }: { sector: Sector; supabase: SupabaseClie
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['general', 'settings', 'rules'] as const;
+const TABS = ['general', 'settings', 'members', 'rules'] as const;
 type Tab = typeof TABS[number];
 
-export default function ManageSectorClient({ sector, memberRole }: Props) {
+export default function ManageSectorClient({ sector, memberRoles }: Props) {
     const supabase = createSupabaseBrowserClient();
     const [activeTab, setActiveTab] = useState<Tab>('general');
 
@@ -626,7 +628,9 @@ export default function ManageSectorClient({ sector, memberRole }: Props) {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground tracking-tight">{sector.name}</h1>
-                        <p className="text-xs text-muted-foreground font-mono">s/{sector.slug} · {memberRole}</p>
+                        <p className="text-xs text-muted-foreground font-mono">
+                            s/{sector.slug} · {memberRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(' / ')}
+                        </p>
                     </div>
                 </div>
                 <Link
@@ -663,7 +667,10 @@ export default function ManageSectorClient({ sector, memberRole }: Props) {
                 <GeneralTab sector={sector} supabase={supabase} />
             </div>
             <div className={activeTab === 'settings' ? 'block' : 'hidden'}>
-                <SettingsTab sector={sector} supabase={supabase} />
+                <SettingsTab sector={sector} supabase={supabase} memberRoles={memberRoles} />
+            </div>
+            <div className={activeTab === 'members' ? 'block' : 'hidden'}>
+                <MembersTab sectorId={sector.id} currentUserRole={memberRoles} />
             </div>
             <div className={activeTab === 'rules' ? 'block' : 'hidden'}>
                 <RulesTab sector={sector} supabase={supabase} />
