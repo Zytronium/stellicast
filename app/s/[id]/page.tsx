@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { SectorMemberProvider } from './SectorContext';
 import SectorHeader from './SectorHeader';
 import SectorMemberCount from './SectorMemberCount';
+import SectorMobileTabs from './SectorMobileTabs';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id } = await params;
@@ -153,6 +154,141 @@ export default async function SectorPage({ params }: PageProps) {
         }
     }
 
+    // -------- Shared JSX - rendered in both the mobile About tab and desktop sidebar --------
+
+    const videoGrid = videos.length > 0 ? (
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {videos.map(video => (
+                <Card
+                    key={video.id}
+                    slug={video.slug}
+                    duration={video.duration}
+                    title={video.title}
+                    creator_name={video.channels?.display_name || 'Unknown Creator'}
+                    views={video.view_count}
+                    date={video.created_at}
+                    thumbnail_src={video.thumbnail_url ?? '/Stellicast404Thumbnail.png'}
+                    is_ai={video.is_ai}
+                />
+            ))}
+        </section>
+    ) : (
+        <div className="py-20 text-center">
+            <p className="text-muted-foreground text-sm">
+                No videos in this Sector yet. Be the first to post!
+            </p>
+        </div>
+    );
+
+    const sidebarPanels = (
+        <div className="space-y-6">
+            {/* Statistics */}
+            <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                <h2 className="text-lg font-semibold text-foreground">Statistics</h2>
+                <div className="space-y-2 text-sm text-card-foreground">
+                    {!isAll && <SectorMemberCount />}
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Videos:</span>
+                        <span className="font-medium">
+                            {sector.video_count !== null
+                                ? sector.video_count.toLocaleString()
+                                : videos.length.toLocaleString()}
+                        </span>
+                    </div>
+                    {sectorAge && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Age:</span>
+                            <span className="font-medium">{sectorAge}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Rules */}
+            <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                <h2 className="text-lg font-semibold text-foreground">Sector Rules</h2>
+                {sector.rules && sector.rules.length > 0 ? (
+                    <ol className="space-y-2 text-sm text-card-foreground">
+                        {sector.rules.map((rule: string, index: number) => (
+                            <li key={index} className="flex gap-2">
+                                <span className="font-semibold text-muted-foreground shrink-0">
+                                    {index + 1}.
+                                </span>
+                                <span className="leading-relaxed">{rule}</span>
+                            </li>
+                        ))}
+                    </ol>
+                ) : (
+                    <p className="text-sm text-muted-foreground">This sector has no rules</p>
+                )}
+                <hr />
+                {isAll ? (
+                    <p className="text-xs text-muted-foreground">
+                        For more details, read the <Link href="/rules" className="text-primary underline">full site-wide rules</Link>.
+                    </p>
+                ) : (
+                    <p className="text-xs text-muted-foreground">
+                        * Remember to follow <Link href="/rules" className="text-primary underline">site-wide rules</Link> as well!
+                    </p>
+                )}
+            </div>
+
+            {/* Upload Constraints */}
+            {!isAll && (
+                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <h2 className="text-lg font-semibold text-foreground">Upload Constraints</h2>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Allows AI Content</span>
+                            <span className={`font-medium ${sector.allow_ai ? 'text-green-500' : 'text-destructive'}`}>
+                                {sector.allow_ai ? 'Yes' : 'No'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Min Duration</span>
+                            <span className="font-medium text-card-foreground">
+                                {sector.min_video_length === 0 ? 'None' : formatSectorDuration(sector.min_video_length)}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Max Duration</span>
+                            <span className="font-medium text-card-foreground">
+                                {formatSectorDuration(sector.max_video_length)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Privacy & Access */}
+            {!isAll && (
+                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <h2 className="text-lg font-semibold text-foreground">Privacy & Access</h2>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Appears on Star Map</span>
+                            <span className={`font-medium ${sector.star_map ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                {sector.star_map ? 'Yes' : 'No'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Anyone Can Post</span>
+                            <span className={`font-medium ${sector.open_posting ? 'text-green-500' : 'text-destructive'}`}>
+                                {sector.open_posting ? 'Yes' : 'No'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Approval Required</span>
+                            <span className={`font-medium ${sector.approval_for_posting ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+                                {sector.approval_for_posting ? 'Yes' : 'No'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <SectorMemberProvider
             initialCount={sector.member_count ?? 0}
@@ -176,151 +312,25 @@ export default async function SectorPage({ params }: PageProps) {
                         isAll={isAll}
                     />
 
-                    <hr className="border-border"/>
+                    <hr className="border-border" />
 
-                    {/* -------- Videos -------- */}
-                    {videos.length > 0 ? (
-                        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {videos.map(video => (
-                                <Card
-                                    key={video.id}
-                                    slug={video.slug}
-                                    duration={video.duration}
-                                    title={video.title}
-                                    creator_name={video.channels?.display_name || 'Unknown Creator'}
-                                    views={video.view_count}
-                                    date={video.created_at}
-                                    thumbnail_src={video.thumbnail_url ?? '/Stellicast404Thumbnail.png'}
-                                    is_ai={video.is_ai}
-                                />
-                            ))}
-                        </section>
-                    ) : (
-                        <div className="py-20 text-center">
-                            <p className="text-muted-foreground text-sm">
-                                No videos in this Sector yet. Be the first to post!
-                            </p>
-                        </div>
-                    )}
+                    {/* -------- Mobile: tabbed videos + about -------- */}
+                    <SectorMobileTabs
+                        videosContent={videoGrid}
+                        sidebarContent={sidebarPanels}
+                    />
+
+                    {/* -------- Desktop: video grid only -------- */}
+                    <div className="hidden lg:block">
+                        {videoGrid}
+                    </div>
                 </div>
 
-                {/* Sidebar */}
-                <aside className="hidden lg:block w-80 flex-shrink-0">
+                {/* -------- Desktop Sidebar -------- */}
+                <aside className="hidden lg:block w-80 shrink-0">
                     <div className="sticky top-4 rounded-md overflow-hidden">
-                        <div className="space-y-6 max-h-[calc(100vh-64px-2rem)] overflow-y-auto">
-                            {/* Statistics Section */}
-                            <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                                <h2 className="text-lg font-semibold text-foreground">
-                                    Statistics
-                                </h2>
-                                <div className="space-y-2 text-sm text-card-foreground">
-                                    {/* member_count + Your Role rows — update live on join/leave */}
-                                    {!isAll && <SectorMemberCount />}
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Videos:</span>
-                                        <span className="font-medium">
-                                            {sector.video_count !== null
-                                                ? sector.video_count.toLocaleString()
-                                                : videos.length.toLocaleString()}
-                                        </span>
-                                    </div>
-                                    {sectorAge && (
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Age:</span>
-                                            <span className="font-medium">{sectorAge}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Rules Section */}
-                            <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                                <h2 className="text-lg font-semibold text-foreground">
-                                    Sector Rules
-                                </h2>
-
-                                {sector.rules && sector.rules.length > 0 ? (
-                                    <ol className="space-y-2 text-sm text-card-foreground">
-                                        {sector.rules.map((rule: string, index: number) => (
-                                            <li key={index} className="flex gap-2">
-                                                <span className="font-semibold text-muted-foreground flex-shrink-0">
-                                                    {index + 1}.
-                                                </span>
-                                                <span className="leading-relaxed">{rule}</span>
-                                            </li>
-                                        ))}
-                                    </ol>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        This sector has no rules
-                                    </p>
-                                )}
-                                <hr/>
-                                {isAll && (
-                                    <p className="text-xs text-muted-foreground">
-                                        For more details, read the <Link href="/rules" className="text-primary underline">full site-wide rules</Link>.
-                                    </p>
-                                )}
-                                {!isAll && (
-                                    <p className="text-xs text-muted-foreground">
-                                        * Remember to follow <Link href="/rules" className="text-primary underline">site-wide rules</Link> as well!
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Upload Constraints Section */}
-                            {!isAll && (
-                                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                                    <h2 className="text-lg font-semibold text-foreground">Upload Constraints</h2>
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Allows AI Content</span>
-                                            <span className={`font-medium ${sector.allow_ai ? 'text-green-500' : 'text-destructive'}`}>
-                                                {sector.allow_ai ? 'Yes' : 'No'}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Min Duration</span>
-                                            <span className="font-medium text-card-foreground">
-                                                {sector.min_video_length === 0 ? 'None' : formatSectorDuration(sector.min_video_length)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Max Duration</span>
-                                            <span className="font-medium text-card-foreground">
-                                                {formatSectorDuration(sector.max_video_length)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Privacy & Access Section */}
-                            {!isAll && (
-                                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                                    <h2 className="text-lg font-semibold text-foreground">Privacy & Access</h2>
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Appears on Star Map</span>
-                                            <span className={`font-medium ${sector.star_map ? 'text-green-500' : 'text-muted-foreground'}`}>
-                                                {sector.star_map ? 'Yes' : 'No'}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Anyone Can Post</span>
-                                            <span className={`font-medium ${sector.open_posting ? 'text-green-500' : 'text-destructive'}`}>
-                                                {sector.open_posting ? 'Yes' : 'No'}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Approval Required</span>
-                                            <span className={`font-medium ${sector.approval_for_posting ? 'text-yellow-500' : 'text-muted-foreground'}`}>
-                                                {sector.approval_for_posting ? 'Yes' : 'No'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                        <div className="max-h-[calc(100vh-64px-2rem)] overflow-y-auto">
+                            {sidebarPanels}
                         </div>
                     </div>
                 </aside>
