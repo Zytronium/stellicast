@@ -8,7 +8,7 @@ import { createSupabaseBrowserClient } from "@/../lib/supabase-client";
 import { PickedCoords } from "@/components/StarMapCore";
 import StarMapPicker from "@/components/StarMapPicker";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// -------- Helpers --------
 
 function slugify(value: string): string {
     return value
@@ -41,7 +41,7 @@ function formatHourMinSec(seconds: number): string {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// -------- Sub-components --------
 
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
     return (
@@ -131,7 +131,7 @@ function TimeInput({
     );
 }
 
-// ─── Form State ───────────────────────────────────────────────────────────────
+// -------- Form State --------
 
 interface FormState {
     starMap: boolean;
@@ -174,7 +174,7 @@ const defaultForm: FormState = {
     rules: [],
 };
 
-// ─── Column Components ────────────────────────────────────────────────────────
+// -------- Column Components --------
 
 function AdvancedOptionsColumn({
                                    form, setForm, errors, setErrors,
@@ -419,7 +419,7 @@ function RulesSection({ rules, setRules }: { rules: string[]; setRules: (r: stri
     );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// -------- Page --------
 
 export default function NewSectorPage() {
     const router = useRouter();

@@ -4,7 +4,7 @@ export const metadata = getPageMetadata('/more');
 import Link from "next/link";
 import {Plus, Compass, Grid} from "lucide-react";
 
-// ─── Section Components ───────────────────────────────────────────────────────
+// -------- Section Components --------
 
 function SectorsSection() {
     return (
@@ -37,7 +37,7 @@ function SectorsSection() {
     );
 }
 
-// ─── Section Shell ────────────────────────────────────────────────────────────
+// -------- Section Shell --------
 
 interface SectionProps {
     title: string;
@@ -59,7 +59,7 @@ function Section({title, description, children}: SectionProps) {
     );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// -------- Page --------
 
 export default function MorePage() {
     return (

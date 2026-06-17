@@ -11,7 +11,7 @@ import StarMapPicker from '@/components/StarMapPicker';
 import MembersTab from './MembersTab';
 import {SectorRole} from "@/../types";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// -------- Types --------
 
 interface Sector {
     id: string;
@@ -38,7 +38,7 @@ interface Props {
     memberRoles: SectorRole[];
 }
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
+// -------- Shared helpers --------
 
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
     return (
@@ -180,7 +180,7 @@ function StatusMessage({ error, success }: { error?: string; success?: string })
     return null;
 }
 
-// ─── Tab components ───────────────────────────────────────────────────────────
+// -------- Tab components --------
 
 function GeneralTab({ sector, supabase }: { sector: Sector; supabase: SupabaseClient }) {
     const fileRef = useRef<HTMLInputElement>(null);
@@ -605,7 +605,7 @@ function RulesTab({ sector, supabase }: { sector: Sector; supabase: SupabaseClie
     );
 }
 
-// ─── Root ─────────────────────────────────────────────────────────────────────
+// -------- Root --------
 
 const TABS = ['general', 'settings', 'members', 'rules'] as const;
 type Tab = typeof TABS[number];

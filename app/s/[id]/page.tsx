@@ -161,7 +161,7 @@ export default async function SectorPage({ params }: PageProps) {
             <div className="flex gap-8">
                 {/* Main Content */}
                 <div className="flex-1 space-y-8">
-                    {/* ── Sector Header ── */}
+                    {/* -------- Sector Header -------- */}
                     <SectorHeader
                         sectorId={sector.id ?? ''}
                         slug={sector.slug}
@@ -178,7 +178,7 @@ export default async function SectorPage({ params }: PageProps) {
 
                     <hr className="border-border"/>
 
-                    {/* ── Videos ── */}
+                    {/* -------- Videos -------- */}
                     {videos.length > 0 ? (
                         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {videos.map(video => (
