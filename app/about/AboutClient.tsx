@@ -271,7 +271,7 @@ export default function AboutPage() {
               <div className="rounded-2xl border border-border bg-card/60 p-7 space-y-3">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-5">Example Sectors</p>
                 {[
-                  { slug: 's/science',   label: 'Science & Technology', desc: 'No AI-generated content. Min 3 minutes.' },
+                  { slug: 's/science',   label: 'Science & Technology', desc: 'No AI-generated content. Min 30 seconds.' },
                   { slug: 's/rc_planes', label: 'RC Planes',            desc: 'Stellicast founder\'s favorite place. No AI content.' },
                   { slug: 's/gaming',    label: 'Gaming',               desc: 'Open posting. Min 15 seconds, max 4 hours.' },
                   { slug: 's/space',     label: 'Space',                desc: 'Approval required. No AI content. Max 12 hours.' },

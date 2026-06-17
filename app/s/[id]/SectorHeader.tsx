@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import SectorJoinButton from '@/components/SectorJoinButton';
 import { useSectorMember } from './SectorContext';
 
@@ -23,6 +24,7 @@ export default function SectorHeader({
                                          starMap, privateAccess, authUserId, isMember, memberRole, isAll,
                                      }: Props) {
     const { handleJoin, handleLeave } = useSectorMember();
+    const canManage = authUserId && !isAll && (memberRole === 'owner' || memberRole === 'moderator');
 
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
@@ -68,7 +70,16 @@ export default function SectorHeader({
                 )}
             </div>
 
-            {/* Join / Leave; not shown for s/all */}
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 shrink-0">
+                {canManage && (
+                    <Link
+                        href={`/s/${slug}/manage`}
+                        className="h-9 px-5 rounded-full border border-border bg-background text-sm font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-colors flex items-center"
+                    >
+                        Manage
+                    </Link>
+                )}
             {authUserId && !isAll && (
                 <SectorJoinButton
                     sectorId={sectorId}
@@ -79,6 +90,7 @@ export default function SectorHeader({
                     onLeave={handleLeave}
                 />
             )}
+        </div>
         </div>
     );
 }
