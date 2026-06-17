@@ -291,9 +291,9 @@ close to the center to maximize visibility.
 
 ### 7.5. Cleanup
 Clean up some stuff:
-- Add a way for channels to to add, remove, or change sectors their video is in
+- all done!
 
-**Status:** Todo
+**Status:** Done
 
 ## 8. Admin Panel
 

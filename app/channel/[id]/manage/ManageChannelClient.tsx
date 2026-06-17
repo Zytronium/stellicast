@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
@@ -77,6 +77,21 @@ interface EditVideoModalProps {
   onClose: () => void;
   supabase: SupabaseClient;
   onUpdate: (video: Video) => void;
+}
+
+interface SectorWithStatus {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  open_posting: boolean;
+  approval_for_posting: boolean;
+  allow_ai: boolean;
+  min_video_length: number;
+  max_video_length: number;
+  private_access: boolean;
+  assigned: boolean;
+  approval_status: 'approved' | 'pending' | 'rejected' | null;
 }
 
 interface ProfileEditorProps {
@@ -262,7 +277,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
           </div>
 
           {/* Action buttons */}
-          <div className="w-full sm:w-auto flex-shrink-0 flex gap-2">
+          <div className="w-full sm:w-auto shrink-0 flex gap-2">
             <Link
               href={`/channel/${channel.handle}`}
               className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
@@ -599,6 +614,87 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
   });
   const [saving, setSaving] = useState<boolean>(false);
 
+  const [sectors, setSectors] = useState<SectorWithStatus[]>([]);
+  const [loadingSectors, setLoadingSectors] = useState<boolean>(true);
+  const [sectorError, setSectorError] = useState<string | null>(null);
+  const [selectedSectorId, setSelectedSectorId] = useState<string>('');
+  const [sectorActionId, setSectorActionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSectors = async () => {
+      try {
+        setLoadingSectors(true);
+        const res = await fetch(`/api/videos/${video.id}/sectors`);
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to load sectors');
+        if (!cancelled) setSectors(json.sectors ?? []);
+      } catch (error) {
+        if (!cancelled) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          setSectorError(errorMessage);
+        }
+      } finally {
+        if (!cancelled) setLoadingSectors(false);
+      }
+    };
+
+    loadSectors();
+    return () => { cancelled = true; };
+  }, [video.id]);
+
+  const handleAddSector = async () => {
+    if (!selectedSectorId) return;
+    const sectorId = selectedSectorId;
+
+    try {
+      setSectorActionId(sectorId);
+      const res = await fetch(`/api/videos/${video.id}/sectors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sector_id: sectorId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to add sector');
+
+      setSectors(prev => prev.map(s =>
+        s.id === sectorId ? { ...s, assigned: true, approval_status: json.approval_status } : s
+      ));
+      setSelectedSectorId('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error adding sector: ${errorMessage}`);
+    } finally {
+      setSectorActionId(null);
+    }
+  };
+
+  const handleRemoveSector = async (sectorId: string) => {
+    try {
+      setSectorActionId(sectorId);
+      const res = await fetch(`/api/videos/${video.id}/sectors`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sector_id: sectorId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to remove sector');
+
+      setSectors(prev => prev.map(s =>
+        s.id === sectorId ? { ...s, assigned: false, approval_status: null } : s
+      ));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error removing sector: ${errorMessage}`);
+    } finally {
+      setSectorActionId(null);
+    }
+  };
+
+  const assignedSectors = sectors.filter(s => s.assigned);
+  const unassignedSectors = sectors.filter(s => !s.assigned);
+
   const handleSubmit = async () => {
     try {
       setSaving(true);
@@ -680,6 +776,68 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
               className="w-4 h-4 rounded accent-primary"
             />
             <label htmlFor="is_ai" className="text-sm text-card-foreground">Contains AI content</label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-card-foreground mb-1">Sectors</label>
+
+            {loadingSectors ? (
+              <p className="text-sm text-muted-foreground">Loading sectors...</p>
+            ) : sectorError ? (
+              <p className="text-sm text-destructive">{sectorError}</p>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {assignedSectors.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Not in any sectors yet.</p>
+                  )}
+                  {assignedSectors.map(s => (
+                    <span
+                      key={s.id}
+                      className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-secondary text-secondary-foreground"
+                    >
+                      {s.name}
+                      {s.approval_status === 'pending' && (
+                        <span className="text-yellow-400">(pending)</span>
+                      )}
+                      {s.approval_status === 'rejected' && (
+                        <span className="text-destructive">(rejected)</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSector(s.id)}
+                        disabled={sectorActionId === s.id}
+                        className="text-muted-foreground hover:text-destructive transition disabled:opacity-50"
+                        aria-label={`Remove from ${s.name}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <select
+                    value={selectedSectorId}
+                    onChange={e => setSelectedSectorId(e.target.value)}
+                    className="flex-1 rounded-md bg-input border border-border text-foreground px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="">Select a sector to add...</option>
+                    {unassignedSectors.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleAddSector}
+                    disabled={!selectedSectorId || sectorActionId === selectedSectorId}
+                    className="px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
+                  >
+                    Add
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
