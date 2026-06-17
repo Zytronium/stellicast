@@ -667,7 +667,7 @@ export default function ManageSectorClient({ sector, memberRoles }: Props) {
                 <GeneralTab sector={sector} supabase={supabase} />
             </div>
             <div className={activeTab === 'settings' ? 'block' : 'hidden'}>
-                <SettingsTab sector={sector} supabase={supabase} memberRoles={memberRoles} />
+                <SettingsTab sector={sector} supabase={supabase} />
             </div>
             <div className={activeTab === 'members' ? 'block' : 'hidden'}>
                 <MembersTab sectorId={sector.id} currentUserRole={memberRoles} />
