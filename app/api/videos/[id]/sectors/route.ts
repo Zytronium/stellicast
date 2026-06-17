@@ -43,7 +43,15 @@ async function getOwnedVideo(
     };
 }
 
-// -------- GET: list sectors with assignment status --------
+type AssignedSectorRow = {
+    approval_status: 'approved' | 'pending' | 'rejected';
+    sectors: { id: string; name: string; slug: string; icon: string | null } | null;
+};
+
+// -------- GET: list the video's currently assigned sectors --------
+// Intentionally scoped to this video's rows in sector_videos rather than
+// the full sectors table, that table stays small (it's just the sectors
+// one video belongs to) even once sectors itself has millions of rows.
 export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const supabase = await createSupabaseServerClient();
@@ -57,31 +65,25 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     if (!video)
         return NextResponse.json({ error: 'Video not found' }, { status: 404 });
 
-    const { data: sectors, error: sectorsError } = await supabase
-        .from('sectors')
-        .select('id, name, slug, icon, open_posting, approval_for_posting, allow_ai, min_video_length, max_video_length, private_access')
-        .order('name');
-
-    if (sectorsError)
-        return NextResponse.json({ error: sectorsError.message }, { status: 500 });
-
-    const { data: assignedRows, error: assignedError } = await supabase
+    const { data: assigned, error } = await supabase
         .from('sector_videos')
-        .select('sector_id, approval_status')
+        .select('approval_status, sectors(id, name, slug, icon)')
         .eq('video_id', id);
 
-    if (assignedError)
-        return NextResponse.json({ error: assignedError.message }, { status: 500 });
+    if (error)
+        return NextResponse.json({ error: error.message }, { status: 500 });
 
-    const assignedMap = new Map((assignedRows ?? []).map((row) => [row.sector_id, row.approval_status]));
+    const sectors = ((assigned ?? []) as unknown as AssignedSectorRow[])
+        .filter((row) => row.sectors !== null)
+        .map((row) => ({
+            id: row.sectors!.id,
+            name: row.sectors!.name,
+            slug: row.sectors!.slug,
+            icon: row.sectors!.icon,
+            approval_status: row.approval_status,
+        }));
 
-    const result = (sectors ?? []).map((sector) => ({
-        ...sector,
-        assigned: assignedMap.has(sector.id),
-        approval_status: assignedMap.get(sector.id) ?? null,
-    }));
-
-    return NextResponse.json({ sectors: result });
+    return NextResponse.json({ sectors });
 }
 
 // -------- POST: add the video to a sector --------
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { data: sector, error: sectorError } = await supabase
         .from('sectors')
-        .select('id, private_access, open_posting, approval_for_posting, allow_ai, min_video_length, max_video_length')
+        .select('id, slug, private_access, open_posting, approval_for_posting, allow_ai, min_video_length, max_video_length')
         .eq('id', sectorId)
         .single();
 
@@ -159,10 +161,39 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (error) {
         if (error.code === '23505')
             return NextResponse.json({ error: 'This video is already in that sector' }, { status: 409 });
+
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ sector_id: data.sector_id, approval_status: data.approval_status });
+    // -------- s/misc cleanup --------
+    // s/misc is the default bucket for unsorted videos. Once a video lands
+    // in a real sector, it doesn't need to sit in misc too.
+    let removedMiscSectorId: string | null = null;
+
+    if (sector.slug !== 'misc') {
+        const { data: miscSector } = await supabase
+            .from('sectors')
+            .select('id')
+            .eq('slug', 'misc')
+            .maybeSingle();
+
+        if (miscSector) {
+            const { error: miscDeleteError } = await supabase
+                .from('sector_videos')
+                .delete()
+                .eq('video_id', id)
+                .eq('sector_id', miscSector.id);
+
+            if (!miscDeleteError)
+                removedMiscSectorId = miscSector.id;
+        }
+    }
+
+    return NextResponse.json({
+        sector_id: data.sector_id,
+        approval_status: data.approval_status,
+        removed_misc_sector_id: removedMiscSectorId,
+    });
 }
 
 // -------- DELETE: remove the video from a sector --------
