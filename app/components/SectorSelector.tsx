@@ -12,6 +12,7 @@ interface Sector {
     allow_ai: boolean;
     min_video_length: number;
     max_video_length: number;
+    approval_for_posting: boolean;
 }
 
 interface SectorViolation {
@@ -68,7 +69,7 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
         async function fetchSectors() {
             const { data } = await supabase
                 .from('sectors')
-                .select('id, slug, name, icon, allow_ai, min_video_length, max_video_length')
+                .select('id, slug, name, icon, allow_ai, min_video_length, max_video_length, approval_for_posting')
                 .eq('private_access', false)
                 .order('name');
             if (data) {
@@ -123,7 +124,7 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
             // misc replaces everything
             next = [sector];
         } else {
-            // Adding a real sector — remove misc if present
+            // Adding a real sector - remove misc if present
             const withoutMisc = selectedSectors.filter(s => s.slug !== 'misc');
             next = [...withoutMisc, sector].slice(0, MAX_SECTORS);
         }
@@ -260,6 +261,9 @@ export default function SectorSelector({ selectedSectors, onChange, isTest, onIs
                                                     <p className="text-sm font-medium text-foreground truncate">{sector.name}</p>
                                                     <p className="text-xs text-muted-foreground font-mono">s/{sector.slug}</p>
                                                 </div>
+                                                {sector.approval_for_posting && (
+                                                    <span className="text-xs text-amber-400 shrink-0">Approval req.</span>
+                                                )}
                                             </button>
                                         ))
                                     )}

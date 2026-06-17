@@ -129,7 +129,7 @@ export default function AboutPage() {
           document.body
         )}
 
-        {/* ── Hero ── */}
+        {/* -------- Hero -------- */}
         <section className="w-full max-w-5xl py-20 px-6 text-center animate-fade-in-up">
           <div className="w-auto h-24 -mt-12 mb-24">
             <Image src="/stellicast.png" alt="Stellicast" width={2997} height={512} priority />
@@ -150,7 +150,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── The Problem ── */}
+        {/* -------- The Problem -------- */}
         <Section className="w-full bg-card/40 border-y border-border py-24 px-6">
           <div className="max-w-4xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4 text-center">The Problem</p>
@@ -176,7 +176,7 @@ export default function AboutPage() {
           </div>
         </Section>
 
-        {/* ── Privacy Comparison ── */}
+        {/* -------- Privacy Comparison -------- */}
         <Section className="w-full py-24 px-6">
           <div className="max-w-3xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4 text-center">Privacy</p>
@@ -243,7 +243,7 @@ export default function AboutPage() {
           </div>
         </Section>
 
-        {/* ── Sectors ── */}
+        {/* -------- Sectors -------- */}
         <Section className="w-full bg-primary/5 border-y border-border py-24 px-6">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4 text-center">Community</p>
@@ -289,7 +289,7 @@ export default function AboutPage() {
           </div>
         </Section>
 
-        {/* ── Creators vs Studios ── */}
+        {/* -------- Creators vs Studios -------- */}
         <Section className="w-full py-24 px-6">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4 text-center">The Creator Advantage</p>
@@ -351,7 +351,7 @@ export default function AboutPage() {
           </div>
         </Section>
 
-        {/* ── Open Source ── */}
+        {/* -------- Open Source -------- */}
         <Section className="w-full bg-card/40 border-y border-border py-24 px-6">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-12 items-center">
             <div className="flex-1">
@@ -392,7 +392,7 @@ export default function AboutPage() {
           </div>
         </Section>
 
-        {/* ── Sample Video ── */}
+        {/* -------- Sample Video -------- */}
         <Section className="w-full max-w-4xl mx-auto py-24 px-6">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4 text-center">Experience</p>
           <h2 className="text-3xl font-bold text-center mb-12 text-foreground">See the player in action</h2>
@@ -406,7 +406,7 @@ export default function AboutPage() {
           }} />
         </Section>
 
-        {/* ── FAQ ── */}
+        {/* -------- FAQ -------- */}
         <Section className="w-full bg-card/40 border-y border-border py-24 px-6">
           <div className="max-w-2xl mx-auto">
             <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4 text-center">FAQ</p>
@@ -472,7 +472,7 @@ export default function AboutPage() {
           </div>
         </Section>
 
-        {/* ── CTA ── */}
+        {/* -------- CTA -------- */}
         <section className="py-32 px-6 text-center w-full">
           <h2 className="text-4xl font-bold mb-4 text-foreground">Ready for a better experience?</h2>
           <p className="text-muted-foreground mb-10 max-w-lg mx-auto">

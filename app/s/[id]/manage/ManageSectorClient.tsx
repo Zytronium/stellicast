@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
-import { AlertCircle, Trash2, Plus, Upload, Loader2 } from 'lucide-react';
+import { AlertCircle, Trash2, Plus, Upload, Loader2, Check, X } from 'lucide-react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PickedCoords } from '@/components/StarMapCore';
 import StarMapPicker from '@/components/StarMapPicker';
 import MembersTab from './MembersTab';
-import {SectorRole} from "@/../types";
+import { SectorRole } from '@/../types';
+import { hasPermission } from '@/../lib/sector-utils';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// -------- Types --------
 
 interface Sector {
     id: string;
@@ -33,12 +34,29 @@ interface Sector {
     video_count: number;
 }
 
+interface PendingVideo {
+    video_id: string;
+    video: {
+        id: string;
+        slug: string;
+        title: string;
+        thumbnail_url: string | null;
+        duration: number | null;
+        created_at: string | null;
+        channel: {
+            display_name: string;
+            handle: string;
+            avatar_url: string | null;
+        } | null;
+    };
+}
+
 interface Props {
     sector: Sector;
     memberRoles: SectorRole[];
 }
 
-// ─── Shared helpers ───────────────────────────────────────────────────────────
+// -------- Shared helpers --------
 
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
     return (
@@ -180,7 +198,7 @@ function StatusMessage({ error, success }: { error?: string; success?: string })
     return null;
 }
 
-// ─── Tab components ───────────────────────────────────────────────────────────
+// -------- Tab components --------
 
 function GeneralTab({ sector, supabase }: { sector: Sector; supabase: SupabaseClient }) {
     const fileRef = useRef<HTMLInputElement>(null);
@@ -242,7 +260,7 @@ function GeneralTab({ sector, supabase }: { sector: Sector; supabase: SupabaseCl
                 iconUrl = publicUrl;
             }
 
-            // slug is intentionally excluded from the update payload — it is immutable
+            // slug is intentionally excluded from the update payload - it is immutable
             const { error: updateError } = await supabase
                 .from('sectors')
                 .update({ name: name.trim(), description: description.trim() || null, icon: iconUrl, updated_at: new Date().toISOString() })
@@ -309,7 +327,7 @@ function GeneralTab({ sector, supabase }: { sector: Sector; supabase: SupabaseCl
                     <FieldError message={nameError} />
                 </div>
 
-                {/* Slug — read-only, cannot be changed after creation */}
+                {/* Slug - read-only, cannot be changed after creation */}
                 <div>
                     <FieldLabel hint="Slugs are permanent and cannot be changed after creation">Sector Slug</FieldLabel>
                     <div className="relative">
@@ -407,7 +425,7 @@ function SettingsTab({ sector, supabase }: { sector: Sector; supabase: SupabaseC
                 patch.galaxy_x = location.galaxy_x;
                 patch.galaxy_y = location.galaxy_y;
             } else if (!starMap) {
-                // Removing from star map — free up the coordinates
+                // Removing from star map - free up the coordinates
                 patch.galaxy_x = null;
                 patch.galaxy_y = null;
             }
@@ -475,7 +493,7 @@ function SettingsTab({ sector, supabase }: { sector: Sector; supabase: SupabaseC
                 />
                 <Checkbox
                     label="Require Approval for Posting"
-                    hint="All posts not made by mods must be approved before going public."
+                    hint="All posts not made by contributors or higher must be approved before going public."
                     checked={approvalForPosting}
                     onChange={setApprovalForPosting}
                 />
@@ -605,13 +623,201 @@ function RulesTab({ sector, supabase }: { sector: Sector; supabase: SupabaseClie
     );
 }
 
-// ─── Root ─────────────────────────────────────────────────────────────────────
+// -------- Approvals tab --------
 
-const TABS = ['general', 'settings', 'members', 'rules'] as const;
-type Tab = typeof TABS[number];
+function ApprovalsTab({ sector }: { sector: Sector }) {
+    const [pending, setPending] = useState<PendingVideo[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [successMsg, setSuccessMsg] = useState('');
+
+    const fetchPending = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const res = await fetch(`/api/sectors/${sector.id}/approvals`);
+            if (!res.ok)
+                throw new Error('Failed to load approval queue');
+            const { pending: data } = await res.json();
+            setPending(data ?? []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load approval queue');
+        } finally {
+            setLoading(false);
+        }
+    }, [sector.id]);
+
+    useEffect(() => { fetchPending(); }, [fetchPending]);
+
+    async function handleAction(videoId: string, action: 'approve' | 'reject') {
+        setActionLoading(videoId);
+        setError('');
+        setSuccessMsg('');
+        try {
+            const res = await fetch(`/api/sectors/${sector.id}/approvals`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ video_id: videoId, action }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `Failed to ${action} video`);
+
+            // Remove from the local list
+            setPending(p => p.filter(v => v.video_id !== videoId));
+            setSuccessMsg(action === 'approve' ? 'Video approved and published to sector.' : 'Video rejected.');
+            setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Something went wrong.');
+        } finally {
+            setActionLoading(null);
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center gap-3 py-12 justify-center text-muted-foreground">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="text-sm">Loading approval queue...</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-3xl flex flex-col gap-6">
+            <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground">
+                    Videos submitted by members without bypass permissions appear here before going public.
+                    Contributors, moderators, admins, and owners are never queued.
+                </p>
+            </div>
+
+            {error && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive-foreground text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />{error}
+                </div>
+            )}
+
+            {successMsg && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                    {successMsg}
+                </div>
+            )}
+
+            {pending.length === 0 ? (
+                <div className="py-16 text-center">
+                    <p className="text-muted-foreground text-sm">No videos awaiting approval.</p>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    {pending.map(item => {
+                        const vid = item.video;
+                        const isActing = actionLoading === item.video_id;
+                        const durationStr = vid.duration != null
+                            ? vid.duration >= 3600
+                                ? formatHourMinSec(vid.duration)
+                                : formatMinSec(vid.duration)
+                            : null;
+                        const submittedAt = vid.created_at
+                            ? new Date(vid.created_at).toLocaleDateString(undefined, {
+                                year: 'numeric', month: 'short', day: 'numeric',
+                              })
+                            : null;
+
+                        return (
+                            <div
+                                key={item.video_id}
+                                className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border"
+                            >
+                                {/* Thumbnail */}
+                                <Link href={`/watch/${vid.slug}`} target="_blank" className="flex-shrink-0">
+                                    <div className="relative w-32 aspect-video rounded-lg overflow-hidden bg-muted">
+                                        {vid.thumbnail_url ? (
+                                            <Image
+                                                src={vid.thumbnail_url}
+                                                alt={vid.title}
+                                                fill
+                                                className="object-cover"
+                                                unoptimized={false}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                                                No thumbnail
+                                            </div>
+                                        )}
+                                        {durationStr && (
+                                            <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs font-mono px-1 rounded">
+                                                {durationStr}
+                                            </span>
+                                        )}
+                                    </div>
+                                </Link>
+
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                    <Link
+                                        href={`/watch/${vid.slug}`}
+                                        target="_blank"
+                                        className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-2"
+                                    >
+                                        {vid.title}
+                                    </Link>
+                                    {vid.channel && (
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            {vid.channel.display_name}
+                                            {' '}
+                                            <span className="font-mono">@{vid.channel.handle}</span>
+                                        </p>
+                                    )}
+                                    {submittedAt && (
+                                        <p className="text-xs text-muted-foreground mt-1">Submitted {submittedAt}</p>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex flex-col gap-2 flex-shrink-0">
+                                    <button
+                                        type="button"
+                                        disabled={isActing}
+                                        onClick={() => handleAction(item.video_id, 'approve')}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500/15 border border-green-500/30 text-green-400 text-xs font-semibold hover:bg-green-500/25 transition disabled:opacity-50"
+                                    >
+                                        {isActing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                        Approve
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={isActing}
+                                        onClick={() => handleAction(item.video_id, 'reject')}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive-foreground text-xs font-semibold hover:bg-destructive/20 transition disabled:opacity-50"
+                                    >
+                                        {isActing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// -------- Root --------
+
+type Tab = 'general' | 'settings' | 'members' | 'approvals' | 'rules';
 
 export default function ManageSectorClient({ sector, memberRoles }: Props) {
     const supabase = createSupabaseBrowserClient();
+
+    const canApprove = hasPermission(memberRoles, 'approve_posts');
+    const showApprovalsTab = sector.approval_for_posting && canApprove;
+
+    const tabs: Tab[] = showApprovalsTab
+        ? ['general', 'settings', 'members', 'approvals', 'rules']
+        : ['general', 'settings', 'members', 'rules'];
+
     const [activeTab, setActiveTab] = useState<Tab>('general');
 
     return (
@@ -645,7 +851,7 @@ export default function ManageSectorClient({ sector, memberRoles }: Props) {
 
             {/* Tabs */}
             <div className="flex flex-row gap-6 -mb-6">
-                {TABS.map(tab => (
+                {tabs.map(tab => (
                     <button
                         key={tab}
                         type="button"
@@ -672,6 +878,11 @@ export default function ManageSectorClient({ sector, memberRoles }: Props) {
             <div className={activeTab === 'members' ? 'block' : 'hidden'}>
                 <MembersTab sectorId={sector.id} currentUserRole={memberRoles} />
             </div>
+            {showApprovalsTab && (
+                <div className={activeTab === 'approvals' ? 'block' : 'hidden'}>
+                    <ApprovalsTab sector={sector} />
+                </div>
+            )}
             <div className={activeTab === 'rules' ? 'block' : 'hidden'}>
                 <RulesTab sector={sector} supabase={supabase} />
             </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import { Users, Video, ExternalLink, X } from 'lucide-react';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// -------- Types --------
 
 interface SectorData {
     id: string; slug: string; name: string; description: string | null;
@@ -39,7 +39,7 @@ export interface StarMapCoreProps {
     className?: string;
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// -------- Constants --------
 
 const COORD_SCALE    = 250;
 const MIN_RADIUS     = 30;
@@ -53,7 +53,7 @@ const PREVIEW_HUE    = 220;   // steel-blue for the "pending" preview blob
 const PREVIEW_RADIUS = MIN_RADIUS;
 const PREVIEW_SEED   = 42;
 
-// ── Pure helpers ──────────────────────────────────────────────────────────────
+// -------- Pure helpers --------
 
 function lcg(s: number) {
     let n = s | 0;
@@ -98,7 +98,7 @@ function resolveOverlaps(sectors: PlacedSector[]): PlacedSector[] {
     return out;
 }
 
-// ── Three.js helpers ──────────────────────────────────────────────────────────
+// -------- Three.js helpers --------
 
 function buildBlobShape(THREE: any, radius: number, seed: number, numPts = 10) {
     const rng  = lcg(seed);
@@ -161,7 +161,7 @@ function updateCamera(THREE: any, camera: any, state: any) {
     camera.lookAt(target);
 }
 
-// ── SectorPopup (view mode) ───────────────────────────────────────────────────
+// -------- SectorPopup (view mode) --------
 
 function SectorPopup({ sector, sx, sy, onClose, onNavigate }: {
     sector: PlacedSector; sx: number; sy: number;
@@ -208,7 +208,7 @@ function SectorPopup({ sector, sx, sy, onClose, onNavigate }: {
     );
 }
 
-// ── StarMapCore ───────────────────────────────────────────────────────────────
+// -------- StarMapCore --------
 
 export default function StarMapCore({
                                         mode        = 'view',
@@ -282,7 +282,7 @@ export default function StarMapCore({
             const el = mountRef.current;
             const w  = el.clientWidth, h = el.clientHeight;
 
-            // ── Renderer ──────────────────────────────────────────────────────
+            // -------- Renderer --------
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.setSize(w, h);
@@ -294,13 +294,13 @@ export default function StarMapCore({
             const camState = { target: new THREE.Vector3(0, 0, 0), azimuth: 0, elevation: 0.58, distance: 900 };
             updateCamera(THREE, camera, camState);
 
-            // ── Stars ─────────────────────────────────────────────────────────
+            // -------- Stars --------
             const farStars = makeStarPoints(THREE, 5000, 24000, 1.5, 0.45);
             scene.add(farStars);
             scene.add(makeStarPoints(THREE, 2000, 14000, 2.4, 0.65));
             scene.add(makeStarPoints(THREE, 500,  6000,  4.2, 0.90));
 
-            // ── Sectors ───────────────────────────────────────────────────────
+            // -------- Sectors --------
             const maxMembers = Math.max(5, ...rawSectors.map(s => s.member_count));
             const placed = resolveOverlaps(
                 rawSectors.map(s => ({
@@ -355,7 +355,7 @@ export default function StarMapCore({
                 labelData.push({ sprite: label, sector: s });
             });
 
-            // ── Preview sector (pick mode only) ───────────────────────────────
+            // -------- Preview sector (pick mode only) --------
             if (mode === 'pick') {
                 const pColor   = new THREE.Color().setHSL(PREVIEW_HUE / 360, 0.7, 0.50);
                 const pHlColor = new THREE.Color().setHSL(PREVIEW_HUE / 360, 0.9, 0.75);
@@ -403,7 +403,7 @@ export default function StarMapCore({
             groundPlane.rotation.x = -Math.PI / 2;
             scene.add(groundPlane);
 
-            // ── Animation loop ────────────────────────────────────────────────
+            // -------- Animation loop --------
             let animId: number;
 
             function animate() {
@@ -453,7 +453,7 @@ export default function StarMapCore({
             }
             animate();
 
-            // ── Shared click handler ──────────────────────────────────────────
+            // -------- Shared click handler --------
             function handleClick(clientX: number, clientY: number) {
                 const rect = renderer.domElement.getBoundingClientRect();
                 const ndc  = new THREE.Vector2(
@@ -477,7 +477,7 @@ export default function StarMapCore({
                     return;
                 }
 
-                // ── pick mode ─────────────────────────────────────────────────
+                // -------- pick mode --------
                 // Clicking on an existing sector counts as "too close"
                 if (ray.intersectObjects(sectorMeshes).length > 0) {
                     setTooClose(true);
@@ -501,7 +501,7 @@ export default function StarMapCore({
                 }
             }
 
-            // ── Pointer controls ──────────────────────────────────────────────
+            // -------- Pointer controls --------
             let drag: { button: number; startX: number; startY: number; lastX: number; lastY: number; moved: boolean } | null = null;
             const cv = renderer.domElement;
 
@@ -545,7 +545,7 @@ export default function StarMapCore({
             window.addEventListener('pointerup',   onUp);
             cv.addEventListener('wheel', onWheel, { passive: false });
 
-            // ── Touch controls ────────────────────────────────────────────────
+            // -------- Touch controls --------
             let onTouchStart: ((e: TouchEvent) => void) | null = null;
             let onTouchMove:  ((e: TouchEvent) => void) | null = null;
             let onTouchEnd:   ((e: TouchEvent) => void) | null = null;
@@ -609,7 +609,7 @@ export default function StarMapCore({
                 cv.addEventListener('touchend',   onTouchEnd,   { passive: false });
             }
 
-            // ── Resize ────────────────────────────────────────────────────────
+            // -------- Resize --------
             const onResize = () => {
                 const nw = el.clientWidth, nh = el.clientHeight;
                 camera.aspect = nw / nh;
@@ -618,7 +618,7 @@ export default function StarMapCore({
             };
             window.addEventListener('resize', onResize);
 
-            // ── Dispose ───────────────────────────────────────────────────────
+            // -------- Dispose --------
             disposeScene = () => {
                 cancelAnimationFrame(animId);
                 window.removeEventListener('pointermove', onMove);

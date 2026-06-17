@@ -292,9 +292,6 @@ close to the center to maximize visibility.
 ### 7.5. Cleanup
 Clean up some stuff:
 - Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
-- Allow sector owners to manage member roles and permissions
-- Implement member roles and permissions
-- Implement posting approval for sectors that require it
 - Display sector mods on side panel on sector page
 - Add a 2nd tab to sector page on mobile that displays what's on the sidebar on desktop (rules, stats, etc.)
 
