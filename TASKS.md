@@ -276,7 +276,7 @@ Add a Sectors page (/sectors) that displays a grid or list layout showing
 many different sectors. Sectors can be searched for or recommended.
 Allow switching between grid view and star map view.
 
-**Status:** Todo
+**Status:** Done
 
 ### 7.4. Add star map
 Add a unique galaxy-like map of every single sector. On sector 
@@ -292,7 +292,6 @@ close to the center to maximize visibility.
 ### 7.5. Cleanup
 Clean up some stuff:
 - Add /rules and /s/:id to robots.txt and sitemap.xml. Hell, do a total update of these files
-- Allow managing sectors from a sector admin panel
 - Allow sector owners to manage member roles and permissions
 - Implement member roles and permissions
 - Implement posting approval for sectors that require it
