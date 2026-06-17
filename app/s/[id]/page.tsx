@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/../lib/supabase-server';
 import { notFound } from 'next/navigation';
 import Card from '@/components/Card';
 import Link from "next/link";
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import { SectorMemberProvider } from './SectorContext';
 import SectorHeader from './SectorHeader';
@@ -51,6 +52,23 @@ function formatSectorDuration(seconds: number): string {
     return parts.join(' ') || '0s';
 }
 
+// Returns the single highest role to display for a member
+const ROLE_PRIORITY = ['owner', 'admin', 'moderator'] as const;
+type StaffRole = typeof ROLE_PRIORITY[number];
+
+function topRole(roles: string[]): StaffRole | null {
+    for (const r of ROLE_PRIORITY) {
+        if (roles.includes(r)) return r;
+    }
+    return null;
+}
+
+const ROLE_STYLES: Record<StaffRole, string> = {
+    owner:     'text-red-500',
+    admin:     'text-orange-500',
+    moderator: 'text-green-400',
+};
+
 type PageProps = {
     params: Promise<{ id: string }>;
 };
@@ -67,6 +85,16 @@ type SectorVideo = {
     channels: { display_name: string } | null;
 };
 
+type StaffMember = {
+    user_id: string;
+    roles: string[];
+    users: {
+        display_name: string | null;
+        username: string;
+        avatar_url: string | null;
+    } | null;
+};
+
 const ALL_SECTOR = {
     id: null,
     slug: 'all',
@@ -79,7 +107,7 @@ const ALL_SECTOR = {
         "Do not break the law.",
         "Do not upload harmful, abusive, or explicit content.",
         "Do not exploit or harm others.",
-        "Do not compromise security or integrity by attempting to trick users into giving their login information or disributing harmful code.",
+        "Do not compromise security or integrity by attempting to trick users into giving their login information or distributing harmful code.",
         "Do not circumvent technical measures or spam content to burden our systems.",
         "Do not misuse AI content or misrepresent it as entirely human-made.",
     ],
@@ -129,6 +157,25 @@ export default async function SectorPage({ params }: PageProps) {
         if (membership) {
             isMember = true;
             memberRole = membership.roles?.[0] ?? 'member';
+        }
+    }
+
+    // Fetch staff (owners, admins, moderators) - not relevant for the "All" pseudo-sector
+    let staff: StaffMember[] = [];
+    if (!isAll && sector.id) {
+        const { data: staffData } = await supabase
+            .from('sector_members')
+            .select('user_id, roles, users(display_name, username, avatar_url)')
+            .eq('sector_id', sector.id)
+            .overlaps('roles', ['owner', 'admin', 'moderator']);
+
+        if (staffData) {
+            // Sort by role priority: owner -> admin -> moderator
+            staff = (staffData as unknown as StaffMember[]).sort((a, b) => {
+                const pa = ROLE_PRIORITY.findIndex(r => a.roles.includes(r));
+                const pb = ROLE_PRIORITY.findIndex(r => b.roles.includes(r));
+                return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);
+            });
         }
     }
 
@@ -232,6 +279,54 @@ export default async function SectorPage({ params }: PageProps) {
                     </p>
                 )}
             </div>
+
+            {/* Staff */}
+            {staff.length > 0 && (
+                <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <h2 className="text-lg font-semibold text-foreground">Moderators</h2>
+                    <ul className="space-y-3">
+                        {staff.map(member => {
+                            const user = member.users;
+                            const role = topRole(member.roles);
+                            if (!user || !role) return null;
+                            const initial = user.display_name?.[0]?.toUpperCase() ?? user.username[0].toUpperCase();
+                            return (
+                                <li key={member.user_id} className="flex items-center gap-2.5">
+                                    {/* Avatar */}
+                                    <div className="w-7 h-7 rounded-full overflow-hidden bg-muted border border-border shrink-0 flex items-center justify-center">
+                                        {user.avatar_url ? (
+                                            <Image
+                                                src={user.avatar_url}
+                                                alt={user.display_name ?? ""}
+                                                width={28}
+                                                height={28}
+                                                className="object-cover w-full h-full"
+                                            />
+                                        ) : (
+                                            <span className="text-xs font-semibold text-muted-foreground select-none">
+                                                {initial}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Name + handle */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-foreground truncate leading-none">
+                                            {user.display_name}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
+                                            @{user.username}
+                                        </p>
+                                    </div>
+                                    {/* Role badge */}
+                                    <span className={`text-xs font-semibold capitalize shrink-0 ${ROLE_STYLES[role]}`}>
+                                        {role}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
 
             {/* Upload Constraints */}
             {!isAll && (
