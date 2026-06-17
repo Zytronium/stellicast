@@ -25,10 +25,12 @@ export async function GET(request: Request) {
 
       const sectorIds = sectorRows?.map(s => s.id) ?? [];
 
+      // Only surface videos that have been approved in the requested sectors
       const { data: svRows, error: svError } = await supabase
         .from('sector_videos')
         .select('video_id')
-        .in('sector_id', sectorIds);
+        .in('sector_id', sectorIds)
+        .eq('approval_status', 'approved');
 
       if (svError) throw svError;
 

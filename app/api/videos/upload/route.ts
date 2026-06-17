@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
+import { hasPermission } from '@/../lib/sector-utils';
+import type { SectorRole } from '@/../types';
+
+// -------- Slug generation --------
 
 // Generate random 8-character slug using a-z, A-Z, 0-9 (x2), _, -
 function generateSlug(): string {
   // 0-9 appears twice to make it x2 more likely to show up in a slug due to there being 52 a-z characters
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
   let slug = '';
-
   for (let i = 0; i < 8; i++) {
     slug += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -30,9 +33,8 @@ async function generateUniqueSlug(supabase: any): Promise<string> {
       throw error;
 
     // If no video with this slug exists, we're good
-    if (!data) {
+    if (!data)
       return slug;
-    }
 
     // Conflict detected, generate a new slug
     slug = generateSlug();
@@ -41,6 +43,8 @@ async function generateUniqueSlug(supabase: any): Promise<string> {
 
   throw new Error('Failed to generate unique slug after multiple attempts');
 }
+
+// -------- Route handler --------
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, channel_id } = body;
+    const { title, channel_id, sector_ids } = body;
 
     if (!channel_id) {
       return NextResponse.json(
@@ -120,6 +124,56 @@ export async function POST(request: NextRequest) {
 
     if (dbError) throw dbError;
 
+    // -------- Sector linking with approval status --------
+
+    const pendingSectorSlugs: string[] = [];
+
+    if (Array.isArray(sector_ids) && sector_ids.length > 0) {
+      // Fetch sector settings for all selected sectors
+      const { data: sectors, error: sectorsError } = await supabase
+        .from('sectors')
+        .select('id, slug, approval_for_posting, open_posting')
+        .in('id', sector_ids);
+
+      if (sectorsError) throw sectorsError;
+
+      // Fetch user's membership in these sectors (to check bypass permissions)
+      const { data: memberships } = await supabase
+        .from('sector_members')
+        .select('sector_id, roles')
+        .eq('user_id', user.id)
+        .in('sector_id', sector_ids);
+
+      const membershipMap: Record<string, SectorRole[]> = {};
+      for (const m of memberships ?? []) {
+        membershipMap[m.sector_id] = m.roles as SectorRole[];
+      }
+
+      const sectorInserts = (sectors ?? []).map(sector => {
+        const userRoles = membershipMap[sector.id] ?? [];
+        const canBypassApproval = hasPermission(userRoles, 'post_without_approval');
+        const needsApproval = sector.approval_for_posting && !canBypassApproval;
+
+        if (needsApproval) {
+          pendingSectorSlugs.push(sector.slug);
+        }
+
+        return {
+          sector_id: sector.id,
+          video_id: newVideo.id,
+          approval_status: needsApproval ? 'pending' : 'approved',
+        };
+      });
+
+      if (sectorInserts.length > 0) {
+        const { error: svError } = await supabase
+          .from('sector_videos')
+          .insert(sectorInserts);
+
+        if (svError) throw svError;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       guid,
@@ -127,6 +181,7 @@ export async function POST(request: NextRequest) {
       slug: newVideo.slug,
       libraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
       apiKey: process.env.BUNNY_STREAM_API_KEY,
+      pendingSectorSlugs,
     });
   } catch (error: any) {
     console.error('Upload API Error:', error);

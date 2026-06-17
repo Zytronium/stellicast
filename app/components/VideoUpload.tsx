@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
+import { CloudArrowUpIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import VideoPlayer from '@/components/VideoPlayer';
 import SectorSelector from '@/components/SectorSelector';
-import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 
 type VideoPreview = {
   file: File;
@@ -25,6 +25,7 @@ type VideoPreview = {
   allow_ai: boolean;
   min_video_length: number;
   max_video_length: number;
+  approval_for_posting: boolean;
   }
 
 function hasSectorViolation(sector: Sector, isAI: boolean, videoDuration?: number): boolean {
@@ -40,9 +41,6 @@ function hasSectorViolation(sector: Sector, isAI: boolean, videoDuration?: numbe
 }
 
 export default function VideoUpload({ channelId }: { channelId?: string }) {
-  const supabaseRef = useRef(createSupabaseBrowserClient());
-  const supabase = supabaseRef.current;
-
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -53,6 +51,8 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
   const [uploadCompleted, setUploadCompleted] = useState(false);
 
   const [videoId, setVideoId] = useState<string | null>(null);
+  const [uploadedSlug, setUploadedSlug] = useState<string | null>(null);
+  const [pendingSlugs, setPendingSlugs] = useState<string[]>([]);
   const uploadTargetRef = useRef<any>(null);
 
   const [title, setTitle] = useState('');
@@ -70,6 +70,9 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
   const hasViolations = selectedSectors.some(s =>
     hasSectorViolation(s, isAI, videoPreview?.duration)
   );
+
+  // True if any selected sector requires approval (for the info banner)
+  const someNeedApproval = selectedSectors.some(s => s.approval_for_posting);
 
   const addTag = (tagText: string) => {
     const trimmed = tagText.trim();
@@ -170,15 +173,23 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     setUploadStage('');
     setUploading(false);
     setUploadCompleted(false);
+    setPendingSlugs([]);
+    setUploadedSlug(null);
     uploadTargetRef.current = null;
     setVideoId(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const startUploadFlow = async (file: File, durationSeconds: number) => {
+  // -------- Upload flow --------
+
+  const startUploadFlow = async (
+    file: File,
+    durationSeconds: number,
+    sectorIds: string[],
+  ): Promise<{ success: boolean; videoId: string | null; videoSlug: string | null; pendingSlugs: string[] }> => {
     if (!channelId) {
       alert('Please select a channel before uploading.');
-      return { success: false, videoId: null };
+      return { success: false, videoId: null, videoSlug: null, pendingSlugs: [] };
     }
 
     setUploading(true);
@@ -201,6 +212,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
           filesize: file.size,
           duration: durationSeconds,
           auto_upload: true,
+          sector_ids: sectorIds,
         }),
       });
 
@@ -211,6 +223,9 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
 
       const createJson = await createRes.json();
       const id = createJson.videoId || createJson.id || createJson.video_id;
+      const slug = createJson.slug ?? null;
+      const resultPendingSlugs: string[] = createJson.pendingSectorSlugs ?? [];
+
       setVideoId(id || null);
 
       const uploadUrl = createJson.uploadUrl || createJson.upload_url;
@@ -245,7 +260,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         }).catch(err => console.error('Failed to patch metadata after upload', err));
       }
 
-      return { success: true, videoId: id ?? null };
+      return { success: true, videoId: id ?? null, videoSlug: slug, pendingSlugs: resultPendingSlugs };
     } catch (err: any) {
       console.error('Upload flow error', err);
       alert(err?.message || 'Upload failed. Please try again.');
@@ -254,7 +269,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       setUploadStage('');
       uploadTargetRef.current = null;
       setVideoId(null);
-      return { success: false, videoId: null };
+      return { success: false, videoId: null, videoSlug: null, pendingSlugs: [] };
     }
   };
 
@@ -321,20 +336,18 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       return;
     }
 
-    // Start upload when publish is clicked
-    const { success, videoId: uploadedId } = await startUploadFlow(videoPreview.file, videoPreview.duration);
+    const { success, videoId: uploadedId, videoSlug, pendingSlugs: resultPendingSlugs } =
+      await startUploadFlow(
+        videoPreview.file,
+        videoPreview.duration,
+        selectedSectors.map(s => s.id),
+      );
 
     if (!success || !uploadedId) return;
 
-    // Link video to selected sectors
-    if (selectedSectors.length > 0) {
-      const { error: sectorError } = await supabase
-          .from('sector_videos')
-          .insert(selectedSectors.map(s => ({ sector_id: s.id, video_id: uploadedId })));
-      if (sectorError) console.error('Failed to link sectors:', sectorError);
-    }
-
-    router.push(`/watch/${uploadedId}`);
+    // Sector linking is handled server-side in /api/videos/upload
+    setPendingSlugs(resultPendingSlugs);
+    setUploadedSlug(videoSlug);
   };
 
   useEffect(() => {
@@ -356,6 +369,18 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             isAI={isAI}
             videoDuration={videoPreview?.duration}
         />
+
+        {/* Approval info banner */}
+        {someNeedApproval && !uploadCompleted && (
+          <div className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-sm text-amber-400">
+            <InformationCircleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>
+              One or more selected sectors require approval for new posts. Your video
+              will be reviewed by a moderator before appearing there. Contributors and
+              higher bypass this automatically.
+            </span>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-1.5">Video Title</label>
@@ -538,7 +563,32 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         </div>
       )}
 
-      {/* Action buttons */}
+      {/* -------- Action buttons / post-upload state -------- */}
+      {uploadCompleted ? (
+        <div className="flex flex-col gap-3 pt-2">
+          {pendingSlugs.length > 0 && (
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-sm text-amber-400">
+              <p className="font-medium mb-1">Awaiting approval</p>
+              <p>
+                Your video is pending review in{' '}
+                {pendingSlugs.map((s, i) => (
+                  <span key={s}>
+                    {i > 0 && ', '}
+                    <span className="font-mono">s/{s}</span>
+                  </span>
+                ))}
+                . It won't appear there until a moderator approves it.
+              </p>
+            </div>
+          )}
+          <Link
+            href={`/watch/${uploadedSlug || videoId}`}
+            className="block w-full px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-colors text-center"
+          >
+            View Video
+          </Link>
+        </div>
+      ) : (
       <div className="flex gap-3 pt-2">
         <button
           onClick={clearVideo}
@@ -550,12 +600,13 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
         </button>
         <button
           onClick={handlePublish}
-          disabled={uploading || uploadCompleted || !title.trim() || !channelId || !videoPreview || hasViolations}
+            disabled={uploading || !title.trim() || !channelId || !videoPreview || hasViolations}
           className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors"
         >
-          {uploading ? `Uploading... ${Math.round(uploadProgress)}%` : uploadCompleted ? 'Published' : 'Publish Video'}
+            {uploading ? `Uploading... ${Math.round(uploadProgress)}%` : 'Publish Video'}
         </button>
       </div>
+      )}
     </div>
   );
 }
