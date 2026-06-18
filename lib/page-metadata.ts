@@ -7,7 +7,7 @@ const metadataMap: Record<string, Metadata> = {
     },
     "/about": {
         title: "About | Stellicast - Be the Star of Your Own Show",
-        description: "Learn more about Stellicast and its goal. Stelicast is a work-in-progress, open-source, privacy‑first video platform that doesn't sell user data, doesn't bombard you with ads, listens to user feedback, and promotes non-corporate, human-made content."
+        description: "Learn more about Stellicast and its goal. Stellicast is a work-in-progress, open-source, privacy‑first video platform that doesn't sell user data, doesn't bombard you with ads, listens to user feedback, and promotes non-corporate, human-made content."
     },
     "/account": {
         title: "Account | Stellicast",
