@@ -12,6 +12,7 @@ export async function GET(request: Request) {
       .from('videos')
       .select('*, channels(display_name), sector_videos(sectors(name, slug))')
       .eq('visibility', 'public')
+      .eq('processing_status', 'ready')
       .order('created_at', { ascending: false });
 
     if (sectors.length > 0) {
