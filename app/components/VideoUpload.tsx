@@ -477,7 +477,7 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
                 <button
                     type="button"
                     onClick={clearThumbnail}
-                    className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     aria-label="Remove thumbnail"
                 >
                   <XMarkIcon className="w-3.5 h-3.5 z-10 cursor-pointer" />
