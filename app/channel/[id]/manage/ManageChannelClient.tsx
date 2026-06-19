@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
@@ -340,6 +340,7 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
 function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerProps) {
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [editVideo, setEditVideo] = useState<Video | null>(null);
+  const [newThumbnailUrl, setNewThumbnailUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const toggleSelect = (id: string) => {
@@ -614,6 +615,12 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
   });
   const [saving, setSaving] = useState<boolean>(false);
 
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [newThumbnailUrl, setNewThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(video.thumbnail_url ?? null);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
+
   const [assignedSectors, setAssignedSectors] = useState<AssignedSector[]>([]);
   const [loadingSectors, setLoadingSectors] = useState<boolean>(true);
   const [sectorError, setSectorError] = useState<string | null>(null);
@@ -688,7 +695,8 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
         body: JSON.stringify({ sector_id: sector.id }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to add sector');
+      if (!res.ok)
+        throw new Error(json.error || 'Failed to add sector');
 
       setAssignedSectors(prev => {
         const withoutMisc = json.removed_misc_sector_id
@@ -721,7 +729,8 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
         body: JSON.stringify({ sector_id: sectorId }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to remove sector');
+      if (!res.ok)
+        throw new Error(json.error || 'Failed to remove sector');
 
       setAssignedSectors(prev => prev.filter(s => s.id !== sectorId));
     } catch (error) {
@@ -729,6 +738,47 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
       alert(`Error removing sector: ${errorMessage}`);
     } finally {
       setSectorActionId(null);
+    }
+  };
+
+  const handleThumbnailChange = async (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Thumbnail must be a JPEG, PNG, or WebP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Thumbnail must be under 5 MB.');
+      return;
+    }
+
+    // Show a local preview immediately
+    setThumbnailPreview(URL.createObjectURL(file));
+    setThumbnailFile(file);
+    setUploadingThumbnail(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('thumbnail', file);
+      const res = await fetch(`/api/videos/${video.id}/thumbnail`, {
+        method: 'POST',
+        body: formData,
+      });
+      const json = await res.json();
+      if (!res.ok)
+        throw new Error(json.error || 'Upload failed');
+
+      // Update the displayed URL to the persisted one (includes cache-buster)
+      setThumbnailPreview(json.thumbnail_url);
+      setNewThumbnailUrl(json.thumbnail_url);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Thumbnail upload failed: ${msg}`);
+      // Revert preview to original
+      setThumbnailPreview(video.thumbnail_url ?? null);
+      setThumbnailFile(null);
+    } finally {
+      setUploadingThumbnail(false);
     }
   };
 
@@ -748,9 +798,10 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
           .select()
           .single();
 
-      if (error) throw error;
+      if (error)
+        throw error;
 
-      onUpdate(data as Video);
+      onUpdate({ ...(data as Video), thumbnail_url: newThumbnailUrl ?? data.thumbnail_url });
       alert('Video updated successfully!');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -813,6 +864,53 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
                   className="w-4 h-4 rounded accent-primary"
               />
               <label htmlFor="is_ai" className="text-sm text-card-foreground">Contains AI content</label>
+            </div>
+
+            {/* -------- Thumbnail -------- */}
+            <div>
+              <label className="block text-sm font-medium text-card-foreground mb-1">Thumbnail</label>
+              <div className="flex items-start gap-3">
+                <div className="relative w-40 shrink-0 rounded-md overflow-hidden border border-border bg-secondary aspect-video">
+                  {thumbnailPreview ? (
+                      <img
+                          src={thumbnailPreview}
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover"
+                      />
+                  ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
+                        No thumbnail
+                      </div>
+                  )}
+                  {uploadingThumbnail && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                      type="button"
+                      disabled={uploadingThumbnail}
+                      onClick={() => thumbnailInputRef.current?.click()}
+                      className="px-3 py-1.5 text-xs font-medium rounded bg-secondary text-secondary-foreground hover:bg-muted transition disabled:opacity-50"
+                  >
+                    {uploadingThumbnail ? 'Uploading...' : 'Change thumbnail'}
+                  </button>
+                  <p className="text-xs text-muted-foreground">JPEG, PNG, or WebP - max 5 MB</p>
+                </div>
+              </div>
+              <input
+                  ref={thumbnailInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) handleThumbnailChange(file);
+                    e.target.value = '';
+                  }}
+                  className="hidden"
+              />
             </div>
 
             <div>
