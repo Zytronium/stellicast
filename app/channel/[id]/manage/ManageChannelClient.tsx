@@ -340,6 +340,7 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
 function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerProps) {
   const [selectedVideos, setSelectedVideos] = useState<string[]>([]);
   const [editVideo, setEditVideo] = useState<Video | null>(null);
+  const [newThumbnailUrl, setNewThumbnailUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const toggleSelect = (id: string) => {
@@ -615,6 +616,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
   const [saving, setSaving] = useState<boolean>(false);
 
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [newThumbnailUrl, setNewThumbnailUrl] = useState<string | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(video.thumbnail_url ?? null);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
@@ -693,7 +695,8 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
         body: JSON.stringify({ sector_id: sector.id }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to add sector');
+      if (!res.ok)
+        throw new Error(json.error || 'Failed to add sector');
 
       setAssignedSectors(prev => {
         const withoutMisc = json.removed_misc_sector_id
@@ -726,7 +729,8 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
         body: JSON.stringify({ sector_id: sectorId }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Failed to remove sector');
+      if (!res.ok)
+        throw new Error(json.error || 'Failed to remove sector');
 
       setAssignedSectors(prev => prev.filter(s => s.id !== sectorId));
     } catch (error) {
@@ -743,8 +747,8 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
       alert('Thumbnail must be a JPEG, PNG, or WebP image.');
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Thumbnail must be under 10 MB.');
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Thumbnail must be under 5 MB.');
       return;
     }
 
@@ -761,11 +765,12 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
         body: formData,
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Upload failed');
+      if (!res.ok)
+        throw new Error(json.error || 'Upload failed');
 
       // Update the displayed URL to the persisted one (includes cache-buster)
       setThumbnailPreview(json.thumbnail_url);
-      onUpdate({ ...video, thumbnail_url: json.thumbnail_url });
+      setNewThumbnailUrl(json.thumbnail_url);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       alert(`Thumbnail upload failed: ${msg}`);
@@ -793,9 +798,10 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
           .select()
           .single();
 
-      if (error) throw error;
+      if (error)
+        throw error;
 
-      onUpdate(data as Video);
+      onUpdate({ ...(data as Video), thumbnail_url: newThumbnailUrl ?? data.thumbnail_url });
       alert('Video updated successfully!');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -891,7 +897,7 @@ function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalPr
                   >
                     {uploadingThumbnail ? 'Uploading...' : 'Change thumbnail'}
                   </button>
-                  <p className="text-xs text-muted-foreground">JPEG, PNG, or WebP - max 10 MB</p>
+                  <p className="text-xs text-muted-foreground">JPEG, PNG, or WebP - max 5 MB</p>
                 </div>
               </div>
               <input
