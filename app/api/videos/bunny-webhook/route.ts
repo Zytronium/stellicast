@@ -83,5 +83,3 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
     }
 }
-
-// TODO: when ready for production, go to bunny.net and set the webhook URL to https://stellicast.com/api/videos/bunny-webhook
