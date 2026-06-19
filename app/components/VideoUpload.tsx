@@ -60,6 +60,10 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
   const [visibility, setVisibility] = useState<'public' | 'unlisted' | 'private'>('public');
   const [isAI, setIsAI] = useState(false);
 
+  const thumbnailInputRef = useRef<HTMLInputElement | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
   const [tags, setTags] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
 
@@ -166,10 +170,21 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     if (file) handleFileSelect(file);
   };
 
+  const clearThumbnail = () => {
+    if (thumbnailPreview)
+      URL.revokeObjectURL(thumbnailPreview);
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    if (thumbnailInputRef.current)
+      thumbnailInputRef.current.value = '';
+  };
+
   const clearVideo = () => {
-    if (videoPreview) URL.revokeObjectURL(videoPreview.url);
+    if (videoPreview)
+      URL.revokeObjectURL(videoPreview.url);
     setVideoPreview(null);
     setUploadProgress(0);
+    clearThumbnail();
     setUploadStage('');
     setUploading(false);
     setUploadCompleted(false);
@@ -177,7 +192,8 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     setUploadedSlug(null);
     uploadTargetRef.current = null;
     setVideoId(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current)
+      fileInputRef.current.value = '';
   };
 
   // -------- Upload flow --------
@@ -237,7 +253,13 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
       setUploadProgress(15);
       setUploadStage('Uploading file...');
 
-      await uploadFileWithProgress(file, uploadTargetRef.current);
+      // Fire video file upload and thumbnail upload in parallel.
+      // The thumbnail route needs the videoId to do the DB write,
+      // so both can start now that we have it.
+      await Promise.all([
+        uploadFileWithProgress(file, uploadTargetRef.current),
+        thumbnailFile ? uploadThumbnail(id, thumbnailFile) : Promise.resolve(),
+      ]);
 
       setUploadProgress(100);
       setUploadStage('Upload complete');
@@ -315,6 +337,35 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
     });
   };
 
+  const uploadThumbnail = async (videoId: string, file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append('thumbnail', file);
+    const res = await fetch(`/api/videos/${videoId}/thumbnail`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      // Non-fatal: the video upload should still complete
+      console.warn('[upload] Thumbnail upload failed:', await res.text().catch(() => ''));
+    }
+  };
+
+  const handleThumbnailSelect = (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Thumbnail must be a JPEG, PNG, or WebP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Thumbnail must be under 5 MB.');
+      return;
+    }
+    if (thumbnailPreview)
+      URL.revokeObjectURL(thumbnailPreview);
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
   const handlePublish = async () => {
     if (!channelId) {
       alert('Please select a channel before publishing.');
@@ -352,7 +403,10 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
 
   useEffect(() => {
     return () => {
-      if (videoPreview) URL.revokeObjectURL(videoPreview.url);
+      if (videoPreview)
+        URL.revokeObjectURL(videoPreview.url);
+      if (thumbnailPreview)
+        URL.revokeObjectURL(thumbnailPreview);
     };
   }, []);
 
@@ -406,6 +460,57 @@ export default function VideoUpload({ channelId }: { channelId?: string }) {
             maxLength={5000}
           />
           <p className="text-xs text-muted-foreground mt-1">{description.length}/5000 characters</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+            Custom Thumbnail
+          </label>
+
+          {thumbnailPreview ? (
+              <div className="relative w-48 rounded-xl overflow-hidden border border-border group">
+                <img
+                    src={thumbnailPreview}
+                    alt="Thumbnail preview"
+                    className="w-full aspect-video object-cover"
+                />
+                <button
+                    type="button"
+                    onClick={clearThumbnail}
+                    className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Remove thumbnail"
+                >
+                  <XMarkIcon className="w-3.5 h-3.5 z-10 cursor-pointer" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => thumbnailInputRef.current?.click()}
+                    className="absolute inset-0 flex items-end justify-center pb-2 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-white font-medium"
+                >
+                  Change
+                </button>
+              </div>
+          ) : (
+              <button
+                  type="button"
+                  onClick={() => thumbnailInputRef.current?.click()}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+              >
+                <CloudArrowUpIcon className="w-4 h-4" />
+                Upload thumbnail
+              </button>
+          )}
+
+          <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) handleThumbnailSelect(file);
+              }}
+              className="hidden"
+          />
         </div>
 
         <div>
