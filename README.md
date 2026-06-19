@@ -1,6 +1,6 @@
 # Stellicast
 
-**The YouTube alternative we're still waiting for.**
+**Watch Without Being Watched.**
 
 [![Website](https://img.shields.io/badge/website-stellicast.com-blue)](https://stellicast.com/)
 [![Beta](https://img.shields.io/badge/beta-preview-orange)](https://beta.stellicast.com/)
