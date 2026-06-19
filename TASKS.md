@@ -343,3 +343,14 @@ Prefer a legal expert to rewrite the whole thing, but at minimum, just keep it
 accurate and less vague.
 
 **Status:** Todo
+
+## 10. Thumbnails and improved upload flow
+
+### 10.1. Show video processing progress during upload flow
+If possible, display a progress bar for video processing in Bunny.net. The
+video cannot be watched until this is done, so treat the video as unlisted until 
+it is done processing.
+
+### 10.2. Custom thumbnails
+Allow changing auto-generated thumbnails or uploading cusotm thumbnails to
+Bunny.net using the Bunny.net API.
