@@ -370,18 +370,20 @@ agree to in order to submit an application to become an Early Access Channel.
 ### 11.2. Add Early Access Channel Application Form
 Add a form to the website that allows users to submit an application to become
 an Early Access Channel. Users must agree to the above-mentioned Terms of Service
-to submit an application. Note that the apploication process is not strict and most
-answers are purply contextual and will not affect your likelyhood of acceptance unless
+to submit an application. Note that the application process is not strict and most
+answers are purely contextual and will not affect your likelihood of acceptance unless
 you're clearly just messing around.
 
 Form fields:
-- What type of content to you plan to upload? (paragraph)
+- What type of content do you plan to upload? (paragraph)
 - How frequently do you plan to upload (text)
-- Do you have content ready do upload now, or are you still planning? (multiple choice)
+- Do you have content ready to upload now, or are you still planning? (multiple choice)
 - Why do you want to upload to Stellicast as opposed to other platforms like YouTube? (paragraph, optional)
-- Have you uploaded video content to other platforms before? (i.e.e YouTube, TikTok, Twitch, etc.) If so, which ones? (text)
+- Have you uploaded video content to other platforms before? (i.e. YouTube, TikTok, Twitch, etc.) If so, which ones? (text)
 - How did you hear about Stllicast? (paragraph)
 - [ ] I have read the Channel Early Access Agreement and agree to follow platform rules 
+
+User must fill out the existing channel creation form so the channel can also be reviewed and then created upon acceptance.
 
 **Status:** Todo
 
