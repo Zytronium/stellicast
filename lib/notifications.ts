@@ -12,13 +12,13 @@ interface ApplicationDecisionEmailParams {
 export async function notifyApplicationDecision(
     params: ApplicationDecisionEmailParams
 ): Promise<void> {
-    const functionsUrl = `${process.env.SUPABASE_URL}/functions/v1/send-application-decision`;
+    const functionsUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-application-decision`;
 
     const res = await fetch(functionsUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+            Authorization: `Bearer ${process.env.SUPABASE_SECRET_API_KEY}`,
         },
         body: JSON.stringify(params),
     });
