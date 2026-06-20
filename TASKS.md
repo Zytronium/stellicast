@@ -351,6 +351,39 @@ If possible, display a progress bar for video processing in Bunny.net. The
 video cannot be watched until this is done, so treat the video as unlisted until 
 it is done processing.
 
+**Status:** Done
+
 ### 10.2. Custom thumbnails
 Allow changing auto-generated thumbnails or uploading cusotm thumbnails to
 Bunny.net using the Bunny.net API.
+
+**Status:** Done
+
+## 11. Early Access to Channels
+
+### 11.1. Write a Terms of Service for Early Access Channels
+Write a short Terms of Service with zero AI-generated content that users must
+agree to in order to submit an application to become an Early Access Channel.
+
+**Status:** In-Progress
+
+### 11.2. Add Early Access Channel Application Form
+Add a form to the website that allows users to submit an application to become
+an Early Access Channel. Users must agree to the above mentioned Terms of Service
+to submit an application.
+
+**Status:** Todo
+
+### 11.3. Add Early Access Channel Approval Process
+Add an approval process for Early Access Channels. This includes an admin panel 
+that displays all applications and allows admins to approve or reject them.
+
+**Status:** Todo
+
+### 11.4. Lock Down Channel Access to Approved Channels Only
+Lock down access to Early Access Channels to approved channels only. For existing
+channels, display a popup on next site visit asking users to apply to become an Early
+Access Channel. Don't allow users to create a new channel unless they've submitted
+an application and been approved.
+
+**Status:** Todo
