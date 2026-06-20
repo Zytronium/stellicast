@@ -402,3 +402,11 @@ Access Channel. Don't allow users to create a new channel unless they've submitt
 an application and been approved.
 
 **Status:** Todo
+
+### 11.5. Site Admin Panel
+This is required for 11.3 to work. Build it as simple as possible for current required
+functionality: allow adding users as admin or moderator, add a column in users table or
+a join table that specifies if a user has admin or moderator perms or if they're just a 
+normal user. To start, use SQL to set the official Stellicast team account id as the first
+admin. Ensure that the account can never have admin perms revoked via admin panel. (but maybe 
+allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
