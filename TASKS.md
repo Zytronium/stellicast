@@ -403,10 +403,17 @@ an application and been approved.
 
 **Status:** Todo
 
-### 11.5. Site Admin Panel
-This is required for 11.3 to work. Build it as simple as possible for current required
+### 11.5. Apply Existing Channels for Early Access
+Allow existing channels to apply to unfreeze their channel by joiining Early Access.
+The form should be identical to the one for new channels except without the channel
+info - instead, it should automatically attach a link to the existing channel.
+
+### 11.6. Site Admin Panel
+This is required for 11.3 to work properly. Build it as simple as possible for current required
 functionality: allow adding users as admin or moderator, add a column in users table or
 a join table that specifies if a user has admin or moderator perms or if they're just a 
 normal user. To start, use SQL to set the official Stellicast team account id as the first
 admin. Ensure that the account can never have admin perms revoked via admin panel. (but maybe 
 allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
+
+**Status:** Partially Done
