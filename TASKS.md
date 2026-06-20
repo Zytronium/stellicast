@@ -365,7 +365,7 @@ Bunny.net using the Bunny.net API.
 Write a short Terms of Service with zero AI-generated content that users must
 agree to in order to submit an application to become an Early Access Channel.
 
-**Status:** In-Progress
+**Status:** Done
 
 ### 11.2. Add Early Access Channel Application Form
 Add a form to the website that allows users to submit an application to become
