@@ -74,22 +74,31 @@ export async function POST(req: NextRequest) {
         // -------- admin client for DB reads/writes (bypasses RLS) --------
         const admin = createSupabaseAdminClient();
 
-        // -------- check for existing application --------
-        const { data: existingApp } = await admin
-            .from('channel_early_access_applications')
-            .select('id, status')
-            .eq('user_id', user.id)
-            .maybeSingle();
+        // -------- check pending application cap (accepted/rejected don't count) --------
+        const MAX_PENDING_APPLICATIONS = 3;
 
-        if (existingApp) {
-            const statusMsg =
-                existingApp.status === 'pending'   ? 'You already have a pending application.' :
-                    existingApp.status === 'accepted'  ? 'Your application has already been accepted.' :
-                        'You already submitted an application.';
-            return NextResponse.json({ error: statusMsg }, { status: 409 });
+        const { count: pendingCount, error: pendingCountError } = await admin
+            .from('channel_early_access_applications')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('status', 'pending');
+
+        if (pendingCountError) {
+            console.error('Pending application count error:', pendingCountError);
+            return NextResponse.json(
+                { error: 'Failed to check your existing applications. Please try again.' },
+                { status: 500 }
+            );
         }
 
-        // -------- check handle availability --------
+        if ((pendingCount ?? 0) >= MAX_PENDING_APPLICATIONS) {
+            return NextResponse.json(
+                { error: `You can only have ${MAX_PENDING_APPLICATIONS} pending applications at once. Wait for one to be reviewed before submitting another.` },
+                { status: 409 }
+            );
+        }
+
+        // -------- check handle availability (existing channels + pending applications) --------
         const { data: existingHandle } = await admin
             .from('channels')
             .select('id')
@@ -99,6 +108,20 @@ export async function POST(req: NextRequest) {
         if (existingHandle) {
             return NextResponse.json(
                 { error: 'That channel handle is already taken. Please choose another.' },
+                { status: 409 }
+            );
+        }
+
+        const { data: pendingHandleApp } = await admin
+            .from('channel_early_access_applications')
+            .select('id')
+            .eq('handle', cleanHandle)
+            .eq('status', 'pending')
+            .maybeSingle();
+
+        if (pendingHandleApp) {
+            return NextResponse.json(
+                { error: 'Another pending application is already using that handle. Please choose another.' },
                 { status: 409 }
             );
         }
