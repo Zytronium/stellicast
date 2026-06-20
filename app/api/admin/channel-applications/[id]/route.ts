@@ -64,14 +64,18 @@ export async function PATCH(
                 return NextResponse.json({ error: 'Failed to reject application.' }, { status: 500 });
             }
 
-            // -------- room for email notification --------
-            // TODO: actually send the email once that infrastructure exists
+            // -------- send the decision email --------
+            const { data: rejectedAuthUser } = await admin.auth.admin.getUserById(application.user_id);
+            if (rejectedAuthUser?.user?.email) {
             await notifyApplicationDecision({
-                userId: application.user_id,
+                    email: rejectedAuthUser.user.email,
                 status: 'rejected',
                 displayName: application.display_name,
                 note: note?.trim() || null,
             });
+            } else {
+                console.error('Could not find email for user, skipping decision email:', application.user_id);
+            }
 
             return NextResponse.json({ success: true });
         }
@@ -174,14 +178,18 @@ export async function PATCH(
             return NextResponse.json({ error: 'Channel was created, but failed to update application status.' }, { status: 500 });
         }
 
-        // -------- room for email notification --------
-        // TODO: actually send the email once that infrastructure exists
+        // -------- send the decision email --------
+        const { data: acceptedAuthUser } = await admin.auth.admin.getUserById(application.user_id);
+        if (acceptedAuthUser?.user?.email) {
         await notifyApplicationDecision({
-            userId: application.user_id,
+                email: acceptedAuthUser.user.email,
             status: 'accepted',
             displayName: application.display_name,
             note: note?.trim() || null,
         });
+        } else {
+            console.error('Could not find email for user, skipping decision email:', application.user_id);
+        }
 
         return NextResponse.json({ success: true, channel_id: newChannel.id });
     } catch (err) {
