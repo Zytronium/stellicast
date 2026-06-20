@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/../lib/supabase-server';
+// import { createSupabaseServerClient } from '@/../lib/supabase-server';
 
 export async function POST(request: Request) {
-  try {
+/*  try {
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -94,5 +94,6 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Channel creation error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  }*/
+    return NextResponse.json({ error: "This feature has been disabled. Please apply for Early Access at stellicast.com/channels/apply" }, { status: 403 });
 }

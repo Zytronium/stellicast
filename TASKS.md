@@ -385,12 +385,13 @@ Form fields:
 
 User must fill out the existing channel creation form so the channel can also be reviewed and then created upon acceptance.
 
-**Status:** Todo
+**Status:** Done
 
 ### 11.3. Add Early Access Channel Approval Process
 Add an approval process for Early Access Channels. This includes an admin panel 
 that displays all applications and allows admins to approve or reject them.
-Max 30 approvals.
+Max 30 approvals. Also allow users to view their application status at any time.
+Ensure the user is emailed when theeir application is accepted or rejected.
 
 **Status:** Todo
 

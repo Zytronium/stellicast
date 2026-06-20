@@ -17,6 +17,10 @@ const metadataMap: Record<string, Metadata> = {
         title: "Login Portal | Stellicast",
         description: "Log in or create a new account with Stellicast."
     },
+    "/channels/apply": {
+        title: "Apply for Channels Early Access | Stellicast",
+        description: "Apply to become an early access creator on Stellicast."
+    },
     "/channel-early-access-agreement": {
         title: "Channel Early Access Agreement | Stellicast",
         description: "Read the agreement required before being allowed to create a channel and upload content."
