@@ -1104,15 +1104,17 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
 
       const csv = [
         ['Title', 'Views', 'Likes', 'Dislikes', 'Stars', 'Created At', 'Visibility'].join(','),
-        ...(data as Video[]).map(v => [
+        ...(data as Video[]).map(v =>
+          [
           `"${v.title}"`,
           v.view_count,
           v.like_count,
           v.dislike_count,
           v.star_count,
           v.created_at,
-          v.visibility
-        ].join(','))
+            v.visibility,
+          ].join(',')
+        ),
       ].join('\n');
 
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -1132,28 +1134,19 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
     try {
       setDeleting(true);
 
-      // Delete all videos first (cascade should handle this, but being explicit)
-      const { error: videoError } = await supabase
-          .from('videos')
-          .delete()
-          .eq('channel_id', channel.id);
+      const res = await fetch(`/api/account/channels/${channel.id}`, {
+        method: 'DELETE',
+      });
 
-      if (videoError) throw videoError;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? `Server error ${res.status}`);
+      }
 
-      // Delete the channel
-      const { error: channelError } = await supabase
-          .from('channels')
-          .delete()
-          .eq('id', channel.id);
-
-      if (channelError) throw channelError;
-
-      alert('Channel deleted successfully!');
       window.location.href = '/';
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       alert(`Error deleting channel: ${errorMessage}`);
-    } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -1191,8 +1184,14 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
           </button>
 
           {showDeleteConfirm && (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setShowDeleteConfirm(false)}>
-                <div className="bg-card rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl border border-border" onClick={e => e.stopPropagation()}>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            <div
+              className="bg-card rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl border border-border"
+              onClick={e => e.stopPropagation()}
+            >
                   <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Delete Channel?</h2>
                   <p className="text-sm text-muted-foreground mb-6">
                     This will permanently delete your channel, all videos, and data. This action cannot be undone.
