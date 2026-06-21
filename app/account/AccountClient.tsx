@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Plus, Edit, Upload, LogOut } from 'lucide-react';
+import { User, Plus, Edit, Upload, LogOut, ClipboardList } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
@@ -192,6 +192,14 @@ export default function AccountPage() {
             <h2 className="text-lg sm:text-xl font-semibold text-foreground">Your Channels</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">Manage your creator and studio channels</p>
           </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Link
+              href="/applications"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 border border-border text-foreground text-sm rounded-lg hover:bg-muted transition w-full sm:w-auto"
+            >
+              <ClipboardList className="w-4 h-4" />
+              View Application Status
+            </Link>
           <Link
             href="/channels/apply"
             // onClick={() => setShowCreateModal(true)}
@@ -200,6 +208,7 @@ export default function AccountPage() {
             <Plus className="w-4 h-4" />
             Apply to Create Channel
           </Link>
+        </div>
         </div>
 
         {channels.length > 0 ? (
@@ -274,6 +283,12 @@ export default function AccountPage() {
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               Apply to Create Your First Channel
             </Link>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-3">
+              Already applied?{' '}
+              <Link href="/applications" className="text-accent hover:underline">
+                Check your application status
+              </Link>
+            </p>
           </div>
         )}
       </div>
