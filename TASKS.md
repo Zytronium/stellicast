@@ -393,7 +393,7 @@ that displays all applications and allows admins to approve or reject them.
 Max 30 approvals. Also allow users to view their application status at any time.
 Ensure the user is emailed when their application is accepted or rejected.
 
-**Status:** In-progress (can't view application status yet)
+**Status:** Done
 
 ### 11.4. Lock Down Channel Access to Approved Channels Only
 Lock down access to Early Access Channels to approved channels only. For existing
@@ -418,4 +418,4 @@ normal user. To start, use SQL to set the official Stellicast team account id as
 admin. Ensure that the account can never have admin perms revoked via admin panel. (but maybe 
 allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 
-**Status:** Partially Done
+**Status:** Done
