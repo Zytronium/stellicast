@@ -201,6 +201,31 @@ export async function POST(req: NextRequest) {
                 );
             }
 
+            // -------- notify admin & applicant --------
+            try {
+                const { error: notifyError } = await admin.functions.invoke('send-application-submitted', {
+                    body: {
+                        email: user.email,
+                        displayName: existingChannel.display_name,
+                        handle: existingChannel.handle,
+                        channelType: existingChannel.channel_type,
+                        isExistingChannel: true,
+                        contentType: content_type.trim(),
+                        uploadFrequency: upload_frequency.trim(),
+                        contentReadiness: content_readiness,
+                        otherPlatforms: other_platforms.trim(),
+                        howHeard: how_heard.trim(),
+                        whyStellicast: why_stellicast?.trim() || null,
+                    },
+                });
+
+                if (notifyError) {
+                    console.error('Failed to send application submitted notification:', notifyError);
+                }
+            } catch (notifyErr) {
+                console.error('Unexpected error invoking send-application-submitted:', notifyErr);
+            }
+
             return NextResponse.json({ success: true });
         }
 
@@ -288,6 +313,31 @@ export async function POST(req: NextRequest) {
                 { error: 'Failed to submit application. Please try again.' },
                 { status: 500 }
             );
+        }
+
+        // -------- notify admin & applicant --------
+        try {
+            const { error: notifyError } = await admin.functions.invoke('send-application-submitted', {
+                body: {
+                    email: user.email,
+                    displayName: display_name.trim(),
+                    handle: cleanHandle,
+                    channelType: channel_type,
+                    isExistingChannel: false,
+                    contentType: content_type.trim(),
+                    uploadFrequency: upload_frequency.trim(),
+                    contentReadiness: content_readiness,
+                    otherPlatforms: other_platforms.trim(),
+                    howHeard: how_heard.trim(),
+                    whyStellicast: why_stellicast?.trim() || null,
+                },
+            });
+
+            if (notifyError) {
+                console.error('Failed to send application submitted notification:', notifyError);
+            }
+        } catch (notifyErr) {
+            console.error('Unexpected error invoking send-application-submitted:', notifyErr);
         }
 
         return NextResponse.json({ success: true });
