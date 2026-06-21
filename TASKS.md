@@ -393,7 +393,7 @@ that displays all applications and allows admins to approve or reject them.
 Max 30 approvals. Also allow users to view their application status at any time.
 Ensure the user is emailed when their application is accepted or rejected.
 
-**Status:** Todo
+**Status:** In-progress (can't view application status yet)
 
 ### 11.4. Lock Down Channel Access to Approved Channels Only
 Lock down access to Early Access Channels to approved channels only. For existing
@@ -401,12 +401,14 @@ channels, display a popup on next site visit asking users to apply to become an 
 Access Channel. Don't allow users to create a new channel unless they've submitted
 an application and been approved.
 
-**Status:** Todo
+**Status:** In-Progress
 
 ### 11.5. Apply Existing Channels for Early Access
-Allow existing channels to apply to unfreeze their channel by joiining Early Access.
+Allow existing channels to apply to unfreeze their channel by joining Early Access.
 The form should be identical to the one for new channels except without the channel
 info - instead, it should automatically attach a link to the existing channel.
+
+**Status:** Todo
 
 ### 11.6. Site Admin Panel
 This is required for 11.3 to work properly. Build it as simple as possible for current required

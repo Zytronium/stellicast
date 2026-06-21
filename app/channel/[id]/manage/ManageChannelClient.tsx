@@ -1,6 +1,7 @@
 'use client';
 
 import {useState, useEffect, useRef} from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
@@ -16,6 +17,7 @@ interface Channel {
   avatar_url: string | null;
   video_count: number | null;
   follower_count: number | null;
+  status: 'active' | 'frozen' | 'pending';
 }
 
 interface Video {
@@ -56,6 +58,7 @@ interface TabsProps {
   children: React.ReactNode[];
   defaultTab: string;
   className?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 interface VideoManagerProps {
@@ -103,18 +106,37 @@ interface ProfileEditorProps {
 interface AdvancedSettingsProps {
   channel: Channel;
   supabase: SupabaseClient;
+  status: Channel['status'];
+}
+
+const VALID_TABS = ['videos', 'profile', 'settings'] as const;
+type TabId = typeof VALID_TABS[number];
+
+function resolveTab(raw: string | null): TabId {
+  return VALID_TABS.includes(raw as TabId) ? (raw as TabId) : 'videos';
 }
 
 export default function ManageChannelClient({ channel, videos: initialVideos }: ManageChannelClientProps) {
   const supabase = createSupabaseBrowserClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [currentChannel, setCurrentChannel] = useState<Channel>(channel);
   const [videos, setVideos] = useState<Video[]>(initialVideos);
+
+  const initialTab = resolveTab(searchParams.get('tab'));
+
+  const handleTabChange = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   return (
       <div className="relative min-h-full">
         <div className="container mx-auto">
           <Header channel={currentChannel} setChannel={setCurrentChannel} supabase={supabase} />
-          <Tabs defaultTab="videos" className="mt-4 sm:mt-8 px-4 sm:px-12">
+          <Tabs defaultTab={initialTab} onTabChange={handleTabChange} className="mt-4 sm:mt-8 px-4 sm:px-12">
             <TabPanel id="videos">
               <VideoManager videos={videos} setVideos={setVideos} channelId={channel.id} supabase={supabase} />
             </TabPanel>
@@ -122,7 +144,7 @@ export default function ManageChannelClient({ channel, videos: initialVideos }: 
               <ProfileEditor channel={currentChannel} setChannel={setCurrentChannel} supabase={supabase} />
             </TabPanel>
             <TabPanel id="settings">
-              <AdvancedSettings channel={currentChannel} supabase={supabase} />
+              <AdvancedSettings channel={currentChannel} supabase={supabase} status={currentChannel.status} />
             </TabPanel>
           </Tabs>
         </div>
@@ -301,9 +323,14 @@ function TabPanel({ children, id }: TabPanelProps) {
   return <div role="tabpanel" id={`panel-${id}`}>{children}</div>;
 }
 
-function Tabs({ children, defaultTab, className }: TabsProps) {
+function Tabs({ children, defaultTab, className, onTabChange }: TabsProps) {
   const [active, setActive] = useState<string>(defaultTab);
   const tabs = ['videos', 'profile', 'settings'];
+
+  const handleTabClick = (id: string) => {
+    setActive(id);
+    onTabChange?.(id);
+  };
 
   return (
       <div className={className}>
@@ -311,7 +338,7 @@ function Tabs({ children, defaultTab, className }: TabsProps) {
           {tabs.map(id => (
               <p
                   key={id}
-                  onClick={() => setActive(id)}
+                  onClick={() => handleTabClick(id)}
                   role="tab"
                   aria-selected={active === id}
                   className={`relative cursor-pointer text-sm sm:text-base transition-all ${
@@ -1089,7 +1116,7 @@ function ProfileEditor({ channel, setChannel, supabase }: ProfileEditorProps) {
   );
 }
 
-function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
+function AdvancedSettings({ channel, supabase, status }: AdvancedSettingsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
 
@@ -1154,7 +1181,42 @@ function AdvancedSettings({ channel, supabase }: AdvancedSettingsProps) {
 
   return (
       <div className="max-w-2xl space-y-4 sm:space-y-6">
-        {/* Export analytics */}
+
+        {/* -------- Early access notice -------- */}
+        {status !== 'active' && (
+          <div className={`p-4 rounded-lg border-2 ${
+            status === 'pending'
+              ? 'bg-yellow-500/10 border-yellow-500/40'
+              : 'bg-destructive/10 border-destructive/40'
+          }`}>
+            <div className="flex items-start gap-3">
+              <svg className={`w-5 h-5 shrink-0 mt-0.5 ${status === 'pending' ? 'text-yellow-500' : 'text-destructive'}`} fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1 min-w-0">
+                <h3 className={`text-sm font-semibold ${status === 'pending' ? 'text-yellow-500' : 'text-destructive'}`}>
+                  {status === 'pending' ? 'Application Under Review' : 'Channel Not Active'}
+                </h3>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {status === 'pending'
+                    ? 'Your early access application is pending review. Uploading will be unlocked once approved.'
+                    : 'This channel is not approved for early access. Apply to unlock video uploads.'
+                  }
+                </p>
+                {status !== 'pending' && (
+                  <Link
+                    href={`/channel/${channel.handle}/early-access`}
+                    className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
+                  >
+                    Apply for Early Access
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* -------- Export analytics -------- */}
         <div className="p-4 bg-card/50 rounded-lg border border-border">
           <h3 className="text-sm font-medium text-foreground mb-2">Analytics Export</h3>
           <p className="text-xs text-muted-foreground mb-4">Download your channel analytics and metrics</p>

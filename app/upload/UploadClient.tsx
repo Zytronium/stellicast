@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
 import VideoUpload from '@/components/VideoUpload';
-import { CloudArrowUpIcon, ShieldCheckIcon, InformationCircleIcon, ChevronDownIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, ShieldCheckIcon, InformationCircleIcon, ChevronDownIcon, PlusIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -14,6 +14,71 @@ interface Channel {
   handle: string;
   avatar_url: string | null;
   channel_type: string;
+  status: 'active' | 'frozen' | 'pending';
+}
+
+function ChannelAvatar({ channel, size = 32 }: { channel: Channel; size?: number }) {
+  if (channel.avatar_url) {
+    return (
+      <Image
+        src={channel.avatar_url}
+        alt={channel.display_name}
+        width={size}
+        height={size}
+        className="rounded-full object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold text-primary-foreground shrink-0"
+      style={{ width: size, height: size }}
+    >
+      {channel.display_name[0].toUpperCase()}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: Channel['status'] }) {
+  if (status === 'active') return null;
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+      status === 'pending'
+        ? 'bg-yellow-500/15 text-yellow-500'
+        : 'bg-destructive/15 text-destructive'
+    }`}>
+      {status}
+    </span>
+  );
+}
+
+function FrozenChannelNotice({ channel }: { channel: Channel }) {
+  const isPending = channel.status === 'pending';
+  return (
+    <div className="bg-card border border-border rounded-2xl p-8 text-center max-w-md mx-auto">
+      <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+        <LockClosedIcon className="w-7 h-7 text-destructive" />
+      </div>
+      <h2 className="text-lg font-bold text-foreground mb-2">
+        {isPending ? 'Application Under Review' : 'Channel Not Active'}
+      </h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        {isPending
+          ? 'Your early access application is pending review. You\'ll be able to upload once it\'s approved.'
+          : 'This channel hasn\'t been approved for early access yet. Apply to start uploading.'
+        }
+      </p>
+      {!isPending && (
+        <Link
+          href={`/channel/${channel.handle}/early-access`}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-sm font-semibold transition-colors"
+        >
+          Apply for Early Access
+        </Link>
+      )}
+    </div>
+  );
 }
 
 function UploadContent() {
@@ -42,7 +107,7 @@ function UploadContent() {
       // Fetch all user's channels
       const { data: userChannels, error: channelsError } = await supabase
         .from('channels')
-        .select('id, display_name, handle, avatar_url, channel_type')
+        .select('id, display_name, handle, avatar_url, channel_type, status')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -52,14 +117,19 @@ function UploadContent() {
         return;
       }
 
-      setChannels(userChannels || []);
+      const allChannels = (userChannels ?? []) as Channel[];
+      setChannels(allChannels);
 
-      // Select channel based on URL parameter or default to first channel
+      // Prefer active channels when selecting a default.
+      // If the URL points to a specific channel, honour it regardless of status
+      // so the user sees the frozen notice for that channel rather than being
+      // silently redirected.
       if (urlChannelId) {
-        const channel = userChannels?.find((ch: Channel) => ch.id === urlChannelId);
-        setSelectedChannel(channel || userChannels?.[0] || null);
+        const match = allChannels.find(ch => ch.id === urlChannelId);
+        setSelectedChannel(match ?? allChannels[0] ?? null);
       } else {
-        setSelectedChannel(userChannels?.[0] || null);
+        const firstActive = allChannels.find(ch => ch.status === 'active');
+        setSelectedChannel(firstActive ?? allChannels[0] ?? null);
       }
 
       setLoading(false);
@@ -70,14 +140,13 @@ function UploadContent() {
   const handleChannelSelect = (channel: Channel) => {
     setSelectedChannel(channel);
     setShowChannelDropdown(false);
-    // Update URL with selected channel
     router.push(`/upload?channel=${channel.id}`, { scroll: false });
   };
 
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -102,10 +171,12 @@ function UploadContent() {
   if (!selectedChannel) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
+
+  const isBlocked = selectedChannel.status !== 'active';
 
   return (
     <div className="max-w-4xl mx-auto w-full py-8 px-4">
@@ -125,34 +196,22 @@ function UploadContent() {
             className="w-full md:w-auto min-w-[300px] flex items-center justify-between gap-3 px-4 py-3 bg-card border border-border rounded-xl hover:border-muted transition text-foreground"
           >
             <div className="flex items-center gap-3">
-              {selectedChannel.avatar_url ? (
-                <Image
-                  src={selectedChannel.avatar_url}
-                  alt={selectedChannel.display_name}
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold text-primary-foreground">
-                  {selectedChannel.display_name[0].toUpperCase()}
-                </div>
-              )}
+              <ChannelAvatar channel={selectedChannel} />
               <div className="text-left">
+                <div className="flex items-center gap-2">
                 <p className="font-semibold text-foreground">{selectedChannel.display_name}</p>
+                  <StatusBadge status={selectedChannel.status} />
+                </div>
                 <p className="text-xs text-muted-foreground">@{selectedChannel.handle}</p>
               </div>
             </div>
-            <ChevronDownIcon className={`w-5 h-5 text-muted-foreground transition-transform ${showChannelDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDownIcon className={`w-5 h-5 text-muted-foreground transition-transform shrink-0 ${showChannelDropdown ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Dropdown */}
           {showChannelDropdown && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowChannelDropdown(false)}
-              />
+              <div className="fixed inset-0 z-10" onClick={() => setShowChannelDropdown(false)} />
               <div className="absolute top-full left-0 mt-2 w-full md:w-auto min-w-[300px] bg-card border border-border rounded-xl shadow-xl z-20 max-h-64 overflow-y-auto">
                 {channels.map((channel) => (
                   <button
@@ -162,25 +221,16 @@ function UploadContent() {
                       selectedChannel.id === channel.id ? 'bg-muted/50' : ''
                     }`}
                   >
-                    {channel.avatar_url ? (
-                      <Image
-                        src={channel.avatar_url}
-                        alt={channel.display_name}
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold text-primary-foreground">
-                        {channel.display_name[0].toUpperCase()}
+                    <ChannelAvatar channel={channel} />
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-foreground truncate">{channel.display_name}</p>
+                        <StatusBadge status={channel.status} />
                       </div>
-                    )}
-                    <div className="text-left flex-1">
-                      <p className="font-semibold text-foreground">{channel.display_name}</p>
                       <p className="text-xs text-muted-foreground">@{channel.handle}</p>
                     </div>
                     {selectedChannel.id === channel.id && (
-                      <div className="w-2 h-2 rounded-full bg-accent" />
+                      <div className="w-2 h-2 rounded-full bg-accent shrink-0" />
                     )}
                   </button>
                 ))}
@@ -190,6 +240,9 @@ function UploadContent() {
         </div>
       </div>
 
+      {isBlocked ? (
+        <FrozenChannelNotice channel={selectedChannel} />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
           <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
@@ -240,6 +293,7 @@ function UploadContent() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -248,7 +302,7 @@ export default function UploadPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-1 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     }>
       <UploadContent />

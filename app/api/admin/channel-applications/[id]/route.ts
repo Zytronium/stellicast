@@ -64,6 +64,20 @@ export async function PATCH(
                 return NextResponse.json({ error: 'Failed to reject application.' }, { status: 500 });
             }
 
+            // -------- if an existing channel applied, put it back to frozen --------
+            if (application.channel_id) {
+                const { error: channelFreezeError } = await admin
+                    .from('channels')
+                    .update({ status: 'frozen', updated_at: new Date().toISOString() })
+                    .eq('id', application.channel_id);
+
+                if (channelFreezeError) {
+                    console.error('Channel freeze error on rejection:', channelFreezeError);
+                    // Application is already rejected - log and continue rather than
+                    // returning an error, since the important state is the application.
+                }
+            }
+
             // -------- send the decision email --------
             const { data: rejectedAuthUser } = await admin.auth.admin.getUserById(application.user_id);
             if (rejectedAuthUser?.user?.email) {
@@ -82,7 +96,53 @@ export async function PATCH(
 
         // -------- approve path --------
 
-        // -------- enforce the channel cap --------
+        // -------- existing channel applying for early access --------
+        // channel_id is set when a frozen/pending channel submitted this application.
+        // The channel and its creator/studio rows already exist - just flip the status.
+        if (application.channel_id) {
+            const { error: channelActivateError } = await admin
+                .from('channels')
+                .update({ status: 'active', updated_at: new Date().toISOString() })
+                .eq('id', application.channel_id);
+
+            if (channelActivateError) {
+                console.error('Channel activate error:', channelActivateError);
+                return NextResponse.json({ error: 'Failed to activate channel.' }, { status: 500 });
+            }
+
+            const { error: updateError } = await admin
+                .from('channel_early_access_applications')
+                .update({
+                    status: 'accepted',
+                    reviewed_at: new Date().toISOString(),
+                    reviewer_note: note?.trim() || null,
+                })
+                .eq('id', id);
+
+            if (updateError) {
+                console.error('Application accept error:', updateError);
+                return NextResponse.json(
+                    { error: 'Channel was activated, but failed to update application status.' },
+                    { status: 500 }
+                );
+            }
+
+            const { data: acceptedAuthUser } = await admin.auth.admin.getUserById(application.user_id);
+            if (acceptedAuthUser?.user?.email) {
+                await notifyApplicationDecision({
+                    email: acceptedAuthUser.user.email,
+                    status: 'accepted',
+                    displayName: application.display_name,
+                    note: note?.trim() || null,
+                });
+            } else {
+                console.error('Could not find email for user, skipping decision email:', application.user_id);
+            }
+
+            return NextResponse.json({ success: true, channel_id: application.channel_id });
+        }
+
+        // -------- new channel application - enforce the channel cap --------
         const { count: channelCount, error: countError } = await admin
             .from('channels')
             .select('id', { count: 'exact', head: true });
@@ -114,6 +174,9 @@ export async function PATCH(
         }
 
         // -------- create the channel --------
+        // status is explicitly 'active' - new channels created via approval are
+        // immediately live. The 'frozen' column default is for channels created
+        // through any other path (e.g. direct DB insert, future admin tools).
         const { data: newChannel, error: channelError } = await admin
             .from('channels')
             .insert({
@@ -122,6 +185,7 @@ export async function PATCH(
                 display_name: application.display_name,
                 handle: application.handle,
                 description: application.description,
+                status: 'active',
             })
             .select('id')
             .single();
