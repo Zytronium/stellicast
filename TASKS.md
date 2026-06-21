@@ -401,14 +401,14 @@ channels, display a popup on next site visit asking users to apply to become an 
 Access Channel. Don't allow users to create a new channel unless they've submitted
 an application and been approved.
 
-**Status:** In-Progress
+**Status:** In-Progress (doesn't show popup yet)
 
 ### 11.5. Apply Existing Channels for Early Access
 Allow existing channels to apply to unfreeze their channel by joining Early Access.
 The form should be identical to the one for new channels except without the channel
 info - instead, it should automatically attach a link to the existing channel.
 
-**Status:** Todo
+**Status:** Done
 
 ### 11.6. Site Admin Panel
 This is required for 11.3 to work properly. Build it as simple as possible for current required
