@@ -135,8 +135,8 @@ export default function EarlyAccessPopup() {
                             Channels Early Access
                         </h2>
                         <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                            To keep quality high and build trust with our community during this early stage,
-                            we&apos;re approving channels individually. Your channel{multiple ? 's are' : ' is'} paused
+                            To maintain quality and trust during this early stage in development,
+                            we&apos;re now approving channels individually. Your channel{multiple ? 's are' : ' is'} paused
                             until {multiple ? 'they\'re' : 'it\'s'} approved for Early Access, which usually takes
                             less than 48 hours.
                         </p>
