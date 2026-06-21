@@ -14,6 +14,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [themeClass, setThemeClass] = useState<string>('');
     const pathname = usePathname();
+
+    // -------- path-based flags --------
     const pathsWithFilters = ['/explore', '/s']; // and `/`
     const pathsWithoutSidebar = ['/about', '/auth', '/star-map'];
     const pathsWithoutPadding = ['/channel/', '/user/', '/profile', '/star-map', '/about'];
@@ -23,11 +25,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const showSidebar = !pathsWithoutSidebar.some(path => pathname.startsWith(path));
     const noPadding = pathsWithoutPadding.some(path => pathname.startsWith(path));
     const showBottomNav = !pathsWithoutBottomNav.some(path => pathname.startsWith(path));
-
     const isWatchPage = pathname.startsWith('/watch');
+    const isEmbedPage = pathname.startsWith('/embed');
 
     // Fetch user theme preference asynchronously
     useEffect(() => {
+        // Skip theme fetching entirely for embed pages - no UI chrome to theme
+        if (isEmbedPage)
+            return;
+
         const fetchTheme = async () => {
             try {
                 const supabase = createSupabaseBrowserClient();
@@ -92,7 +98,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         };
 
         fetchTheme();
-    }, []);
+    }, [isEmbedPage]);
 
     useEffect(() => {
         if ('serviceWorker' in navigator) {
@@ -105,6 +111,24 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         setSidebarOpen(false);
     }, [pathname]);
 
+    // -------- embed: bare shell, no chrome --------
+    // All hooks above must run unconditionally before this return.
+    // globals.css is already imported at the top of this file, so VideoPlayer's
+    // CSS custom properties (used for colors, accent, etc.) are available.
+    if (isEmbedPage) {
+        return (
+            <html lang="en">
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+            </head>
+            <body className="bg-black m-0 p-0 w-screen h-screen overflow-hidden">
+                {children}
+            </body>
+            </html>
+        );
+    }
+
+    // -------- normal app shell --------
     return (
         <html lang="en" className="scroll-smooth" data-scroll-behavior="smooth">
         <head>

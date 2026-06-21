@@ -1,20 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/../lib/supabase-server';
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const supabase = await createSupabaseServerClient();
-
-  // Get the authenticated user
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Fetch the video with channel owner information
-  const { data: video, error } = await supabase
-    .from('videos')
-    .select(`
+const VIDEO_SELECT = `
         *,
         channels (
           id,
@@ -28,11 +15,40 @@ export async function GET(
          sector_videos (
          sectors(name, slug)
          )
-      `)
+`;
+
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const supabase = await createSupabaseServerClient();
+
+  // Get the authenticated user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // -------- video lookup: UUID first, slug fallback --------
+  let video: any = null;
+
+  const { data: byId } = await supabase
+    .from('videos')
+    .select(VIDEO_SELECT)
     .eq('id', id)
     .single();
 
-  if (error || !video) {
+  if (byId) {
+    video = byId;
+  } else {
+    const { data: bySlug } = await supabase
+      .from('videos')
+      .select(VIDEO_SELECT)
+      .eq('slug', id)
+      .single();
+
+    video = bySlug ?? null;
+  }
+
+  if (!video) {
     return NextResponse.json({ error: 'Video not found' }, { status: 404 });
   }
 
