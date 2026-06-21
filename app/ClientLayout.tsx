@@ -6,8 +6,9 @@ import TopBar from '@/components/TopBar';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import ToastContainer from '@/components/ToastContainer';
+import EarlyAccessPopup from '@/components/EarlyAccessPopup';
 import { usePathname } from "next/navigation";
-import { createSupabaseBrowserClient } from "../lib/supabase-client";
+import { createSupabaseBrowserClient } from "@/../lib/supabase-client";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -148,6 +149,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
         {showBottomNav && <BottomNav />}
         <ToastContainer />
+        <EarlyAccessPopup />
         </body>
         </html>
     );

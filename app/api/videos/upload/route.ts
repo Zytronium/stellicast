@@ -65,17 +65,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user owns this channel
+    // Verify user owns this channel and it is active
     const { data: channel, error: channelError } = await supabase
       .from('channels')
-      .select('id')
+      .select('id, status')
       .eq('id', channel_id)
       .eq('owner_id', user.id)
       .single();
 
     if (channelError || !channel) {
       return NextResponse.json(
-        { error: 'Channel not found or you do not have permission' },
+        { error: 'Channel not found or you do not have permission.' },
+        { status: 403 }
+      );
+    }
+
+    if (channel.status !== 'active') {
+      return NextResponse.json(
+        { error: 'This channel is not active. Apply for early access to start uploading.' },
         { status: 403 }
       );
     }

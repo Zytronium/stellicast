@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Plus, Edit, Upload, LogOut } from 'lucide-react';
+import { User, Plus, Edit, Upload, LogOut, ClipboardList } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createSupabaseBrowserClient } from '@/../lib/supabase-client';
+import Link from "next/link";
 
 type Channel = {
   id: string;
@@ -191,13 +192,23 @@ export default function AccountPage() {
             <h2 className="text-lg sm:text-xl font-semibold text-foreground">Your Channels</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">Manage your creator and studio channels</p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Link
+              href="/applications"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 border border-border text-foreground text-sm rounded-lg hover:bg-muted transition w-full sm:w-auto"
+            >
+              <ClipboardList className="w-4 h-4" />
+              View Application Status
+            </Link>
+          <Link
+            href="/channels/apply"
+            // onClick={() => setShowCreateModal(true)}
             className="flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-primary text-primary-foreground text-sm rounded-lg hover:bg-accent hover:text-accent-foreground transition w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
-            Create Channel
-          </button>
+            Apply to Create Channel
+          </Link>
+        </div>
         </div>
 
         {channels.length > 0 ? (
@@ -264,19 +275,26 @@ export default function AccountPage() {
             </div>
             <p className="text-muted-foreground mb-2 sm:mb-4 text-sm sm:text-base">You don&apos;t have any channels yet</p>
             <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">Create a channel to start uploading videos</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
+            <Link
+              href="/channels/apply"
+              // onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary text-primary-foreground text-sm rounded-lg hover:bg-accent hover:text-accent-foreground transition w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-              Create Your First Channel
-            </button>
+              Apply to Create Your First Channel
+            </Link>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-3">
+              Already applied?{' '}
+              <Link href="/applications" className="text-accent hover:underline">
+                Check your application status
+              </Link>
+            </p>
           </div>
         )}
       </div>
 
       {/* Create Channel Modal */}
-      {showCreateModal && (
+      {/*{showCreateModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-card rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border-t sm:border border-border">
             <div className="p-4 sm:p-6 border-b border-border sticky top-0 bg-card z-10">
@@ -295,7 +313,7 @@ export default function AccountPage() {
             </div>
 
             <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
-              {/* Channel Type */}
+               Channel Type
               <div>
                 <label className="block text-sm font-medium mb-2 text-foreground">Channel Type</label>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -326,7 +344,7 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              {/* Display Name */}
+               Display Name
               <div>
                 <label className="block text-sm font-medium mb-2 text-foreground">Display Name *</label>
                 <input
@@ -338,7 +356,7 @@ export default function AccountPage() {
                 />
               </div>
 
-              {/* Handle */}
+               Handle
               <div>
                 <label className="block text-sm font-medium mb-2 text-foreground">Handle *</label>
                 <div className="flex items-center gap-2">
@@ -354,7 +372,7 @@ export default function AccountPage() {
                 <p className="text-xs text-muted-foreground mt-1">Only lowercase letters, numbers, and underscores</p>
               </div>
 
-              {/* Description */}
+               Description
               <div>
                 <label className="block text-sm font-medium mb-2 text-foreground">Description</label>
                 <textarea
@@ -366,7 +384,7 @@ export default function AccountPage() {
                 />
               </div>
 
-              {/* Creator-specific fields */}
+               Creator-specific fields
               {channelType === 'creator' && (
                 <div>
                   <label className="block text-sm font-medium mb-2 text-foreground">Website</label>
@@ -380,7 +398,7 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {/* Studio-specific fields */}
+               Studio-specific fields
               {channelType === 'studio' && (
                 <>
                   <div>
@@ -406,7 +424,7 @@ export default function AccountPage() {
                 </>
               )}
 
-              {/* Actions */}
+               Actions
               <div className="flex gap-3 pt-2 sm:pt-4 pb-2 sm:pb-0">
                 <button
                   type="button"
@@ -430,7 +448,7 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
-      )}
+      )}*/}
     </div>
   );
 }

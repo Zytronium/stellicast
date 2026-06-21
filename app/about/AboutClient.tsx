@@ -472,6 +472,39 @@ export default function AboutPage() {
           </div>
         </Section>
 
+        {/* -------- Early Access -------- */}
+        <Section className="w-full bg-primary/5 border-y border-border py-24 px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="rounded-2xl overflow-hidden border border-border mb-12 shadow-lg shadow-primary/10">
+              <Image
+                src="/early_access_banner.png"
+                alt="Stellicast Early Access"
+                width={1200}
+                height={400}
+                className="w-full h-auto"
+              />
+            </div>
+            <div className="text-center max-w-2xl mx-auto">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-4">Creator Access</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-5">
+                Want to upload on Stellicast?
+              </h2>
+              <p className="text-muted-foreground mb-5 leading-relaxed">
+                Channel creation is currently invite-only while Stellicast is in early development. We&apos;re onboarding a small group of early creators who help shape the platform before it opens to everyone.
+              </p>
+              <p className="text-muted-foreground mb-10 leading-relaxed">
+                The application is short. It&apos;s just a few questions and a short terms agreement. Approved creators get full access to create a channel and start uploading right away.
+              </p>
+              <Link
+                href="/early-access"
+                className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-full font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
+              >
+                Apply for Early Access
+              </Link>
+            </div>
+          </div>
+        </Section>
+
         {/* -------- CTA -------- */}
         <section className="py-32 px-6 text-center w-full">
           <h2 className="text-4xl font-bold mb-4 text-foreground">Ready for a better experience?</h2>
