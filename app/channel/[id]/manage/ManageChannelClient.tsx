@@ -23,6 +23,7 @@ interface Channel {
 interface Video {
   id: string;
   channel_id: string;
+  slug: string;
   title: string;
   description: string | null;
   video_url: string;
@@ -73,6 +74,7 @@ interface VideoCardProps {
   isSelected: boolean;
   onToggleSelect: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
 interface EditVideoModalProps {
@@ -399,6 +401,39 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
     }
   };
 
+  const deleteVideo = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this video? This cannot be undone.')) return;
+
+    try {
+      setLoading(true);
+      const target = videos.find(v => v.id === id);
+
+      if (target?.video_url) {
+        const urlParts = target.video_url.split('/');
+        const guid = urlParts[urlParts.length - 2];
+        const deleteResponse = await fetch(`/api/videos/delete-bunny`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guid }),
+        });
+        if (!deleteResponse.ok) {
+          console.error(`Failed to delete video ${guid} from Bunny.net`);
+        }
+      }
+
+      const { error } = await supabase.from('videos').delete().eq('id', id);
+      if (error) throw error;
+
+      setVideos(videos.filter(v => v.id !== id));
+      setSelectedVideos(prev => prev.filter(sid => sid !== id));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error deleting video: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const bulkDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${selectedVideos.length} video(s)? This cannot be undone.`)) {
       return;
@@ -468,21 +503,21 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
                 <button
                     onClick={() => bulkUpdateVisibility('public')}
                     disabled={loading}
-                    className="px-3 py-1.5 text-xs sm:text-sm bg-muted text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
+                    className="px-3 py-1.5 text-xs sm:text-sm bg-muted text-white rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
                 >
                   Make Public
                 </button>
                 <button
                     onClick={() => bulkUpdateVisibility('private')}
                     disabled={loading}
-                    className="px-3 py-1.5 text-xs sm:text-sm bg-muted text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
+                    className="px-3 py-1.5 text-xs sm:text-sm bg-muted text-white rounded hover:bg-accent hover:text-accent-foreground transition disabled:opacity-50"
                 >
                   Make Private
                 </button>
                 <button
                     onClick={bulkDelete}
                     disabled={loading}
-                    className="px-3 py-1.5 text-xs sm:text-sm bg-destructive text-destructive-foreground rounded hover:opacity-90 transition disabled:opacity-50"
+                    className="px-3 py-1.5 text-xs sm:text-sm bg-destructive text-white rounded hover:opacity-90 transition disabled:opacity-50"
                 >
                   Delete
                 </button>
@@ -490,7 +525,7 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
             </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="flex flex-col gap-2">
           {videos.map(v => (
               <VideoCard
                   key={v.id}
@@ -498,6 +533,7 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
                   isSelected={selectedVideos.includes(v.id)}
                   onToggleSelect={() => toggleSelect(v.id)}
                   onEdit={() => setEditVideo(v)}
+                  onDelete={() => deleteVideo(v.id)}
               />
           ))}
         </div>
@@ -517,8 +553,9 @@ function VideoManager({ videos, setVideos, channelId, supabase }: VideoManagerPr
   );
 }
 
-function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps) {
+function VideoCard({ video, isSelected, onToggleSelect, onEdit, onDelete }: VideoCardProps) {
   const [imgSrc, setImgSrc] = useState<string>(video.thumbnail_url || '/Stellicast404Thumbnail.png');
+  const [copyTooltip, setCopyTooltip] = useState<boolean>(false);
 
   const formatDuration = (duration: number) => {
     if (!duration || duration <= 0) return '0:00';
@@ -529,26 +566,53 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
 
   const formatViews = (views: number | null) => {
     const v = views ?? 0;
+    if (v >= 1000) return `${(v / 1000).toFixed(1)}k views`;
     return `${v} view${v === 1 ? '' : 's'}`;
   };
 
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return 'yesterday';
+    if (diffDays < 30) return `${diffDays} days ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    return `${Math.floor(diffDays / 365)} years ago`;
+  };
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(`${window.location.origin}/watch/${video.slug}`);
+    setCopyTooltip(true);
+    setTimeout(() => setCopyTooltip(false), 1500);
+  };
+
+  const visibilityBadge = {
+    public:   { cls: 'bg-[#1d3a5c] text-[#7ab8f5]', label: 'Public' },
+    unlisted: { cls: 'bg-[#3a2e0d] text-[#f0c060]', label: 'Unlisted' },
+    private:  { cls: 'bg-[#2a2a2a] text-[#999]',    label: 'Private' },
+  }[video.visibility];
+
   return (
       <div
-          role="button"
-          tabIndex={0}
-          aria-pressed={isSelected}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onToggleSelect();
-            }
-          }}
-          onClick={() => onToggleSelect()}
-          className={`group overflow-hidden rounded-2xl border shadow-sm transition transform focus:outline-none focus:ring-2 focus:ring-ring ${
-              isSelected ? 'ring-2 ring-primary border-primary' : 'border-border hover:border-muted'
-          } bg-card cursor-pointer`}
+          className={`flex items-center gap-3 bg-card border rounded-xl px-3 py-2.5 transition-colors ${
+              isSelected ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-muted-foreground/40'
+          }`}
       >
-        <div className="relative aspect-video bg-secondary">
+        {/* -------- Checkbox -------- */}
+        <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggleSelect}
+            aria-label={`Select ${video.title}`}
+            className="shrink-0 accent-primary cursor-pointer"
+            onClick={e => e.stopPropagation()}
+        />
+
+        {/* -------- Thumbnail -------- */}
+        <div className="relative shrink-0 w-28 rounded-md overflow-hidden bg-secondary" style={{ aspectRatio: '16/9' }}>
           <Image
               src={imgSrc}
               alt={video.title}
@@ -556,83 +620,88 @@ function VideoCard({ video, isSelected, onToggleSelect, onEdit }: VideoCardProps
               className="object-cover"
               onError={() => setImgSrc('/Stellicast404Thumbnail.png')}
           />
-
-          {video.is_ai && (
-              <div className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow-sm z-2">
-                AI
-              </div>
-          )}
-
-          <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-xs sm:text-sm font-semibold text-white z-2">
-            {formatDuration(video.duration)}
-          </div>
-
-          <div
-              className={`absolute inset-0 bg-black/60 transition-opacity duration-200 pointer-events-none z-1 ${
-                  isSelected ? 'opacity-100' : 'opacity-0'
-              }`}
-          />
-
-          <div
-              className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-200 z-3 ${
-                  isSelected ? 'opacity-100' : 'opacity-0'
-              }`}
-          >
-            <div className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-primary bg-transparent shadow-lg">
-              <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="w-12 h-12 sm:w-16 sm:h-16 text-primary"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={3}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/5 to-white/5 pointer-events-none" />
+          <span className="absolute top-1 right-1 rounded bg-black/75 px-1.5 py-0.5 text-[10px] font-semibold text-white leading-none">
+          {formatDuration(video.duration)}
+        </span>
         </div>
 
-        <div className="space-y-2 p-3 sm:p-4">
-          <div className="line-clamp-2 text-sm font-semibold leading-snug text-card-foreground">
-            {video.title}
-          </div>
-
-          <div className="flex items-center justify-between gap-3 text-xs">
-          <span className="text-muted-foreground">
-            {formatViews(video.view_count)} • {new Date(video.created_at).toLocaleDateString()}
+        {/* -------- Info -------- */}
+        <div className="flex-1 min-w-0">
+          <p className="truncate text-sm font-medium text-foreground">{video.title}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+          <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium leading-none ${visibilityBadge.cls}`}>
+            {visibilityBadge.label}
+          </span>
+            {video.is_ai && (
+                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium leading-none bg-[#2d1f4e] text-[#a78cf5]">
+              AI
+            </span>
+            )}
+            <span className="text-[11px] text-muted-foreground">
+            {formatViews(video.view_count)} · {formatDate(video.created_at)}
           </span>
           </div>
+        </div>
 
-          <div className="flex items-center justify-between pt-1">
-<span className={`text-xs px-2 py-1 rounded-md font-medium ${
-    video.visibility === 'public'
-        ? 'bg-blue-600/20 text-blue-300'
-        : video.visibility === 'unlisted'
-            ? 'bg-yellow-600/20 text-yellow-300'
-            : 'bg-slate-600/20 text-slate-300'
-}`}>
-            {video.visibility.charAt(0).toUpperCase() + video.visibility.slice(1)}
-          </span>
+        {/* -------- Action buttons -------- */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Link
+              href={`/watch/${video.slug}`}
+              onClick={e => e.stopPropagation()}
+              className="inline-flex items-center justify-center rounded-md border border-border bg-transparent p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              aria-label="Watch video"
+              title="Watch"
+          >
+            <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </Link>
+
+          <div className="relative">
             <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onEdit();
-                }}
-                className="text-xs text-primary hover:text-accent transition font-semibold px-2 py-1 rounded hover:bg-primary/10"
-                aria-label={`Edit ${video.title}`}
+                onClick={handleCopyLink}
+                className="inline-flex items-center justify-center rounded-md border border-border bg-transparent p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                aria-label="Copy link"
+                title="Copy link"
             >
-              Edit
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
             </button>
+            {copyTooltip && (
+                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-1.5 py-0.5 text-[10px] text-background">
+              Copied!
+            </span>
+            )}
           </div>
+
+          <button
+              onClick={e => { e.stopPropagation(); onEdit(); }}
+              className="inline-flex items-center justify-center rounded-md border border-border bg-transparent p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              aria-label={`Edit ${video.title}`}
+              title="Edit"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+
+          <button
+              onClick={e => { e.stopPropagation(); onDelete(); }}
+              className="inline-flex items-center justify-center rounded-md border border-destructive/50 bg-transparent p-1.5 text-destructive/70 transition hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+              aria-label={`Delete ${video.title}`}
+              title="Delete"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a1 1 0 011-1h2a1 1 0 011 1v2" />
+            </svg>
+          </button>
         </div>
       </div>
   );
 }
-
 function EditVideoModal({ video, onClose, supabase, onUpdate }: EditVideoModalProps) {
   const [form, setForm] = useState({
     title: video.title,
@@ -1132,15 +1201,15 @@ function AdvancedSettings({ channel, supabase, status }: AdvancedSettingsProps) 
       const csv = [
         ['Title', 'Views', 'Likes', 'Dislikes', 'Stars', 'Created At', 'Visibility'].join(','),
         ...(data as Video[]).map(v =>
-          [
-          `"${v.title}"`,
-          v.view_count,
-          v.like_count,
-          v.dislike_count,
-          v.star_count,
-          v.created_at,
-            v.visibility,
-          ].join(',')
+            [
+              `"${v.title}"`,
+              v.view_count,
+              v.like_count,
+              v.dislike_count,
+              v.star_count,
+              v.created_at,
+              v.visibility,
+            ].join(',')
         ),
       ].join('\n');
 
@@ -1184,36 +1253,36 @@ function AdvancedSettings({ channel, supabase, status }: AdvancedSettingsProps) 
 
         {/* -------- Early access notice -------- */}
         {status !== 'active' && (
-          <div className={`p-4 rounded-lg border-2 ${
-            status === 'pending'
-              ? 'bg-yellow-500/10 border-yellow-500/40'
-              : 'bg-destructive/10 border-destructive/40'
-          }`}>
-            <div className="flex items-start gap-3">
-              <svg className={`w-5 h-5 shrink-0 mt-0.5 ${status === 'pending' ? 'text-yellow-500' : 'text-destructive'}`} fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
-              <div className="flex-1 min-w-0">
-                <h3 className={`text-sm font-semibold ${status === 'pending' ? 'text-yellow-500' : 'text-destructive'}`}>
-                  {status === 'pending' ? 'Application Under Review' : 'Channel Not Active'}
-                </h3>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {status === 'pending'
-                    ? 'Your early access application is pending review. Uploading will be unlocked once approved.'
-                    : 'This channel is not approved for early access. Apply to unlock video uploads.'
-                  }
-                </p>
-                {status !== 'pending' && (
-                  <Link
-                    href={`/channel/${channel.handle}/early-access`}
-                    className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
-                  >
-                    Apply for Early Access
-                  </Link>
-                )}
+            <div className={`p-4 rounded-lg border-2 ${
+                status === 'pending'
+                    ? 'bg-yellow-500/10 border-yellow-500/40'
+                    : 'bg-destructive/10 border-destructive/40'
+            }`}>
+              <div className="flex items-start gap-3">
+                <svg className={`w-5 h-5 shrink-0 mt-0.5 ${status === 'pending' ? 'text-yellow-500' : 'text-destructive'}`} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-sm font-semibold ${status === 'pending' ? 'text-yellow-500' : 'text-destructive'}`}>
+                    {status === 'pending' ? 'Application Under Review' : 'Channel Not Active'}
+                  </h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {status === 'pending'
+                        ? 'Your early access application is pending review. Uploading will be unlocked once approved.'
+                        : 'This channel is not approved for early access. Apply to unlock video uploads.'
+                    }
+                  </p>
+                  {status !== 'pending' && (
+                      <Link
+                          href={`/channel/${channel.handle}/early-access`}
+                          className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
+                      >
+                        Apply for Early Access
+                      </Link>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
         )}
 
         {/* -------- Export analytics -------- */}
@@ -1246,14 +1315,14 @@ function AdvancedSettings({ channel, supabase, status }: AdvancedSettingsProps) 
           </button>
 
           {showDeleteConfirm && (
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-            onClick={() => setShowDeleteConfirm(false)}
-          >
-            <div
-              className="bg-card rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl border border-border"
-              onClick={e => e.stopPropagation()}
-            >
+              <div
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+                  onClick={() => setShowDeleteConfirm(false)}
+              >
+                <div
+                    className="bg-card rounded-lg max-w-md w-full p-4 sm:p-6 shadow-2xl border border-border"
+                    onClick={e => e.stopPropagation()}
+                >
                   <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Delete Channel?</h2>
                   <p className="text-sm text-muted-foreground mb-6">
                     This will permanently delete your channel, all videos, and data. This action cannot be undone.

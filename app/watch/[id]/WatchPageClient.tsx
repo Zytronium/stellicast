@@ -1301,6 +1301,7 @@ export default function WatchPageClient({ params }: {
                       sector={primarySector !== "Miscellaneous" ? primarySector : null}
                       extraSectors={extraCount}
                       thumbnail_src={v.thumbnail_url}
+                      avatar_url={v.channels?.avatar_url ?? null}
                       is_ai={v.is_ai}
                       views={v.view_count}
                       duration={v.duration}
