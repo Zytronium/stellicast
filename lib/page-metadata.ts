@@ -9,13 +9,13 @@ const metadataMap: Record<string, Metadata> = {
         title: "About | Stellicast - Be the Star of Your Own Show",
         description: "Learn more about Stellicast and its goal. Stellicast is a work-in-progress, open-source, privacy‑first video platform that doesn't sell user data, doesn't bombard you with ads, listens to user feedback, and promotes non-corporate, human-made content."
     },
-    "/account": {
-        title: "Account | Stellicast",
-        description: "Manage your Stellicast account."
-    },
     "/auth": {
         title: "Login Portal | Stellicast",
         description: "Log in or create a new account with Stellicast."
+    },
+    "/channels": {
+        title: "Channels | Stellicast",
+        description: "View and manage your Stellicast channels."
     },
     "/channels/apply": {
         title: "Apply for Channels Early Access | Stellicast",

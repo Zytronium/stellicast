@@ -245,18 +245,18 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
                   </div>
                   <div className="py-2">
                     <Link
-                      href="/account"
-                      className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
-                      onClick={() => setProfileMenuOpen(false)}
-                    >
-                      Account
-                    </Link>
-                    <Link
                       href="/profile"
                       className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       Profile
+                    </Link>
+                    <Link
+                        href="/channels"
+                        className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
+                        onClick={() => setProfileMenuOpen(false)}
+                    >
+                      Channels
                     </Link>
                     <button
                       className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-muted"
