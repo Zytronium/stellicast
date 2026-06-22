@@ -71,6 +71,7 @@ export default function Home() {
               duration={video.duration}
               title={video.title}
               creator_name={video.channels?.display_name || 'Unknown Creator'}
+              avatar_url={video.channels?.avatar_url ?? null}
               views={video.view_count}
               date={video.created_at}
               sector={primarySector !== "Miscellaneous" ? primarySector : null}

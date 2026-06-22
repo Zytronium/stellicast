@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('videos')
-      .select('*, channels(display_name), sector_videos(sectors(name, slug))')
+      .select('*, channels(display_name, avatar_url), sector_videos(sectors(name, slug))')
       .eq('visibility', 'public')
       .eq('processing_status', 'ready')
       .order('created_at', { ascending: false });

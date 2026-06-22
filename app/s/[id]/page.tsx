@@ -82,7 +82,7 @@ type SectorVideo = {
     view_count: number;
     created_at: string;
     is_ai: boolean;
-    channels: { display_name: string } | null;
+    channels: { display_name: string, avatar_url: string | null } | null;
 };
 
 type StaffMember = {
@@ -212,6 +212,7 @@ export default async function SectorPage({ params }: PageProps) {
                     duration={video.duration}
                     title={video.title}
                     creator_name={video.channels?.display_name || 'Unknown Creator'}
+                    avatar_url={video.channels?.avatar_url ?? null}
                     views={video.view_count}
                     date={video.created_at}
                     thumbnail_src={video.thumbnail_url ?? '/Stellicast404Thumbnail.png'}

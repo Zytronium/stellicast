@@ -15,6 +15,7 @@ type CardProps = {
   sector?: string;
   extraSectors?: number;
   thumbnail_src: string;
+  avatar_url: string | null;
   is_ai: boolean;
 };
 
@@ -56,81 +57,102 @@ function formatDate(date: string | Date): string {
 }
 
 export default function Card({
-  slug,
-  duration,
-  title,
-  creator_name,
-  views,
-  date,
-  sector,
-  extraSectors,
-  thumbnail_src,
-  is_ai,
-}: CardProps) {
+                               slug,
+                               duration,
+                               title,
+                               creator_name,
+                               views,
+                               date,
+                               sector,
+                               extraSectors,
+                               thumbnail_src,
+                               avatar_url,
+                               is_ai,
+                             }: CardProps) {
   const [imgSrc, setImgSrc] = useState(thumbnail_src || '/Stellicast404Thumbnail.png');
+  const [avatarSrc, setAvatarSrc] = useState(avatar_url || '');
 
   return (
-    <Link
-      href={`/watch/${slug}`}
-      className="group block overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md border-border bg-card"
-    >
-      <div className="relative aspect-video bg-muted">
-        <Image
-          src={imgSrc}
-          alt={title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          onError={() => setImgSrc('/Stellicast404Thumbnail.png')}
-        />
+      <Link
+          href={`/watch/${slug}`}
+          className="group flex flex-col overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-md border-border bg-card"
+      >
+        <div className="relative aspect-video bg-muted">
+          <Image
+              src={imgSrc}
+              alt={title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              onError={() => setImgSrc('/Stellicast404Thumbnail.png')}
+          />
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/10 to-white/5" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent opacity-0 transition-opacity group-hover:opacity-100 from-white/10 to-white/5" />
 
-        {is_ai && (
-          <div className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
-            AI
+          {is_ai && (
+              <div className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
+                AI
+              </div>
+          )}
+
+          <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white">
+            {formatDuration(duration)}
           </div>
-        )}
 
-        <div className="absolute right-2 top-2 rounded-md bg-black/75 px-2 py-1 text-sm font-semibold text-white">
-          {formatDuration(duration)}
-        </div>
-
-        {sector && (
-            <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
+          {sector && (
+              <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
               <span className="rounded-full bg-black/65 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
                 S/ {sector}
               </span>
-              {!!extraSectors && extraSectors > 0 && (
-                  <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                {!!extraSectors && extraSectors > 0 && (
+                    <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
                   +{extraSectors}
                   </span>
+                )}
+              </div>
+          )}
+
+          <div
+              className="pointer-events-none absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
+              aria-hidden="true"
+          >
+            <PlayIcon className="h-6 w-6 text-accent-alt" />
+          </div>
+        </div>
+
+        <div className="flex flex-col flex-1 gap-2 p-4">
+          <div className="line-clamp-2 flex-1 text-sm font-semibold leading-snug text-card-foreground">
+            {title}
+          </div>
+
+          <div className="mt-auto flex items-center justify-between gap-3">
+            {/* -------- channel avatar + name -------- */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              {avatarSrc ? (
+                  <Image
+                      src={avatarSrc}
+                      alt={creator_name}
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover shrink-0"
+                      onError={() => setAvatarSrc('')}
+                  />
+              ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-[10px] font-bold text-primary-foreground shrink-0">
+                    {creator_name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
               )}
+              <span className="truncate text-xs text-muted-foreground">
+              {creator_name}
+            </span>
             </div>
-        )}
 
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
-          aria-hidden="true"
-        >
-          <PlayIcon className="h-6 w-6 text-accent-alt" />
-        </div>
-      </div>
-
-      <div className="space-y-2 p-4">
-        <div className="line-clamp-2 text-sm font-semibold leading-snug text-card-foreground">
-          {title}
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
-          <span className="truncate text-xs text-muted-foreground">
-            {creator_name}
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground">
+            {/* -------- views + date -------- */}
+            <span className="shrink-0 text-xs text-muted-foreground">
             {formatViews(views)} • {formatDate(date)}
           </span>
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
   );
 }

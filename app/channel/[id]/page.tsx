@@ -155,7 +155,8 @@ export default async function ChannelPage({ params }: PageProps) {
                <Card key={video.id} slug={video.slug} duration={video.duration} title={video.title}
                   creator_name={channel.display_name} views={video.view_count}
                   sector={primarySector !== "Miscellaneous" ? primarySector : null} extraSectors={extraCount}
-                  date={video.created_at} thumbnail_src={video.thumbnail_url} is_ai={video.is_ai}/>
+                  date={video.created_at} thumbnail_src={video.thumbnail_url} is_ai={video.is_ai}
+                  avatar_url={video.channels?.avatar_url ?? null}/>
            )
           })}
         </div>
