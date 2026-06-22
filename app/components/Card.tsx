@@ -33,7 +33,26 @@ function formatViews(views?: number | null): string {
 function formatDate(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString();
+
+  const seconds = Math.floor((Date.now() - d.getTime()) / 1000);
+
+  if (seconds < 60) return 'Just now';
+
+  const intervals: [number, string][] = [
+    [31536000, 'year'],
+    [2592000,  'month'],
+    [604800,   'week'],
+    [86400,    'day'],
+    [3600,     'hour'],
+    [60,       'minute'],
+  ];
+
+  for (const [secs, label] of intervals) {
+    const count = Math.floor(seconds / secs);
+    if (count >= 1) return `${count} ${label}${count !== 1 ? 's' : ''} ago`;
+  }
+
+  return 'Just now';
 }
 
 export default function Card({

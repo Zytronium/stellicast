@@ -1296,7 +1296,7 @@ export default function WatchPageClient({ params }: {
                       key={v.id}
                       slug={v.slug}
                       title={v.title}
-                      creator_name={v.creator}
+                      creator_name={v.channels?.display_name}
                       date={v.created_at}
                       sector={primarySector !== "Miscellaneous" ? primarySector : null}
                       extraSectors={extraCount}
