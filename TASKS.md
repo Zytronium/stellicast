@@ -432,3 +432,4 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Color sector chips by sector
 - Color visbilities on upload page same as in channel manage page
 - Add click animation for video cards
+- Overhaul "account" page and rename it to "channels" page

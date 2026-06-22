@@ -7,7 +7,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 // gated off something while that's being built.
 const STUB_ADMIN_USER_IDS: string[] = [
     'b34ab82d-1d0e-4d78-ac2b-4897a2e55a02',
-    '7d7396d4-4af2-4460-ab9d-bd1e85159004'
+    '7d7396d4-4af2-4460-ab9d-bd1e85159004',
+    '5df2363f-ce6f-4df9-ba8e-0af6a69a69f7'
 ];
 
 export function isAdminUser(userId: string): boolean {
