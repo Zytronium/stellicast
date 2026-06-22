@@ -419,3 +419,19 @@ admin. Ensure that the account can never have admin perms revoked via admin pane
 allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 
 **Status:** Done
+
+## 12. Polishing
+
+- Re-evaluate which fields should be optional in channel early access application
+- Change video cards date to relative format (consider keeping mm/dd/yy format for videos older than a year)
+- Enhance background gradient with a faint vignette effect and maybe radial glows
+- Blurred glass effect on top bar
+- Make custom radio/checkbox form elements
+- Replace native alert with notificaion style popups in bottom-right corner and, for more important alerts, actual popups in the middle of the screen
+- Add channel avatar to video cards
+- Color sector chips by sector
+- Add tips for success on upload page
+- Add icons for visibility on upload page
+- Color visbilities on upload page same as in channel manage page
+- Add click animation for video cards
+- Overhaul vid3eo upload page layout
