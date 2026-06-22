@@ -430,8 +430,5 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Replace native alert with notificaion style popups in bottom-right corner and, for more important alerts, actual popups in the middle of the screen
 - Add channel avatar to video cards
 - Color sector chips by sector
-- Add tips for success on upload page
-- Add icons for visibility on upload page
 - Color visbilities on upload page same as in channel manage page
 - Add click animation for video cards
-- Overhaul vid3eo upload page layout
