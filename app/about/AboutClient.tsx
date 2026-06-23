@@ -490,7 +490,7 @@ export default function AboutPage() {
                 Want to upload on Stellicast?
               </h2>
               <p className="text-muted-foreground mb-5 leading-relaxed">
-                Channel creation is currently invite-only while Stellicast is in early development. We&apos;re onboarding a small group of early creators who help shape the platform before it opens to everyone.
+                Channel creation is currently available through our Early Access program while Stellicast is in active development. We're gradually onboarding creators to help test new features, provide feedback, and shape the platform before it opens more broadly.
               </p>
               <p className="text-muted-foreground mb-10 leading-relaxed">
                 The application is short. It&apos;s just a few questions and a short terms agreement. Approved creators get full access to create a channel and start uploading right away.
