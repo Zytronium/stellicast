@@ -1,18 +1,23 @@
 'use client';
 
 import './globals.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import TopBar from '@/components/TopBar';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import ToastContainer from '@/components/ToastContainer';
 import EarlyAccessPopup from '@/components/EarlyAccessPopup';
+import WelcomeBanner from '@/components/WelcomeBanner';
 import { usePathname } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/../lib/supabase-client";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [themeClass, setThemeClass] = useState<string>('');
+    const [authLoaded, setAuthLoaded] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [bannerHeight, setBannerHeight] = useState(0);
+    const bannerRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
 
     // -------- path-based flags --------
@@ -27,6 +32,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const showBottomNav = !pathsWithoutBottomNav.some(path => pathname.startsWith(path));
     const isWatchPage = pathname.startsWith('/watch');
     const isEmbedPage = pathname.startsWith('/embed');
+
+    // Banner is only shown on the home feed, watch, channel, and sector pages
+    const showWelcomeBanner =
+        pathname === '/' ||
+        pathname.startsWith('/watch/') ||
+        pathname.startsWith('/channel/') ||
+        pathname.startsWith('/s/');
 
     // Fetch user theme preference asynchronously
     useEffect(() => {
@@ -44,8 +56,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 if (!user) {
                     // Not signed in, use default (no theme class)
                     setThemeClass('');
+                    setIsLoggedIn(false);
+                    setAuthLoaded(true);
                     return;
                 }
+
+                setIsLoggedIn(true);
+                setAuthLoaded(true);
 
                 // Get user's preferences
                 const { data, error } = await supabase
@@ -57,6 +74,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 if (error || !data) {
                     // Error or no data, use default
                     setThemeClass('');
+                    setAuthLoaded(true);
                     return;
                 }
 
@@ -94,6 +112,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             } catch (error) {
                 console.error('Error fetching theme:', error);
                 setThemeClass('');
+                setAuthLoaded(true);
             }
         };
 
@@ -104,6 +123,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js');
         }
+    }, []);
+
+    // Track banner height so the content area calc stays correct
+    useEffect(() => {
+        const el = bannerRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver(() => {
+            setBannerHeight(el.offsetHeight);
+        });
+        observer.observe(el);
+        setBannerHeight(el.offsetHeight);
+        return () => observer.disconnect();
     }, []);
 
     // Close sidebar on route change (mobile)
@@ -140,7 +171,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             onFilterClick={() => setSidebarOpen(true)}
             showFilters={showFilters}
         />
-        <div className="flex h-[calc(100vh-64px)]">
+        {showWelcomeBanner && (
+            <div ref={bannerRef}>
+            <WelcomeBanner isLoggedIn={isLoggedIn} authLoaded={authLoaded} />
+            </div>
+        )}
+        <div className="flex" style={{ height: `calc(100vh - 64px - ${bannerHeight}px)` }}>
             {showSidebar && (
                 <Sidebar
                     isOpen={sidebarOpen}
