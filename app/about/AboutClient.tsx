@@ -496,7 +496,7 @@ export default function AboutPage() {
                 The application is short. It&apos;s just a few questions and a short terms agreement. Approved creators get full access to create a channel and start uploading right away.
               </p>
               <Link
-                href="/early-access"
+                href="/channels/apply"
                 className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-full font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
               >
                 Apply for Early Access
