@@ -354,7 +354,7 @@ it is done processing.
 **Status:** Done
 
 ### 10.2. Custom thumbnails
-Allow changing auto-generated thumbnails or uploading cusotm thumbnails to
+Allow changing auto-generated thumbnails or uploading custom thumbnails to
 Bunny.net using the Bunny.net API.
 
 **Status:** Done
@@ -427,9 +427,42 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Enhance background gradient with a faint vignette effect and maybe radial glows
 - Blurred glass effect on top bar
 - Make custom radio/checkbox form elements
-- Replace native alert with notificaion style popups in bottom-right corner and, for more important alerts, actual popups in the middle of the screen
+- Replace native alert with notification style popups in bottom-right corner and, for more important alerts, actual popups in the middle of the screen
 - Add channel avatar to video cards
 - Color sector chips by sector
-- Color visbilities on upload page same as in channel manage page
+- Color visibilities on upload page same as in channel manage page
 - Add click animation for video cards
+- Preview video animation on video card hover
 - Overhaul "account" page and rename it to "channels" page
+- Add 3x speed option for video player
+- Add a search bar to the comments section
+- Hide mouse along with video controls if mouse is over video player when hiding controls
+
+## 13. Badges
+Badges are little icons you can earn for your profile and display next to your name in comment 
+sections. You can earn them by completing certain tasks on the website, such as:
+
+- Uploading a video to Stellicast
+- Uploading a non-test video during channels early access
+- Getting a video with 50+ views
+- Getting a video with 100+ views
+- Getting a video with 250+ views (add more milestones as Stellicast grows)
+- Being awarded a star on one of your videos by someone other than yourself
+- Being awarded 10 stars total (increase to 25, then 50, then 100 based on platform size)
+- Achieving 10 likes on a video (increase to 25, then 50, then 100, then 1,000 based on platform size)
+- Reaching 10 followers
+- Reaching 100 followers (keep adding more milestones as Stellicast grows)
+- Posting 10 total comments/replies
+- Posting 50 total comments/replies
+- Posting 100 total comments/replies
+- Following 3 different channels
+- Following 5 different channels
+- Following 15 different channels
+- Having a Stellicast account for 3 months
+- Having a Stellicast account for a year
+- Discovering an easter egg (one badge for each easter egg)
+- Having a video you reported get taken down (users who mass report videos that are not problematic become ineligible for this badge and may have it revoked if they already have it)
+- Contributing to the development of Stellicast
+
+Badges show what you've accomplished on Stellicast and encourage more activity and engagement.
+You can display as many as you want on your main profile, and up to 3 next to your name in comments.
