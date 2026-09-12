@@ -428,7 +428,6 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Blurred glass effect on top bar
 - Make custom radio/checkbox form elements
 - Replace native alert with notification style popups in bottom-right corner and, for more important alerts, actual popups in the middle of the screen
-- Add channel avatar to video cards
 - Color sector chips by sector
 - Color visibilities on upload page same as in channel manage page
 - Add click animation for video cards
@@ -437,6 +436,8 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Add 3x speed option for video player
 - Add a search bar to the comments section
 - Hide mouse along with video controls if mouse is over video player when hiding controls
+
+**Status:** In-progress
 
 ## 13. Badges
 Badges are little icons you can earn for your profile and display next to your name in comment 

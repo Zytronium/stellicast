@@ -30,7 +30,7 @@ export default async function ChannelPage({ params }: PageProps) {
 
   const { data: videos } = await supabase
     .from('videos')
-    .select('*, sector_videos(sectors(name, slug))')
+    .select('*, channels(display_name, avatar_url), sector_videos(sectors(name, slug))')
     .eq('channel_id', channel.id)
     .eq('visibility', 'public')
     .order('created_at', { ascending: false });
