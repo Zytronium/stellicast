@@ -98,6 +98,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+button[class*="bg-"]:not([class*="bg-transparent"]):not([class*="bg-gradient"]):not(.no-btn-gradient-overlay),
+.button-depth:not(.no-btn-gradient-overlay) {
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, currentColor 3%, transparent),
+    transparent 55%
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, currentColor 5%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
+}
+
 .bg-gradient {
   background: linear-gradient(
           to bottom,
