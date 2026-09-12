@@ -304,7 +304,7 @@ function Header({ channel, setChannel, supabase }: HeaderProps) {
             <div className="w-full sm:w-auto shrink-0 flex gap-2">
               <Link
                   href={`/channel/${channel.handle}`}
-                  className="inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
+                  className="button-depth inline-flex items-center justify-center h-9 sm:h-10 px-4 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
               >
                 View Channel
               </Link>

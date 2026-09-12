@@ -108,7 +108,7 @@ export default async function ChannelPage({ params }: PageProps) {
             <div className="w-full sm:w-auto flex-shrink-0">
               {isOwner ? (
                 <Link href={`/channel/${channel.handle}/manage`}
-                      className="inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
+                      className="button-depth inline-flex items-center justify-center h-9 sm:h-10 px-6 rounded-full bg-secondary text-sm font-semibold text-secondary-foreground hover:bg-muted transition"
                       aria-label="Manage"
                       title="Manage"
                 >Manage</Link>

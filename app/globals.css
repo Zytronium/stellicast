@@ -158,7 +158,8 @@ input[type="radio"]:not(.sr-only):disabled {
 }
 
 button[class*="bg-"]:not([class*="bg-transparent"]):not([class*="bg-gradient"]):not(.no-btn-gradient-overlay),
-.button-depth:not(.no-btn-gradient-overlay) {
+.button-depth:not(.no-btn-gradient-overlay),
+.button-depth[class*="bg-"]:not([class*="bg-transparent"]):not([class*="bg-gradient"]):not(.no-btn-gradient-overlay) {
   background-image: linear-gradient(
     to bottom,
     color-mix(in srgb, currentColor 3%, transparent),
