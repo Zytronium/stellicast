@@ -1015,7 +1015,7 @@ export default function WatchPageClient({ params }: {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 max-w-[1800px] mx-auto px-4">
+    <div className="watch-page flex flex-col lg:flex-row gap-6 max-w-[1800px] mx-auto px-4">
       {/* Main Content - Video and Info */}
       <div className="flex-1 min-w-0">
         {/* Video Player Or Canvas */}

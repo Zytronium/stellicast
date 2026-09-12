@@ -141,10 +141,10 @@ export default function AboutPage() {
             Stellicast is a privacy-first, community-driven video platform built to be the YouTube alternative we&apos;ve all been waiting for. No tracking. No corporate bloat. Just content.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/auth" className="px-8 py-4 bg-primary hover:bg-accent text-primary-foreground rounded-full font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/20">
+            <Link href="/auth" className="button-depth px-8 py-4 bg-primary hover:bg-accent text-primary-foreground rounded-full font-bold transition-all transform hover:scale-105 shadow-lg shadow-primary/20">
               Join Us Today
             </Link>
-            <Link href="/" className="px-8 py-4 bg-card border border-border hover:border-primary/50 transition-all rounded-full font-bold">
+            <Link href="/" className="button-depth px-8 py-4 bg-card border border-border hover:border-primary/50 transition-all rounded-full font-bold">
               Explore the Feed
             </Link>
           </div>
@@ -497,7 +497,7 @@ export default function AboutPage() {
               </p>
               <Link
                 href="/channels/apply"
-                className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-full font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
+                className="button-depth inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-full font-bold transition-all hover:scale-105 shadow-lg shadow-primary/20"
               >
                 Apply for Early Access
               </Link>

@@ -172,7 +172,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
           {showFilters && (
             <button
               onClick={onFilterClick}
-              className="p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
+              className="no-btn-gradient-overlay p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
               aria-label="Filters"
             >
               <FunnelIcon className="h-5 w-5" />
@@ -180,7 +180,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
           )}
           <button
             onClick={() => setSearchOpen(true)}
-            className="p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
+            className="no-btn-gradient-overlay p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
             aria-label="Search"
           >
             <MagnifyingGlassIcon className="h-5 w-5" />
@@ -215,7 +215,7 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
             <>
               <button
                 onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                className="flex items-center gap-2 rounded-xl px-2 py-2 md:px-3 hover:bg-muted"
+                className="flex items-center gap-2 rounded-xl bg-transparent px-2 py-2 md:px-3 hover:bg-muted"
                 aria-haspopup="menu"
                 aria-expanded={profileMenuOpen}
               >
@@ -246,20 +246,20 @@ export default function TopBar({ onFilterClick, showFilters = false }: TopBarPro
                   <div className="py-2">
                     <Link
                       href="/profile"
-                      className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
+                      className={`no-btn-gradient-overlay block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       Profile
                     </Link>
                     <Link
                         href="/channels"
-                        className={`block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
+                        className={`no-btn-gradient-overlay block px-4 py-2 text-sm hover:bg-muted ${isColormaticTheme ? 'text-black' : 'text-popover-foreground'}`}
                         onClick={() => setProfileMenuOpen(false)}
                     >
                       Channels
                     </Link>
                     <button
-                      className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-muted"
+                      className="no-btn-gradient-overlay w-full bg-transparent px-4 py-2 text-left text-sm text-destructive hover:bg-muted"
                       onClick={handleLogout}
                     >
                       Logout
