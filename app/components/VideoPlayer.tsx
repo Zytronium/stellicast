@@ -112,7 +112,7 @@ export default function VideoPlayer({
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
 
   const qualities = ['2160p', '1440p', '1080p', '720p', '480p', '360p', 'Auto'];
-  const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+  const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3];
 
   // announce for screen readers
   const announce = useCallback((text: string) => {
