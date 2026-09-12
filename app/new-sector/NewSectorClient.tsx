@@ -69,7 +69,7 @@ function Checkbox({
 }) {
     return (
         <label className="flex items-start gap-3 cursor-pointer group">
-            <div className="mt-0.5 relative flex-shrink-0">
+            <div className="mt-0.5 relative flex-shrink-0 focus-within:ring-2 focus-within:ring-ring/35 focus-within:ring-offset-1">
                 <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only" />
                 <div className={`w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center
           ${checked ? 'bg-primary border-primary' : 'bg-input border-border group-hover:border-muted-foreground'}`}>

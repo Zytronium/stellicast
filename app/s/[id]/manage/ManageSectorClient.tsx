@@ -92,7 +92,7 @@ function Checkbox({ label, hint, checked, onChange, disabled }: {
 }) {
     return (
         <label className={`flex items-start gap-3 ${disabled ? 'opacity-50' : 'cursor-pointer group'}`}>
-            <div className="mt-0.5 relative flex-shrink-0">
+            <div className="mt-0.5 relative flex-shrink-0 focus-within:ring-2 focus-within:ring-ring/35 focus-within:ring-offset-1">
                 <input
                     type="checkbox"
                     checked={checked}
