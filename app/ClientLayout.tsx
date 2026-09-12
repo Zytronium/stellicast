@@ -166,7 +166,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
             <link rel="icon" href="/favicon.ico" />
         </head>
-        <body className={`bg-background text-foreground ${themeClass}`.trim()}>
+        <body className={`bg-background text-foreground overflow-hidden ${themeClass}`.trim()}>
         <TopBar
             onFilterClick={() => setSidebarOpen(true)}
             showFilters={showFilters}
