@@ -426,7 +426,7 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Change video cards date to relative format (consider keeping mm/dd/yy format for videos older than a year)
 - Enhance background gradient with a faint vignette effect and maybe radial glows
 - Blurred glass effect on top bar
-- Make custom radio/checkbox form elements
+- Improve custom radio/checkbox form elements
 - Replace native alert with notification style popups in bottom-right corner and, for more important alerts, actual popups in the middle of the screen
 - Color sector chips by sector
 - Color visibilities on upload page same as in channel manage page
