@@ -27,51 +27,109 @@ export async function GET(
 
     const supabase = await createSupabaseServerClient();
 
-    // -------------------------
-    // Fetch comments
-    // -------------------------
-    let query = supabase
-      .from('comments')
-      .select(
-        `
-        *,
-        user:users!comments_user_id_fkey (
-          id,
-          username,
-          display_name,
-          avatar_url
-        )
-      `,
-        { count: 'exact' }
+    const commentSelect = `
+      *,
+      user:users!comments_user_id_fkey (
+        id,
+        username,
+        display_name,
+        avatar_url
       )
-      .eq('video_id', videoId)
-      .eq('visible', true);
+    `;
 
-    // Apply search filter
+    // Search results include the complete conversation around every match:
+    // ancestors are included so replies have context, and descendants are
+    // included so a matching comment still shows its entire thread.
+    let comments;
+    let count;
+    let error;
+
     if (searchQuery) {
-      query = query.ilike('message', `%${searchQuery}%`);
+      const { data: matchingComments, error: matchingError, count: matchingCount } =
+        await supabase
+          .from('comments')
+          .select(commentSelect, { count: 'exact' })
+          .eq('video_id', videoId)
+          .eq('visible', true)
+          .ilike('message', `%${searchQuery}%`);
+
+      if (matchingError) {
+        error = matchingError;
+      } else {
+        let allCommentsQuery = supabase
+          .from('comments')
+          .select(commentSelect)
+          .eq('video_id', videoId)
+          .eq('visible', true);
+
+        switch (sortOrder) {
+          case 'oldest':
+            allCommentsQuery = allCommentsQuery.order('created_at', { ascending: true });
+            break;
+          case 'popular':
+            allCommentsQuery = allCommentsQuery.order('like_count', { ascending: false });
+            break;
+          case 'newest':
+          default:
+            allCommentsQuery = allCommentsQuery.order('created_at', { ascending: false });
+            break;
+        }
+
+        const { data: allComments, error: allCommentsError } = await allCommentsQuery;
+
+        if (allCommentsError) {
+          error = allCommentsError;
+        } else {
+          const relevantIds = new Set((matchingComments || []).map((comment) => comment.id));
+          let changed = true;
+
+          // Add parents first, then repeatedly add replies to any relevant
+          // comment so nested threads are complete in either direction.
+          while (changed) {
+            changed = false;
+            for (const comment of allComments || []) {
+              if (comment.parent_comment_id && relevantIds.has(comment.id) && !relevantIds.has(comment.parent_comment_id)) {
+                relevantIds.add(comment.parent_comment_id);
+                changed = true;
+              }
+              if (comment.parent_comment_id && relevantIds.has(comment.parent_comment_id) && !relevantIds.has(comment.id)) {
+                relevantIds.add(comment.id);
+                changed = true;
+              }
+            }
+          }
+
+          comments = (allComments || []).filter((comment) => relevantIds.has(comment.id));
+          count = matchingCount;
+        }
+      }
+    } else {
+      let query = supabase
+        .from('comments')
+        .select(commentSelect, { count: 'exact' })
+        .eq('video_id', videoId)
+        .eq('visible', true);
+
+      switch (sortOrder) {
+        case 'oldest':
+          query = query.order('created_at', { ascending: true });
+          break;
+        case 'popular':
+          query = query.order('like_count', { ascending: false });
+          break;
+        case 'newest':
+        default:
+          query = query.order('created_at', { ascending: false });
+          break;
+      }
+
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      const result = await query.range(from, to);
+      comments = result.data;
+      error = result.error;
+      count = result.count;
     }
-
-    // Apply sorting
-    switch (sortOrder) {
-      case 'oldest':
-        query = query.order('created_at', { ascending: true });
-        break;
-      case 'popular':
-        query = query.order('like_count', { ascending: false });
-        break;
-      case 'newest':
-      default:
-        query = query.order('created_at', { ascending: false });
-        break;
-    }
-
-    // Apply pagination
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
-    query = query.range(from, to);
-
-    const { data: comments, error, count } = await query;
 
     if (error) {
       console.error('Error fetching comments:', error);

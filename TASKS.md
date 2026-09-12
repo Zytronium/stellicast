@@ -433,9 +433,9 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Add click animation for video cards
 - Preview video animation on video card hover
 - Overhaul "account" page and rename it to "channels" page
-- Add 3x speed option for video player
-- Add a search bar to the comments section
 - Hide mouse along with video controls if mouse is over video player when hiding controls
+- Add very faint gradient to all single-color buttons to add depth
+- Fix Zen browser scrollbar bug 
 
 **Status:** In-progress
 
