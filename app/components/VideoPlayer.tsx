@@ -720,7 +720,7 @@ export default function VideoPlayer({
   return (
     <div
       ref={containerRef}
-      className="relative bg-black rounded-lg overflow-hidden aspect-video"
+      className={`relative bg-black rounded-lg overflow-hidden aspect-video ${!isMobile && !showControls ? 'cursor-none' : ''}`}
       onMouseMove={handleActivity}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleActivity}

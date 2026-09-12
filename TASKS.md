@@ -433,7 +433,6 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 - Add click animation for video cards
 - Preview video animation on video card hover
 - Overhaul "account" page and rename it to "channels" page
-- Hide mouse along with video controls if mouse is over video player when hiding controls
 
 **Status:** In-progress
 
