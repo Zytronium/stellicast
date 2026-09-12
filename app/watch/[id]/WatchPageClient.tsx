@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Plus, X, Share2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, X, Share2, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
 import FollowButton from '@/components/FollowButton';
 import { ThumbsUpIcon, ThumbsUpIconHandle } from "@/components/ThumbsUpIcon";
@@ -29,9 +29,15 @@ type ChannelInfo = {
   avatar_url?: string | null;
 };
 
-async function fetchComments(videoId: string, page = 1, sort = 'newest') {
+async function fetchComments(videoId: string, page = 1, sort = 'newest', search = '') {
+  const searchParams = new URLSearchParams({
+    page: String(page),
+    sort,
+  });
+  if (search.trim()) searchParams.set('search', search.trim());
+
   const response = await fetch(
-    `/api/videos/${videoId}/comments?page=${page}&sort=${sort}`
+    `/api/videos/${videoId}/comments?${searchParams.toString()}`
   );
   if (!response.ok) throw new Error('Failed to fetch comments');
   return response.json();
@@ -121,6 +127,7 @@ export default function WatchPageClient({ params }: {
   const [comments, setComments] = useState<CommentWithChildren[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
+  const [commentSearch, setCommentSearch] = useState('');
   const [userLikedComments, setUserLikedComments] = useState<string[]>([]);
   const [userDislikedComments, setUserDislikedComments] = useState<string[]>([]);
   const [mobileCommentsExpanded, setMobileCommentsExpanded] = useState(false);
@@ -135,9 +142,11 @@ export default function WatchPageClient({ params }: {
       if (!videoId) return;
 
       try {
-        const data = await fetchComments(videoId);
+        const data = await fetchComments(videoId, 1, 'newest', commentSearch);
         setComments(buildCommentTree(data.comments));
-        setCommentCount(data.comments.length);
+        if (!commentSearch) {
+          setCommentCount(data.pagination?.total ?? data.comments.length);
+        }
 
         if (data.userEngagement) {
           setUserLikedComments(data.userEngagement.likedComments || []);
@@ -151,7 +160,7 @@ export default function WatchPageClient({ params }: {
     }
 
     loadComments();
-  }, [videoId]);
+  }, [videoId, commentSearch]);
 
   // Separate auth initialization from data loading
   useEffect(() => {
@@ -460,9 +469,11 @@ export default function WatchPageClient({ params }: {
   const refreshComments = async () => {
     if (!videoId) return;
     try {
-      const data = await fetchComments(videoId);
+      const data = await fetchComments(videoId, 1, 'newest', commentSearch);
       setComments(buildCommentTree(data.comments));
-      setCommentCount(data.comments.length);
+      if (!commentSearch) {
+        setCommentCount(data.pagination?.total ?? data.comments.length);
+      }
 
       if (data.userEngagement) {
         setUserLikedComments(data.userEngagement.likedComments || []);
@@ -1211,19 +1222,32 @@ export default function WatchPageClient({ params }: {
         <div className="lg:hidden mt-6">
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
             {/* Comments Header - Clickable to expand */}
-            <button
-              onClick={() => setMobileCommentsExpanded(!mobileCommentsExpanded)}
-              className="w-full p-4 flex items-center justify-between hover:bg-accent/30 transition"
-            >
-              <div className="flex items-center gap-2">
+            <div className="w-full p-4 flex items-center justify-between hover:bg-accent/30 transition">
+              <button
+                onClick={() => setMobileCommentsExpanded(!mobileCommentsExpanded)}
+                className="flex items-center gap-2"
+              >
                 <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
-              </div>
-              {mobileCommentsExpanded ? (
-                <ChevronUp className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                {mobileCommentsExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                )}
+              </button>
+              {commentCount > 1 && (
+                <div className="relative ml-auto">
+                  <Search className="absolute left-2.5 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="search"
+                    value={commentSearch}
+                    onChange={(event) => setCommentSearch(event.target.value)}
+                    placeholder="Search comments"
+                    aria-label="Search comments"
+                    className="w-36 rounded-lg border border-border bg-input py-1.5 pl-8 pr-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
               )}
-            </button>
+            </div>
 
             {/* First Comment Preview - Always visible when collapsed */}
             {!mobileCommentsExpanded && comments.length > 0 && (
@@ -1325,6 +1349,19 @@ export default function WatchPageClient({ params }: {
       <div className="hidden lg:flex w-96 bg-card/50 rounded-lg p-4 flex-col h-[calc(100vh-8rem)] sticky top-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{commentCount} Comment{commentCount === 1 ? '' : 's'}</h2>
+          {commentCount > 1 && (
+            <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="search"
+                  value={commentSearch}
+                  onChange={(event) => setCommentSearch(event.target.value)}
+                  placeholder="Search comments"
+                  aria-label="Search comments"
+                  className="w-40 rounded-lg border border-border bg-input py-1.5 pl-8 pr-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+            </div>
+          )}
         </div>
 
         <div className="mb-4">
