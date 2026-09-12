@@ -423,7 +423,6 @@ allow it via SQL editor in Supabase in case the Stellicast account gets hacked.)
 ## 12. Polishing
 
 - Re-evaluate which fields should be optional in channel early access application
-- Change video cards date to relative format (consider keeping mm/dd/yy format for videos older than a year)
 - Enhance background gradient with a faint vignette effect and maybe radial glows
 - Blurred glass effect on top bar
 - Improve custom radio/checkbox form elements
